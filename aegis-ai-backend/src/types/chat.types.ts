@@ -1,4 +1,4 @@
-export type ChatMessageRole = "user" | "assistant" | "system"
+export type TChatMessageRole = "user" | "assistant" | "system"
 
 export interface IChatRequest {
 	message: string
@@ -9,6 +9,10 @@ export interface IChatResponse {
 }
 
 export interface IChatMessage {
-	role: ChatMessageRole
+	role: TChatMessageRole
 	content: string
+}
+
+export interface IGenerateParams {
+	message: string
 }

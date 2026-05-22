@@ -1,6 +1,8 @@
+import type { IChatMessage, IGenerateParams } from "../types/chat.types.js"
+
 export class LLMService {
-	async generate(message: string): Promise<string> {
-		return "Mock AI Response"
+	async generate(params: IGenerateParams): Promise<IChatMessage> {
+		return { role: "assistant", content: params.message }
 	}
 }
 
