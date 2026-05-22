@@ -1,10 +1,10 @@
 import express from "express"
+import { chatRouter } from "./routes/chat.route.js"
 
 const app = express()
 
-app.get("/health", (_, res) => {
-	res.status(200).json({ status: "ok" })
-})
+app.use(express.json())
+app.use("/api", chatRouter)
 
 app.listen(3000, () => {
 	console.log("Server is running on port 3000")
