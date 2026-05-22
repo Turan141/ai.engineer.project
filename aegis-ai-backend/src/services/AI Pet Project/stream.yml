@@ -1,0 +1,31 @@
+info:
+  name: stream
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:3000/api/chat/stream?message=hello
+  headers:
+    - name: Content-Type
+      value: ""
+    - name: ""
+      value: text/event-stream
+  params:
+    - name: message
+      value: hello
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "message": "hello how are you"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​
