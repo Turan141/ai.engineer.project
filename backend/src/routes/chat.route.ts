@@ -40,7 +40,7 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 	const abortController = new AbortController()
 
-	req.on("close", () => {
+	res.on("close", () => {
 		abortController.abort()
 	})
 
@@ -55,9 +55,21 @@ chatRouter.post("/chat/stream", async (req, res) => {
 			res.write(`data: ${JSON.stringify(chunk)}\n\n`)
 			console.dir(chunk)
 		}
+		res.write("data: [DONE]\n\n")
+		res.end()
 	} catch (error) {
+		if ((error as any)?.name === "AbortError") {
+			// Client disconnected — no need to write anything
+			res.end()
+			return
+		}
 		console.error("Error generating AI response stream:", error)
-		//todo handle this
+		try {
+			res.write(`data: ${JSON.stringify({ error: "Internal server error" })}\n\n`)
+		} catch (e) {
+			// ignore write errors
+		}
+		res.end()
 		return
 	}
 
