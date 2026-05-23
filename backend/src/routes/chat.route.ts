@@ -52,7 +52,7 @@ chatRouter.post("/chat/stream", async (req, res) => {
 				console.log("Request aborted by the client")
 				break
 			}
-			res.write(`data: ${chunk.text}\n\n`)
+			res.write(`data: ${JSON.stringify(chunk)}\n\n`)
 			console.dir(chunk)
 		}
 	} catch (error) {
