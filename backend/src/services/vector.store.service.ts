@@ -1,8 +1,7 @@
 import type {
 	IEmbeddingProvider,
 	ISearchResult,
-	IVectorDocument,
-	IAddDocumentRequest
+	IVectorDocument
 } from "../types/chat.types.js"
 import { cosineSimilarity } from "../utils/cosine-similarity.js"
 
@@ -11,12 +10,13 @@ export class InMemoryVectorStore {
 
 	constructor(private readonly embeddingProvider: IEmbeddingProvider) {}
 
-	async addDocument(document: IAddDocumentRequest): Promise<void> {
-		const queryEmbedding = await this.embeddingProvider.generateEmbedding(document.text)
+	async addDocument(document: IVectorDocument): Promise<void> {
+		const queryEmbedding = await this.embeddingProvider.generateEmbedding(
+			document.content
+		)
 
 		this.documents.push({
-			content: document.text,
-			id: document.index.toString(),
+			...document,
 			embedding: queryEmbedding
 		})
 	}
@@ -26,6 +26,12 @@ export class InMemoryVectorStore {
 
 		const similarity = this.documents
 			.map((document) => {
+				if (!document.embedding) {
+					return {
+						document,
+						score: 0
+					}
+				}
 				return {
 					document,
 					score: cosineSimilarity(document.embedding, queryEmbedding)

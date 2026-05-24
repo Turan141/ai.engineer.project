@@ -67,12 +67,8 @@ export interface IEmbeddingProvider {
 export interface IVectorDocument {
 	id: string
 	content: string
-	embedding: number[]
-}
-
-export interface IAddDocumentRequest {
-	text: string
-	index: number
+	embedding?: number[]
+	source?: string
 }
 
 export interface ISearchResult {
