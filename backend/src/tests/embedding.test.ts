@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { LMStudioEmbeddingService } from "../services/lmstudio.embedding.service.ts.js"
+import { LMStudioEmbeddingService } from "../services/lmstudio.embedding.service.js"
 import { cosineSimilarity } from "../utils/cosine-similarity.js"
 
 async function testEmbeddings(): Promise<void> {

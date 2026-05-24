@@ -69,3 +69,18 @@ export interface IVectorDocument {
 	content: string
 	embedding: number[]
 }
+
+export interface IAddDocumentRequest {
+	text: string
+	index: number
+}
+
+export interface ISearchResult {
+	document: IVectorDocument
+	score: number
+}
+
+export interface IRAGResponse {
+	answer: string
+	context: ISearchResult[]
+}

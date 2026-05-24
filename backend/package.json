@@ -7,7 +7,9 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "tsx watch src/server.ts",
-		"test:embedding": "tsx src/tests/embedding.test.ts"
+		"test:embedding": "tsx src/tests/embedding.test.ts",
+		"test:embedding_add_search": "tsx src/tests/embedding-add-search.test.ts",
+		"test:rag": "tsx src/tests/rag.test.ts"
 	},
 	"keywords": [],
 	"author": "",

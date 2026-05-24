@@ -1,13 +1,20 @@
 import { config } from "../config/config.js"
-import type { IChatMessage, IGenerateParams, ILLMProvider } from "../types/chat.types.js"
+import type {
+	IChatMessage,
+	IEmbeddingProvider,
+	IGenerateParams,
+	ILLMProvider
+} from "../types/chat.types.js"
 import { GeminiService } from "./gemini.service.js"
 import { LMStudioService } from "./lmstudio.service.js"
-import { LMStudioEmbeddingService } from "./lmstudio.embedding.service.ts.js"
+import { LMStudioEmbeddingService } from "./lmstudio.embedding.service.js"
+import { InMemoryVectorStore } from "./vector.store.service.js"
+import { RAGService } from "./rag.service.js"
 
 type TProviderName = "gemini" | "lmstudio"
 type TEmbeddingProviderName = "lmstudio"
 
-const embeddingProviders: Record<TEmbeddingProviderName, LMStudioEmbeddingService> = {
+const embeddingProviders: Record<TEmbeddingProviderName, IEmbeddingProvider> = {
 	lmstudio: new LMStudioEmbeddingService()
 }
 
@@ -20,7 +27,7 @@ export class LLMService {
 	private currentProviderName: TProviderName
 	private currentProvider: ILLMProvider
 	private currentEmbeddingProviderName: TEmbeddingProviderName
-	private currentEmbeddingProvider: LMStudioEmbeddingService
+	private currentEmbeddingProvider: IEmbeddingProvider
 
 	constructor() {
 		const defaultName: TProviderName = config.defaultProvider as TProviderName
@@ -81,3 +88,5 @@ export class LLMService {
 }
 
 export const llmService = new LLMService()
+export const inMemoryVectorStore = new InMemoryVectorStore(embeddingProviders.lmstudio)
+export const ragService = new RAGService(inMemoryVectorStore, llmService)

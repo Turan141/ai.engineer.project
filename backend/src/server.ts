@@ -1,6 +1,7 @@
 import "dotenv/config"
 import express from "express"
 import { chatRouter } from "./routes/chat.route.js"
+import { InMemoryVectorStore } from "./services/vector.store.service.js"
 
 const app = express()
 
