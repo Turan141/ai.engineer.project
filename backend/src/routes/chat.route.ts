@@ -34,8 +34,10 @@ chatRouter.post("/chat", async (req, res) => {
 
 chatRouter.post("/chat/stream", async (req, res) => {
 	res.setHeader("Content-Type", "text/event-stream")
-	res.setHeader("Cache-Control", "no-cache")
+	res.setHeader("Cache-Control", "no-cache, no-transform")
 	res.setHeader("Connection", "keep-alive")
+	res.setHeader("X-Accel-Buffering", "no")
+	req.socket?.setNoDelay(true)
 	res.flushHeaders()
 
 	const abortController = new AbortController()
@@ -53,7 +55,6 @@ chatRouter.post("/chat/stream", async (req, res) => {
 				break
 			}
 			res.write(`data: ${JSON.stringify(chunk)}\n\n`)
-			console.dir(chunk)
 		}
 		res.write("data: [DONE]\n\n")
 		res.end()

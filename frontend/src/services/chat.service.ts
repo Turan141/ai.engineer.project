@@ -8,18 +8,20 @@ interface StreamOptions {
 	signal?: AbortSignal
 }
 
-// Streams SSE-style events from the backend endpoint and calls `onChunk`
-// for each parsed `text` chunk. Throws on invalid JSON payloads.
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ""
+
 export async function streamChat({
 	messages,
 	onChunk,
 	signal
 }: StreamOptions): Promise<void> {
-	const res = await fetch("/api/chat/stream", {
+	const res = await fetch(`${API_BASE}/api/chat/stream`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ messages }),
-		signal
+		signal,
+		keepalive: true,
+		cache: "no-cache"
 	})
 
 	if (!res.ok) {
@@ -35,11 +37,10 @@ export async function streamChat({
 	try {
 		while (true) {
 			const { done, value } = await reader.read()
+
 			if (done) break
 			buffer += decoder.decode(value, { stream: true })
-			console.log({ buffer })
-			// Process any complete SSE events in the buffer. SSE events are
-			// separated by a blank line (`\n\n` or `\r\n\r\n`).
+
 			let sepIndex: number
 			while (
 				(sepIndex = buffer.indexOf("\n\n")) !== -1 ||
@@ -98,7 +99,9 @@ export async function streamChat({
 				} catch (err) {
 					throw new Error(`Invalid JSON payload in leftover SSE data: ${data}`)
 				}
-				if (parsed && typeof parsed.text === "string") onChunk(parsed.text)
+				if (parsed && typeof parsed.text === "string") {
+					onChunk(parsed.text)
+				}
 			}
 		}
 	} finally {

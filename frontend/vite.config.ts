@@ -9,7 +9,17 @@ export default defineConfig({
 			"/api": {
 				target: "http://localhost:3000",
 				changeOrigin: true,
-				secure: false
+				secure: false,
+				// Ensure SSE responses are not buffered by the Vite proxy
+				configure: (proxy) => {
+					proxy.on("proxyRes", (proxyRes) => {
+						// Force no buffering for event-stream responses
+						if (proxyRes.headers["content-type"]?.includes("text/event-stream")) {
+							proxyRes.headers["x-accel-buffering"] = "no"
+							proxyRes.headers["cache-control"] = "no-cache, no-transform"
+						}
+					})
+				}
 			}
 		}
 	}
