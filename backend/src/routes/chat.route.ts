@@ -3,6 +3,31 @@ import { llmService } from "../services/llm.service.js"
 
 export const chatRouter = Router()
 
+chatRouter.post("/embeddings", async (req, res) => {
+	const { text } = req.body
+
+	const abortController = new AbortController()
+	req.on("close", () => {
+		abortController.abort()
+	})
+
+	if (typeof text !== "string" || text.trim() === "") {
+		return res.status(400).json({ error: "Text is required for embedding generation" })
+	}
+
+	try {
+		const embedding = await llmService.generateEmbedding(text, abortController.signal)
+		return res.json({ embedding })
+	} catch (error) {
+		if ((error as any)?.name === "AbortError") {
+			// Client disconnected — no need to write anything
+			return
+		}
+		console.error("Error generating embedding:", error)
+		return res.status(500).json({ error: "Failed to generate embedding" })
+	}
+})
+
 chatRouter.post("/chat", async (req, res) => {
 	if (!req.body) {
 		return res.status(400).json({ error: "Request body is required" })
@@ -73,6 +98,4 @@ chatRouter.post("/chat/stream", async (req, res) => {
 		res.end()
 		return
 	}
-
-	res.end()
 })

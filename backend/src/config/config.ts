@@ -22,5 +22,6 @@ export const config = {
 	llmProvider: llmProvider,
 	defaultProvider: llmProvider,
 	lmstudioBaseUrl: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234",
-	llmModel: process.env.LLM_MODEL || "qwen/qwen3.5-9b"
+	llmModel: process.env.LLM_MODEL,
+	embeddingModel: process.env.EMBEDDING_MODEL || "text-embedding-3-small"
 }

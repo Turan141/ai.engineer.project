@@ -49,3 +49,23 @@ export interface ILMStudioStreamChoice {
 export interface ILMStudioDelta {
 	content?: string
 }
+
+export interface IEmbeddingProvider {
+	generateEmbedding(text: string): Promise<number[]>
+}
+
+export interface IEmbeddingResponse {
+	data: Array<{
+		embedding: number[]
+	}>
+}
+
+export interface IEmbeddingProvider {
+	generateEmbedding(text: string, signal?: AbortSignal): Promise<number[]>
+}
+
+export interface IVectorDocument {
+	id: string
+	content: string
+	embedding: number[]
+}
