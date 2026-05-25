@@ -52,6 +52,7 @@ export const Chat: React.FC = () => {
 	const [isLoading, setIsLoading] = useState(false)
 	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
+	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 	const controllerRef = useRef<AbortController | null>(null)
 	const embeddingControllerRef = useRef<AbortController | null>(null)
 	const messagesRef = useRef<HTMLDivElement | null>(null)
@@ -72,6 +73,15 @@ export const Chat: React.FC = () => {
 			messagesRef.current.scrollTop = messagesRef.current.scrollHeight
 		}
 	}, [messages])
+
+	useEffect(() => {
+		if (!isSettingsOpen) return
+		const handleEscape = (e: KeyboardEvent) => {
+			if (e.key === "Escape") setIsSettingsOpen(false)
+		}
+		document.addEventListener("keydown", handleEscape)
+		return () => document.removeEventListener("keydown", handleEscape)
+	}, [isSettingsOpen])
 
 	const handleSend = async () => {
 		const trimmed = input.trim()
@@ -189,6 +199,77 @@ export const Chat: React.FC = () => {
 
 	return (
 		<div className='chat-shell'>
+			{isSettingsOpen && (
+				<div className='settings-overlay' onClick={() => setIsSettingsOpen(false)}>
+					<div
+						className='settings-modal'
+						onClick={(e) => e.stopPropagation()}
+						role='dialog'
+						aria-modal='true'
+						aria-label='Options'
+					>
+						<div className='settings-modal__header'>
+							<span className='settings-modal__title'>Options</span>
+							<button
+								type='button'
+								className='settings-modal__close'
+								onClick={() => setIsSettingsOpen(false)}
+								aria-label='Close'
+							>
+								✕
+							</button>
+						</div>
+
+						<div className='settings-section'>
+							<div className='settings-section__label'>Chat mode</div>
+							<div className='chat-mode-switch' aria-label='Chat mode switch'>
+								<button
+									type='button'
+									onClick={() => setMode("stream")}
+									className={`chat-pill ${mode === "stream" ? "is-active" : ""}`}
+									disabled={isLoading}
+								>
+									Stream /chat/stream
+								</button>
+								<button
+									type='button'
+									onClick={() => setMode("single")}
+									className={`chat-pill ${mode === "single" ? "is-active" : ""}`}
+									disabled={isLoading}
+								>
+									Single /chat
+								</button>
+							</div>
+							<p className='settings-section__hint'>
+								{mode === "stream"
+									? "Ответ придёт потоком сразу по мере генерации."
+									: "Ответ вернётся одним сообщением через стандартный chat endpoint."}
+							</p>
+						</div>
+
+						<div className='settings-section'>
+							<div className='settings-section__label'>Embeddings</div>
+							<button
+								type='button'
+								onClick={() => {
+									handleGenerateEmbedding()
+									setIsSettingsOpen(false)
+								}}
+								disabled={input.trim() === "" || isEmbeddingLoading}
+								className='chat-button chat-button--ghost'
+							>
+								{isEmbeddingLoading ? "Embedding..." : "Generate /embeddings"}
+							</button>
+							{input.trim() === "" && (
+								<p className='settings-section__hint'>
+									Введи текст в поле ввода, чтобы сгенерировать embedding.
+								</p>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
+
 			<section className='chat-panel'>
 				<header className='chat-header'>
 					<div>
@@ -231,46 +312,48 @@ export const Chat: React.FC = () => {
 						<div>
 							<div className='chat-composer__title'>Your prompt</div>
 							<div className='chat-composer__hint'>
-								{mode === "stream"
-									? "Ответ придёт потоком сразу по мере генерации."
-									: "Ответ вернётся одним сообщением через стандартный chat endpoint."}
+								{mode === "stream" ? "Stream mode" : "Single mode"}
 							</div>
 						</div>
-						<div className='chat-composer__count'>{input.trim().length} chars</div>
-					</div>
-
-					<div className='chat-tools'>
-						<div className='chat-mode-switch' aria-label='Chat mode switch'>
+						<div className='chat-composer__topline-end'>
+							<span className='chat-composer__count'>{input.trim().length} chars</span>
 							<button
 								type='button'
-								onClick={() => setMode("stream")}
-								className={`chat-pill ${mode === "stream" ? "is-active" : ""}`}
-								disabled={isLoading}
+								className='chat-settings-btn'
+								onClick={() => setIsSettingsOpen(true)}
+								aria-label='Open options'
 							>
-								Stream /chat/stream
-							</button>
-							<button
-								type='button'
-								onClick={() => setMode("single")}
-								className={`chat-pill ${mode === "single" ? "is-active" : ""}`}
-								disabled={isLoading}
-							>
-								Single /chat
+								<svg
+									width='18'
+									height='18'
+									viewBox='0 0 24 24'
+									fill='none'
+									stroke='currentColor'
+									strokeWidth='2'
+									strokeLinecap='round'
+									strokeLinejoin='round'
+									aria-hidden='true'
+								>
+									<circle cx='9' cy='6' r='2' />
+									<path d='M4 6h3M11 6h9' />
+									<circle cx='15' cy='12' r='2' />
+									<path d='M4 12h9M17 12h3' />
+									<circle cx='10' cy='18' r='2' />
+									<path d='M4 18h4M12 18h8' />
+								</svg>
 							</button>
 						</div>
-						<button
-							type='button'
-							onClick={handleGenerateEmbedding}
-							disabled={input.trim() === "" || isEmbeddingLoading}
-							className='chat-button chat-button--ghost chat-button--compact'
-						>
-							{isEmbeddingLoading ? "Embedding..." : "Generate /embeddings"}
-						</button>
 					</div>
 
 					<textarea
 						value={input}
 						onChange={(e) => setInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+								e.preventDefault()
+								handleSend()
+							}
+						}}
 						rows={4}
 						className='chat-input'
 						placeholder='Type your message...'
