@@ -181,7 +181,11 @@ export const Chat: React.FC = () => {
 		}
 	}
 
-	const statusLabel = isLoading ? "Generating" : isEmbeddingLoading ? "Embedding" : "Ready"
+	const statusLabel = isLoading
+		? "Generating"
+		: isEmbeddingLoading
+			? "Embedding"
+			: "Ready"
 
 	return (
 		<div className='chat-shell'>
@@ -190,9 +194,13 @@ export const Chat: React.FC = () => {
 					<div>
 						<div className='chat-eyebrow'>AI engineer pet</div>
 						<h1>Chat workbench</h1>
-						<p>Обычный chat, streaming chat и embeddings доступны из одного интерфейса.</p>
+						<p>
+							Обычный chat, streaming chat и embeddings доступны из одного интерфейса.
+						</p>
 					</div>
-					<div className={`chat-status ${isLoading || isEmbeddingLoading ? "is-live" : ""}`}>
+					<div
+						className={`chat-status ${isLoading || isEmbeddingLoading ? "is-live" : ""}`}
+					>
 						<span className='chat-status__dot' />
 						{statusLabel}
 					</div>

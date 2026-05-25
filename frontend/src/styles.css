@@ -344,7 +344,11 @@ textarea {
 	padding: 16px;
 	border-radius: 20px;
 	border: 1px solid rgba(255, 255, 255, 0.08);
-	background: linear-gradient(180deg, rgba(78, 135, 245, 0.14), rgba(255, 255, 255, 0.04));
+	background: linear-gradient(
+		180deg,
+		rgba(78, 135, 245, 0.14),
+		rgba(255, 255, 255, 0.04)
+	);
 }
 
 .embedding-card__header {
