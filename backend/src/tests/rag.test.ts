@@ -1,9 +1,12 @@
 import "dotenv/config"
 
-import { ragService } from "../services/llm.service.js"
+import { inMemoryVectorStore, ragService } from "../services/llm.service.js"
 import { seedDocuments } from "./seed-documents.js"
 
 async function main(): Promise<void> {
+	const results = await inMemoryVectorStore.search("What is React?", 2)
+
+	if (results[0]) console.log(results[0].document.source)
 	console.log("Loading documents...")
 
 	await seedDocuments()

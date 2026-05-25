@@ -1,14 +1,13 @@
-import type { IRAGResponse } from "../types/chat.types.js"
+import type { IRAGResponse, IVectorStore } from "../types/chat.types.js"
 import { buildRagPrompt } from "../utils/prompt_builder.js"
 import type { LLMService } from "./llm.service.js"
-import type { InMemoryVectorStore } from "./vector.store.service.js"
 
 const SIMILARITY_THRESHOLD = 0.5
 const MAX_CONTEXT_DOCUMENTS = 3
 
 export class RAGService {
 	constructor(
-		private readonly vectorStore: InMemoryVectorStore,
+		private readonly vectorStore: IVectorStore,
 		private readonly llmService: LLMService
 	) {}
 
@@ -20,7 +19,8 @@ export class RAGService {
 		if (!contextDocuments.length) {
 			return {
 				answer: "I don't have enough information in the knowledge base.",
-				context: []
+				context: [],
+				sources: []
 			}
 		}
 
@@ -38,9 +38,12 @@ export class RAGService {
 			]
 		})
 
+		const sources = [...new Set(contextDocuments.map((doc) => doc.document.source))]
+
 		return {
 			answer: answer.content,
-			context: contextDocuments
+			context: contextDocuments,
+			sources
 		}
 	}
 }

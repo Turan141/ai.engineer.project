@@ -33,7 +33,7 @@ export class FileSystemDocumentLoader implements IDocumentLoader {
 				const content = await fs.readFile(path.join(folderPath, file), "utf-8")
 
 				return {
-					id: path.basename(file, path.extname(file)),
+					id: file,
 					content,
 					source: file
 				}

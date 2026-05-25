@@ -1,5 +1,5 @@
-import { config } from "../config/config.js"
-import type { IEmbeddingProvider, IEmbeddingResponse } from "../types/chat.types.js"
+import { config } from "../../config/config.js"
+import type { IEmbeddingProvider, IEmbeddingResponse } from "../../types/chat.types.js"
 
 export class LMStudioEmbeddingService implements IEmbeddingProvider {
 	async generateEmbedding(text: string, signal?: AbortSignal): Promise<number[]> {

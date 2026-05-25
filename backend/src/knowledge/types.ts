@@ -8,6 +8,7 @@ export interface IChunk {
 	id: string
 	content: string
 	source: string
+	chunkIndex: number
 }
 
 export interface IDocumentLoader {
@@ -17,3 +18,5 @@ export interface IDocumentLoader {
 export interface ITextSplitter {
 	split(document: IDocument): IChunk[]
 }
+
+export interface ITextSplitter {}

@@ -1,11 +1,12 @@
 import type {
 	IEmbeddingProvider,
 	ISearchResult,
-	IVectorDocument
+	IVectorDocument,
+	IVectorStore
 } from "../types/chat.types.js"
 import { cosineSimilarity } from "../utils/cosine-similarity.js"
 
-export class InMemoryVectorStore {
+export class InMemoryVectorStore implements IVectorStore {
 	private documents: IVectorDocument[] = []
 
 	constructor(private readonly embeddingProvider: IEmbeddingProvider) {}

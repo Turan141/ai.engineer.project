@@ -50,10 +50,6 @@ export interface ILMStudioDelta {
 	content?: string
 }
 
-export interface IEmbeddingProvider {
-	generateEmbedding(text: string): Promise<number[]>
-}
-
 export interface IEmbeddingResponse {
 	data: Array<{
 		embedding: number[]
@@ -67,8 +63,12 @@ export interface IEmbeddingProvider {
 export interface IVectorDocument {
 	id: string
 	content: string
-	embedding?: number[]
-	source?: string
+	embedding: number[]
+	source: string
+	metadata: {
+		title: string
+		chunkIndex: number
+	}
 }
 
 export interface ISearchResult {
@@ -79,4 +79,10 @@ export interface ISearchResult {
 export interface IRAGResponse {
 	answer: string
 	context: ISearchResult[]
+	sources: string[]
+}
+
+export interface IVectorStore {
+	addDocument(document: IVectorDocument): Promise<void>
+	search(query: string, topK?: number): Promise<ISearchResult[]>
 }

@@ -1,9 +1,9 @@
-import { config } from "../config/config.js"
+import { config } from "../../config/config.js"
 import type {
 	IGenerateParams,
 	ILLMProvider,
 	ILMStudioResponse
-} from "../types/chat.types.js"
+} from "../../types/chat.types.js"
 
 export class LMStudioService implements ILLMProvider {
 	async generate(params: IGenerateParams, signal?: AbortSignal): Promise<string> {

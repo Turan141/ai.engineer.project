@@ -5,11 +5,11 @@ import type {
 	IGenerateParams,
 	ILLMProvider
 } from "../types/chat.types.js"
-import { GeminiService } from "./gemini.service.js"
-import { LMStudioService } from "./lmstudio.service.js"
-import { LMStudioEmbeddingService } from "./lmstudio.embedding.service.js"
+import { LMStudioService } from "./ai_services/lmstudio.service.js"
 import { InMemoryVectorStore } from "./vector.store.service.js"
 import { RAGService } from "./rag.service.js"
+import { GeminiService } from "./ai_services/gemini.service.js"
+import { LMStudioEmbeddingService } from "./ai_services/lmstudio.embedding.service.js"
 
 type TProviderName = "gemini" | "lmstudio"
 type TEmbeddingProviderName = "lmstudio"
