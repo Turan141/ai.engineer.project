@@ -1,0 +1,32 @@
+{
+	"name": "aegis-ai-backend",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "tsx watch src/server.ts",
+		"test:embedding": "tsx src/tests/embedding.test.ts",
+		"test:embedding_add_search": "tsx src/tests/embedding-add-search.test.ts",
+		"test:rag": "tsx src/tests/rag.test.ts",
+		"test:knowledge-base": "tsx src/tests/knowledge-base.test.ts",
+		"test:recursive-text-splitter": "tsx src/tests/recursive-text-splitter.test.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@google/genai": "^2.6.0",
+		"dotenv": "^17.4.2",
+		"express": "^5.2.1",
+		"openai": "^6.39.0"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.6",
+		"@types/node": "^25.9.1",
+		"ts-node-dev": "^2.0.0",
+		"tsx": "^4.22.3",
+		"typescript": "^6.0.3"
+	}
+}
