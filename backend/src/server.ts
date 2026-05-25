@@ -1,8 +1,14 @@
 import "dotenv/config"
+import cors from "cors"
 import express from "express"
 import { chatRouter } from "./routes/chat.route.js"
 
 const app = express()
+app.use(
+	cors({
+		origin: "https://ai-support-leather.vercel.app"
+	})
+)
 
 // Allow the Vite dev server (and any localhost port) to call the backend directly.
 // This bypasses Vite's HTTP proxy which buffers SSE responses.
