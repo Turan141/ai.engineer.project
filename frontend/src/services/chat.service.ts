@@ -19,7 +19,7 @@ interface StreamOptions {
 	signal?: AbortSignal
 }
 
-const API_BASE = "https://router-canal-pathology-announced.trycloudflare.com/api"
+const API_BASE = "https://router-canal-pathology-announced.trycloudflare.com"
 
 async function getResponseErrorMessage(res: Response): Promise<string> {
 	try {
