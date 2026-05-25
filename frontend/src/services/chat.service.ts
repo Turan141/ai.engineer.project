@@ -36,7 +36,10 @@ async function postJson<T>({ path, body, signal }: JsonRequestOptions): Promise<
 	return res.json() as Promise<T>
 }
 
-export async function generateChat({ messages, signal }: ChatOptions): Promise<IChatMessage> {
+export async function generateChat({
+	messages,
+	signal
+}: ChatOptions): Promise<IChatMessage> {
 	const response = await postJson<{ message: IChatMessage }>({
 		path: "/api/chat",
 		body: { messages },

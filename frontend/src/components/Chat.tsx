@@ -1,12 +1,59 @@
 import React, { useEffect, useRef, useState } from "react"
 import { IChatMessage } from "../types/chat.types"
-import { streamChat } from "../services/chat.service"
+import { generateChat, generateEmbedding, streamChat } from "../services/chat.service"
+
+type TChatMode = "stream" | "single"
+
+interface IEmbeddingPreview {
+	text: string
+	values: number[]
+}
+
+const EMBEDDING_PREVIEW_SIZE = 8
+
+function updateLastAssistantMessage(
+	messages: IChatMessage[],
+	updater: (message: IChatMessage) => IChatMessage
+): IChatMessage[] {
+	if (messages.length === 0) {
+		return messages
+	}
+
+	const next = [...messages]
+	const lastIndex = next.length - 1
+	const lastMessage = next[lastIndex]
+
+	if (lastMessage.role !== "assistant") {
+		return messages
+	}
+
+	next[lastIndex] = updater(lastMessage)
+	return next
+}
+
+function removeEmptyAssistantMessage(messages: IChatMessage[]): IChatMessage[] {
+	const lastMessage = messages[messages.length - 1]
+
+	if (!lastMessage) {
+		return messages
+	}
+
+	if (lastMessage.role === "assistant" && lastMessage.content === "") {
+		return messages.slice(0, -1)
+	}
+
+	return messages
+}
 
 export const Chat: React.FC = () => {
 	const [messages, setMessages] = useState<IChatMessage[]>([])
 	const [input, setInput] = useState("")
+	const [mode, setMode] = useState<TChatMode>("stream")
 	const [isLoading, setIsLoading] = useState(false)
+	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
+	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const controllerRef = useRef<AbortController | null>(null)
+	const embeddingControllerRef = useRef<AbortController | null>(null)
 	const messagesRef = useRef<HTMLDivElement | null>(null)
 
 	useEffect(() => {
@@ -14,6 +61,8 @@ export const Chat: React.FC = () => {
 			// Cleanup any in-flight request on unmount
 			controllerRef.current?.abort()
 			controllerRef.current = null
+			embeddingControllerRef.current?.abort()
+			embeddingControllerRef.current = null
 		}
 	}, [])
 
@@ -35,10 +84,10 @@ export const Chat: React.FC = () => {
 			role: "user",
 			content: trimmed
 		}
+		const conversation = [...messages, userMessage]
 
-		setMessages((prev) => [
-			...prev,
-			userMessage,
+		setMessages([
+			...conversation,
 			{
 				role: "assistant",
 				content: ""
@@ -50,54 +99,77 @@ export const Chat: React.FC = () => {
 
 		const controller = new AbortController()
 		controllerRef.current = controller
-		const start = Date.now()
 
 		try {
-			await streamChat({
-				messages: [userMessage],
-				signal: controller.signal,
+			if (mode === "single") {
+				const assistantMessage = await generateChat({
+					messages: conversation,
+					signal: controller.signal
+				})
 
-				onChunk: (text) => {
-					setMessages((prev) => {
-						if (prev.length === 0) {
-							return prev
-						}
-
-						const next = [...prev]
-						const lastIndex = next.length - 1
-
-						next[lastIndex] = {
-							...next[lastIndex],
-							content: next[lastIndex].content + text
-						}
-
-						return next
-					})
-				}
-			})
+				setMessages((prev) => updateLastAssistantMessage(prev, () => assistantMessage))
+			} else {
+				await streamChat({
+					messages: conversation,
+					signal: controller.signal,
+					onChunk: (text) => {
+						setMessages((prev) =>
+							updateLastAssistantMessage(prev, (message) => ({
+								...message,
+								content: message.content + text
+							}))
+						)
+					}
+				})
+			}
 		} catch (err: any) {
-			if (err?.name !== "AbortError") {
+			if (err?.name === "AbortError") {
+				setMessages((prev) => removeEmptyAssistantMessage(prev))
+			} else {
 				console.error(err)
 
-				setMessages((prev) => {
-					if (prev.length === 0) {
-						return prev
-					}
-
-					const next = [...prev]
-					const lastIndex = next.length - 1
-
-					next[lastIndex] = {
-						...next[lastIndex],
-						content: next[lastIndex].content + "\n[Error streaming response]"
-					}
-
-					return next
-				})
+				setMessages((prev) =>
+					updateLastAssistantMessage(prev, (message) => ({
+						...message,
+						content: message.content
+							? `${message.content}\n[Error requesting response]`
+							: "[Error requesting response]"
+					}))
+				)
 			}
 		} finally {
 			setIsLoading(false)
 			controllerRef.current = null
+		}
+	}
+
+	const handleGenerateEmbedding = async () => {
+		const trimmed = input.trim()
+
+		if (!trimmed || isEmbeddingLoading) {
+			return
+		}
+
+		embeddingControllerRef.current?.abort()
+		const controller = new AbortController()
+		embeddingControllerRef.current = controller
+		setIsEmbeddingLoading(true)
+
+		try {
+			const embedding = await generateEmbedding(trimmed, controller.signal)
+			setEmbeddingPreview({
+				text: trimmed,
+				values: embedding
+			})
+		} catch (err: any) {
+			if (err?.name !== "AbortError") {
+				console.error(err)
+			}
+		} finally {
+			setIsEmbeddingLoading(false)
+			if (embeddingControllerRef.current === controller) {
+				embeddingControllerRef.current = null
+			}
 		}
 	}
 
@@ -109,18 +181,20 @@ export const Chat: React.FC = () => {
 		}
 	}
 
+	const statusLabel = isLoading ? "Generating" : isEmbeddingLoading ? "Embedding" : "Ready"
+
 	return (
 		<div className='chat-shell'>
 			<section className='chat-panel'>
 				<header className='chat-header'>
 					<div>
 						<div className='chat-eyebrow'>AI engineer pet</div>
-						<h1>Streaming chat</h1>
-						<p>Аккуратный интерфейс без серых коробок и визуального шума.</p>
+						<h1>Chat workbench</h1>
+						<p>Обычный chat, streaming chat и embeddings доступны из одного интерфейса.</p>
 					</div>
-					<div className={`chat-status ${isLoading ? "is-live" : ""}`}>
+					<div className={`chat-status ${isLoading || isEmbeddingLoading ? "is-live" : ""}`}>
 						<span className='chat-status__dot' />
-						{isLoading ? "Generating" : "Ready"}
+						{statusLabel}
 					</div>
 				</header>
 
@@ -149,10 +223,41 @@ export const Chat: React.FC = () => {
 						<div>
 							<div className='chat-composer__title'>Your prompt</div>
 							<div className='chat-composer__hint'>
-								Ответ придёт потоком сразу по мере генерации.
+								{mode === "stream"
+									? "Ответ придёт потоком сразу по мере генерации."
+									: "Ответ вернётся одним сообщением через стандартный chat endpoint."}
 							</div>
 						</div>
 						<div className='chat-composer__count'>{input.trim().length} chars</div>
+					</div>
+
+					<div className='chat-tools'>
+						<div className='chat-mode-switch' aria-label='Chat mode switch'>
+							<button
+								type='button'
+								onClick={() => setMode("stream")}
+								className={`chat-pill ${mode === "stream" ? "is-active" : ""}`}
+								disabled={isLoading}
+							>
+								Stream /chat/stream
+							</button>
+							<button
+								type='button'
+								onClick={() => setMode("single")}
+								className={`chat-pill ${mode === "single" ? "is-active" : ""}`}
+								disabled={isLoading}
+							>
+								Single /chat
+							</button>
+						</div>
+						<button
+							type='button'
+							onClick={handleGenerateEmbedding}
+							disabled={input.trim() === "" || isEmbeddingLoading}
+							className='chat-button chat-button--ghost chat-button--compact'
+						>
+							{isEmbeddingLoading ? "Embedding..." : "Generate /embeddings"}
+						</button>
 					</div>
 
 					<textarea
@@ -164,8 +269,36 @@ export const Chat: React.FC = () => {
 						disabled={isLoading}
 					/>
 
+					{embeddingPreview && (
+						<div className='embedding-card'>
+							<div className='embedding-card__header'>
+								<div>
+									<div className='embedding-card__eyebrow'>Embedding preview</div>
+									<div className='embedding-card__title'>
+										{embeddingPreview.values.length}-dimensional vector
+									</div>
+								</div>
+								<div className='embedding-card__meta'>
+									{embeddingPreview.text.length} chars
+								</div>
+							</div>
+							<p className='embedding-card__source'>{embeddingPreview.text}</p>
+							<div className='embedding-card__values'>
+								{embeddingPreview.values
+									.slice(0, EMBEDDING_PREVIEW_SIZE)
+									.map((value, index) => (
+										<div key={index} className='embedding-value'>
+											<span>#{index}</span>
+											<strong>{value.toFixed(4)}</strong>
+										</div>
+									))}
+							</div>
+						</div>
+					)}
+
 					<div className='chat-actions'>
 						<button
+							type='button'
 							onClick={handleSend}
 							disabled={isLoading || input.trim() === ""}
 							className='chat-button chat-button--primary'
@@ -173,6 +306,7 @@ export const Chat: React.FC = () => {
 							Send
 						</button>
 						<button
+							type='button'
 							onClick={handleStop}
 							disabled={!isLoading}
 							className='chat-button chat-button--ghost'

@@ -271,6 +271,48 @@ textarea {
 	font-size: 0.88rem;
 }
 
+.chat-tools {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.chat-mode-switch {
+	display: inline-flex;
+	gap: 4px;
+	padding: 4px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	flex-wrap: wrap;
+}
+
+.chat-pill {
+	border: 0;
+	border-radius: 999px;
+	padding: 10px 14px;
+	background: transparent;
+	color: var(--muted);
+	font-weight: 700;
+	transition:
+		background 180ms ease,
+		color 180ms ease,
+		box-shadow 180ms ease;
+}
+
+.chat-pill.is-active {
+	background: rgba(255, 159, 90, 0.16);
+	color: #fff4e8;
+	box-shadow: inset 0 0 0 1px rgba(255, 159, 90, 0.28);
+}
+
+.chat-button--compact {
+	padding: 10px 14px;
+	white-space: nowrap;
+}
+
 .chat-input {
 	width: 100%;
 	min-height: 120px;
@@ -294,6 +336,71 @@ textarea {
 	border-color: rgba(255, 159, 90, 0.7);
 	box-shadow: 0 0 0 4px rgba(255, 159, 90, 0.12);
 	transform: translateY(-1px);
+}
+
+.embedding-card {
+	display: grid;
+	gap: 14px;
+	padding: 16px;
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: linear-gradient(180deg, rgba(78, 135, 245, 0.14), rgba(255, 255, 255, 0.04));
+}
+
+.embedding-card__header {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.embedding-card__eyebrow {
+	font-size: 0.76rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: #b8cdf8;
+	margin-bottom: 4px;
+}
+
+.embedding-card__title {
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+.embedding-card__meta,
+.embedding-card__source {
+	margin: 0;
+	color: var(--muted);
+	line-height: 1.6;
+}
+
+.embedding-card__values {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+	gap: 10px;
+}
+
+.embedding-value {
+	display: grid;
+	gap: 4px;
+	padding: 10px 12px;
+	border-radius: 16px;
+	background: rgba(7, 11, 20, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.embedding-value span {
+	font-size: 0.75rem;
+	color: var(--muted);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.embedding-value strong {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: var(--text-strong);
 }
 
 .chat-actions {
@@ -360,6 +467,20 @@ textarea {
 	.chat-header,
 	.chat-composer__topline {
 		flex-direction: column;
+	}
+
+	.chat-tools {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.chat-mode-switch {
+		width: 100%;
+	}
+
+	.chat-pill,
+	.chat-button--compact {
+		flex: 1;
 	}
 
 	.chat-thread {
