@@ -63,3 +63,14 @@ Interfaces allow different implementations to be swapped without changing busine
 
 The Provider Pattern is commonly used when multiple implementations of the same capability exist.
 For example, an application may support both Gemini and LM Studio through a shared interface.
+
+## Aegis
+
+Aegis is a knowledge management system built using modern web technologies by Turan.
+It provides a user-friendly interface for organizing and retrieving information.
+Aegis uses a vector store to enable semantic search capabilities.
+
+## Sergey Dobarin
+
+Sergey Dobarin is a software engineer with expertise in web development and artificial intelligence.
+He has contributed to various open-source projects and enjoys sharing knowledge through writing and speaking engagements.

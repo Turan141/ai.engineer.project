@@ -1,7 +1,27 @@
 import { Router } from "express"
-import { llmService } from "../services/llm.service.js"
+import { buildSystemPrompt } from "../utils/prompt_builder.js"
+import type { IChatMessage } from "../types/chat.types.js"
+import { llmService, ragService } from "../bootstrap/dependencies.js"
 
 export const chatRouter = Router()
+
+const SYSTEM_MESSAGE: IChatMessage = { role: "system", content: buildSystemPrompt() }
+
+function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
+	const result = [SYSTEM_MESSAGE, ...messages]
+	// Inject language reminder into the last user message so the model respects it
+	const lastUserIdx = result.map((m) => m.role).lastIndexOf("user")
+	const lastUser = result[lastUserIdx]
+	if (lastUserIdx !== -1 && lastUser) {
+		result[lastUserIdx] = {
+			role: lastUser.role,
+			content:
+				lastUser.content +
+				"\n\n[SYSTEM: Reply strictly in the same language as the message above. Do not switch to English.]"
+		}
+	}
+	return result
+}
 
 chatRouter.post("/embeddings", async (req, res) => {
 	const { text } = req.body
@@ -45,7 +65,10 @@ chatRouter.post("/chat", async (req, res) => {
 	}
 
 	try {
-		const aiResponse = await llmService.generate(req.body, abortController.signal)
+		const aiResponse = await llmService.generate(
+			{ messages: withSystemPrompt(messages) },
+			abortController.signal
+		)
 		if (!aiResponse || !aiResponse.content) {
 			return res.status(500).json({ error: "AI response is empty" })
 		}
@@ -72,7 +95,11 @@ chatRouter.post("/chat/stream", async (req, res) => {
 	})
 
 	try {
-		const stream = await llmService.generateStream(req.body, abortController.signal)
+		const { messages: streamMessages } = req.body
+		const stream = ragService.askStream(
+			withSystemPrompt(streamMessages ?? []),
+			abortController.signal
+		)
 
 		for await (const chunk of stream) {
 			if (abortController.signal.aborted) {

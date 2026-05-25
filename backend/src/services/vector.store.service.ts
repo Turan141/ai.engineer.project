@@ -24,7 +24,6 @@ export class InMemoryVectorStore implements IVectorStore {
 
 	async search(query: string, topK: number): Promise<ISearchResult[]> {
 		const queryEmbedding = await this.embeddingProvider.generateEmbedding(query)
-
 		const similarity = this.documents
 			.map((document) => {
 				if (!document.embedding) {

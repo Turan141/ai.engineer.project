@@ -1,19 +1,14 @@
 import "dotenv/config"
 
-import { InMemoryVectorStore } from "../services/vector.store.service.js"
 import { FileSystemDocumentLoader } from "../knowledge/document-loader.js"
-import { KnowledgeBase } from "../knowledge/knowledge-base.js"
-import { LMStudioEmbeddingService } from "../services/ai_services/lmstudio.embedding.service.js"
 import { RecursiveTextSplitter } from "../knowledge/recursitve-text-splitter.js"
+import { knowledgeBase, vectorStore } from "../bootstrap/dependencies.js"
 
 async function main(): Promise<void> {
 	console.log("Creating services...")
 
-	const embeddingProvider = new LMStudioEmbeddingService()
-	const vectorStore = new InMemoryVectorStore(embeddingProvider)
 	const loader = new FileSystemDocumentLoader()
 	const splitter = new RecursiveTextSplitter()
-	const knowledgeBase = new KnowledgeBase(loader, splitter, vectorStore)
 
 	console.log("Ingesting documents...")
 

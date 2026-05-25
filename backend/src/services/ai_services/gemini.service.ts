@@ -13,9 +13,16 @@ export class GeminiService implements ILLMProvider {
 
 	async generate(params: IGenerateParams): Promise<string> {
 		try {
+			const systemMessage = params.messages.find((m) => m.role === "system")
+			const userMessages = params.messages.filter((m) => m.role !== "system")
+
 			const response = await this.genAI.models.generateContent({
-				model: "gemini-3.5-flash",
-				contents: params.messages
+				model: "gemini-2.5-flash",
+				...(systemMessage ? { systemInstruction: systemMessage.content } : {}),
+				contents: userMessages.map((m) => ({
+					role: m.role === "assistant" ? "model" : "user",
+					parts: [{ text: m.content }]
+				}))
 			})
 
 			if (!response || !response.candidates || response.candidates.length === 0) {

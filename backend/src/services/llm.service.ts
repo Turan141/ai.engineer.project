@@ -3,8 +3,7 @@ import type {
 	IChatMessage,
 	IEmbeddingProvider,
 	IGenerateParams,
-	ILLMProvider,
-	IRetrievalStrategy
+	ILLMProvider
 } from "../types/chat.types.js"
 import { LMStudioService } from "./ai_services/lmstudio.service.js"
 import { InMemoryVectorStore } from "./vector.store.service.js"
@@ -88,12 +87,3 @@ export class LLMService {
 		return this.currentProvider.generateStream(params, signal)
 	}
 }
-
-export const llmService = new LLMService()
-export const inMemoryVectorStore = new InMemoryVectorStore(embeddingProviders.lmstudio)
-export const retrievalService = new RetrievalService()
-export const ragService = new RAGService(
-	inMemoryVectorStore,
-	llmService,
-	retrievalService
-)

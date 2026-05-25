@@ -1,13 +1,8 @@
 import "dotenv/config"
-import { InMemoryVectorStore } from "../services/vector.store.service.js"
-import { LMStudioEmbeddingService } from "../services/ai_services/lmstudio.embedding.service.js"
+import { embeddingProvider, vectorStore } from "../bootstrap/dependencies.js"
 
 async function main(): Promise<void> {
-	const embeddingProvider = new LMStudioEmbeddingService()
-
-	const store = new InMemoryVectorStore(embeddingProvider)
-
-	await store.addDocument({
+	await vectorStore.addDocument({
 		id: "1",
 		content: "React is a frontend library",
 		source: "doc1",
@@ -18,7 +13,7 @@ async function main(): Promise<void> {
 		}
 	})
 
-	await store.addDocument({
+	await vectorStore.addDocument({
 		id: "2",
 		content: "PostgreSQL is a relational database",
 		source: "doc2",
@@ -31,7 +26,7 @@ async function main(): Promise<void> {
 		}
 	})
 
-	await store.addDocument({
+	await vectorStore.addDocument({
 		id: "3",
 		content: "Football is the most popular sport in the world",
 		source: "doc3",
@@ -44,7 +39,7 @@ async function main(): Promise<void> {
 		}
 	})
 
-	await store.addDocument({
+	await vectorStore.addDocument({
 		id: "4",
 		content: "Basketball is played with five players per team",
 		source: "doc4",
@@ -59,7 +54,7 @@ async function main(): Promise<void> {
 
 	console.log("\n=== QUERY: soccer ===")
 
-	const soccerResults = await store.search("soccer", 3)
+	const soccerResults = await vectorStore.search("soccer", 3)
 
 	console.table(
 		soccerResults.map((result) => ({
@@ -71,7 +66,7 @@ async function main(): Promise<void> {
 
 	console.log("\n=== QUERY: frontend framework ===")
 
-	const frontendResults = await store.search("frontend framework", 3)
+	const frontendResults = await vectorStore.search("frontend framework", 3)
 
 	console.table(
 		frontendResults.map((result) => ({
@@ -83,7 +78,7 @@ async function main(): Promise<void> {
 
 	console.log("\n=== QUERY: database ===")
 
-	const databaseResults = await store.search("database", 3)
+	const databaseResults = await vectorStore.search("database", 3)
 
 	console.table(
 		databaseResults.map((result) => ({

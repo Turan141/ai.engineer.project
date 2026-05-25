@@ -1,5 +1,9 @@
 export type TChatMessageRole = "user" | "assistant" | "system"
 
+export interface IInitializable {
+	initialize(): Promise<void>
+}
+
 export interface IChatRequest {
 	messages: IChatMessage[]
 }

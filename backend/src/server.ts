@@ -2,11 +2,14 @@ import "dotenv/config"
 import cors from "cors"
 import express from "express"
 import { chatRouter } from "./routes/chat.route.js"
+import { initializeApplication } from "./bootstrap/ApplicationManager.js"
+
+const PORT = process.env.PORT || 3000
 
 const app = express()
 app.use(
 	cors({
-		origin: "https://ai-support-leather.vercel.app"
+		origin: ["https://ai-support-leather.vercel.app", "http://localhost:5173"]
 	})
 )
 
@@ -34,6 +37,12 @@ app.get("/health", (_req, res) => {
 	res.status(200).json({ status: "ok" })
 })
 
-app.listen(3000, () => {
-	console.log("Server is running on port 3000")
-})
+async function bootstrap(): Promise<void> {
+	await initializeApplication()
+
+	app.listen(process.env.PORT, () => {
+		console.log(`Server started`)
+	})
+}
+
+void bootstrap()
