@@ -2,6 +2,17 @@ import { IChatMessage } from "../types/chat.types"
 
 type OnChunk = (text: string) => void
 
+interface JsonRequestOptions {
+	path: string
+	body: unknown
+	signal?: AbortSignal
+}
+
+interface ChatOptions {
+	messages: IChatMessage[]
+	signal?: AbortSignal
+}
+
 interface StreamOptions {
 	messages: IChatMessage[]
 	onChunk: OnChunk
@@ -9,6 +20,44 @@ interface StreamOptions {
 }
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ""
+
+async function postJson<T>({ path, body, signal }: JsonRequestOptions): Promise<T> {
+	const res = await fetch(`${API_BASE}${path}`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+		signal
+	})
+
+	if (!res.ok) {
+		throw new Error(`Network error: ${res.status} ${res.statusText}`)
+	}
+
+	return res.json() as Promise<T>
+}
+
+export async function generateChat({ messages, signal }: ChatOptions): Promise<IChatMessage> {
+	const response = await postJson<{ message: IChatMessage }>({
+		path: "/api/chat",
+		body: { messages },
+		signal
+	})
+
+	return response.message
+}
+
+export async function generateEmbedding(
+	text: string,
+	signal?: AbortSignal
+): Promise<number[]> {
+	const response = await postJson<{ embedding: number[] }>({
+		path: "/api/embeddings",
+		body: { text },
+		signal
+	})
+
+	return response.embedding
+}
 
 export async function streamChat({
 	messages,

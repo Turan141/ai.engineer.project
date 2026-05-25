@@ -3,13 +3,15 @@ import type {
 	IChatMessage,
 	IEmbeddingProvider,
 	IGenerateParams,
-	ILLMProvider
+	ILLMProvider,
+	IRetrievalStrategy
 } from "../types/chat.types.js"
 import { LMStudioService } from "./ai_services/lmstudio.service.js"
 import { InMemoryVectorStore } from "./vector.store.service.js"
 import { RAGService } from "./rag.service.js"
 import { GeminiService } from "./ai_services/gemini.service.js"
 import { LMStudioEmbeddingService } from "./ai_services/lmstudio.embedding.service.js"
+import { RetrievalService } from "./retrieval_filters/retrieval.service.js"
 
 type TProviderName = "gemini" | "lmstudio"
 type TEmbeddingProviderName = "lmstudio"
@@ -89,4 +91,9 @@ export class LLMService {
 
 export const llmService = new LLMService()
 export const inMemoryVectorStore = new InMemoryVectorStore(embeddingProviders.lmstudio)
-export const ragService = new RAGService(inMemoryVectorStore, llmService)
+export const retrievalService = new RetrievalService()
+export const ragService = new RAGService(
+	inMemoryVectorStore,
+	llmService,
+	retrievalService
+)

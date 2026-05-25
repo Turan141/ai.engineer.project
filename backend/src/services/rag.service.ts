@@ -1,20 +1,23 @@
-import type { IRAGResponse, IVectorStore } from "../types/chat.types.js"
+import type {
+	IRAGResponse,
+	IRetrievalStrategy,
+	IVectorStore
+} from "../types/chat.types.js"
 import { buildRagPrompt } from "../utils/prompt_builder.js"
 import type { LLMService } from "./llm.service.js"
 
-const SIMILARITY_THRESHOLD = 0.5
 const MAX_CONTEXT_DOCUMENTS = 3
 
 export class RAGService {
 	constructor(
 		private readonly vectorStore: IVectorStore,
-		private readonly llmService: LLMService
+		private readonly llmService: LLMService,
+		private readonly retrievalFilter: IRetrievalStrategy
 	) {}
 
 	async ask(question: string): Promise<IRAGResponse> {
-		const contextDocuments = (
-			await this.vectorStore.search(question, MAX_CONTEXT_DOCUMENTS)
-		).filter((similarity) => similarity.score >= SIMILARITY_THRESHOLD)
+		const searchResults = await this.vectorStore.search(question, MAX_CONTEXT_DOCUMENTS)
+		const contextDocuments = this.retrievalFilter.filter(searchResults)
 
 		if (!contextDocuments.length) {
 			return {

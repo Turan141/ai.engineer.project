@@ -86,3 +86,7 @@ export interface IVectorStore {
 	addDocument(document: IVectorDocument): Promise<void>
 	search(query: string, topK?: number): Promise<ISearchResult[]>
 }
+
+export interface IRetrievalStrategy {
+	filter(results: ISearchResult[]): ISearchResult[]
+}
