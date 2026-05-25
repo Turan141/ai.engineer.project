@@ -1,6 +1,6 @@
-import { config } from "../config/config.js"
+import { config } from "../../config/config.js"
 import { GoogleGenAI } from "@google/genai"
-import type { IGenerateParams, ILLMProvider } from "../types/chat.types.js"
+import type { IGenerateParams, ILLMProvider } from "../../types/chat.types.js"
 
 export class GeminiService implements ILLMProvider {
 	private genAI: GoogleGenAI

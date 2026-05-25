@@ -21,6 +21,26 @@ interface StreamOptions {
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ""
 
+async function getResponseErrorMessage(res: Response): Promise<string> {
+	try {
+		const payload = (await res.json()) as { error?: string }
+		if (typeof payload?.error === "string" && payload.error.trim() !== "") {
+			return payload.error
+		}
+	} catch (_error) {
+		try {
+			const text = await res.text()
+			if (text.trim() !== "") {
+				return text
+			}
+		} catch (_readError) {
+			// Ignore body parsing errors and fall back to status text.
+		}
+	}
+
+	return `Network error: ${res.status} ${res.statusText}`
+}
+
 async function postJson<T>({ path, body, signal }: JsonRequestOptions): Promise<T> {
 	const res = await fetch(`${API_BASE}${path}`, {
 		method: "POST",
@@ -30,7 +50,7 @@ async function postJson<T>({ path, body, signal }: JsonRequestOptions): Promise<
 	})
 
 	if (!res.ok) {
-		throw new Error(`Network error: ${res.status} ${res.statusText}`)
+		throw new Error(await getResponseErrorMessage(res))
 	}
 
 	return res.json() as Promise<T>
@@ -75,7 +95,7 @@ export async function streamChat({
 	})
 
 	if (!res.ok) {
-		throw new Error(`Network error: ${res.status} ${res.statusText}`)
+		throw new Error(await getResponseErrorMessage(res))
 	}
 
 	if (!res.body) return
@@ -129,6 +149,10 @@ export async function streamChat({
 					throw new Error(`Invalid JSON payload in SSE data: ${data}`)
 				}
 
+				if (parsed && typeof parsed.error === "string" && parsed.error.trim() !== "") {
+					throw new Error(parsed.error)
+				}
+
 				if (parsed && typeof parsed.text === "string") {
 					onChunk(parsed.text)
 				}
@@ -148,6 +172,9 @@ export async function streamChat({
 					parsed = JSON.parse(data)
 				} catch (err) {
 					throw new Error(`Invalid JSON payload in leftover SSE data: ${data}`)
+				}
+				if (parsed && typeof parsed.error === "string" && parsed.error.trim() !== "") {
+					throw new Error(parsed.error)
 				}
 				if (parsed && typeof parsed.text === "string") {
 					onChunk(parsed.text)
