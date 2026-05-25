@@ -29,7 +29,6 @@ export class RAGService {
 		)
 
 		console.log("QUESTION:", lastUserMessage)
-		console.log("Search results:", searchResults)
 
 		const contextDocuments = this.retrievalFilter.filter(searchResults)
 

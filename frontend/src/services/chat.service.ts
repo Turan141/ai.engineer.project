@@ -14,7 +14,8 @@ interface ChatOptions {
 }
 
 interface StreamOptions {
-	messages: IChatMessage[]
+	sessionId: string
+	message: string
 	onChunk: OnChunk
 	signal?: AbortSignal
 }
@@ -83,14 +84,15 @@ export async function generateEmbedding(
 }
 
 export async function streamChat({
-	messages,
+	sessionId,
+	message,
 	onChunk,
 	signal
 }: StreamOptions): Promise<void> {
 	const res = await fetch(`${API_BASE}/api/chat/stream`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-		body: JSON.stringify({ messages }),
+		body: JSON.stringify({ sessionId, message }),
 		signal
 	})
 

@@ -4,14 +4,6 @@ export interface IInitializable {
 	initialize(): Promise<void>
 }
 
-export interface IChatRequest {
-	messages: IChatMessage[]
-}
-
-export interface IChatResponse {
-	messages: IChatMessage[]
-}
-
 export interface IChatMessage {
 	role: TChatMessageRole
 	content: string

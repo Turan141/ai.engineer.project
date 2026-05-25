@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { buildSystemPrompt } from "../utils/prompt_builder.js"
 import type { IChatMessage } from "../types/chat.types.js"
-import { llmService, ragService } from "../bootstrap/dependencies.js"
+import { llmService, memoryService, ragService } from "../bootstrap/dependencies.js"
 
 export const chatRouter = Router()
 
@@ -95,17 +95,24 @@ chatRouter.post("/chat/stream", async (req, res) => {
 	})
 
 	try {
-		const { messages: streamMessages } = req.body
+		const { sessionId, message } = req.body
+
+		await memoryService.addUserMessage(sessionId, message)
+		const messages = await memoryService.getConversation(sessionId)
+
 		const stream = ragService.askStream(
-			withSystemPrompt(streamMessages ?? []),
+			withSystemPrompt(messages),
 			abortController.signal
 		)
+
+		let assistantResponse = ""
 
 		for await (const chunk of stream) {
 			if (abortController.signal.aborted) {
 				console.log("Request aborted by the client")
 				break
 			}
+			assistantResponse += chunk.text
 			res.write(`data: ${JSON.stringify(chunk)}\n\n`)
 		}
 		res.write("data: [DONE]\n\n")

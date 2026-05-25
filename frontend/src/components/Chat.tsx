@@ -53,6 +53,7 @@ export const Chat: React.FC = () => {
 	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+	const [sessionId] = useState(() => crypto.randomUUID())
 	const controllerRef = useRef<AbortController | null>(null)
 	const embeddingControllerRef = useRef<AbortController | null>(null)
 	const messagesRef = useRef<HTMLDivElement | null>(null)
@@ -120,7 +121,8 @@ export const Chat: React.FC = () => {
 				setMessages((prev) => updateLastAssistantMessage(prev, () => assistantMessage))
 			} else {
 				await streamChat({
-					messages: conversation,
+					sessionId,
+					message: trimmed,
 					signal: controller.signal,
 					onChunk: (text) => {
 						setMessages((prev) =>
