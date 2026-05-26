@@ -1,4 +1,4 @@
-import type { IDocument, IDocumentLoader } from "./types.js"
+import type { IDocument, IDocumentLoader } from "../types.js"
 import path from "path"
 import { promises as fs } from "fs"
 

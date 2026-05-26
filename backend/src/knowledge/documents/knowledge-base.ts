@@ -1,5 +1,5 @@
 import type { IVectorStore } from "../types/chat.types.js"
-import type { IDocumentLoader, ITextSplitter } from "./types.js"
+import type { IDocumentLoader, ITextSplitter } from "../types.js"
 
 export class KnowledgeBase {
 	constructor(

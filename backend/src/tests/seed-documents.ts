@@ -1,4 +1,4 @@
-import { inMemoryVectorStore } from "../services/llm.service.js"
+import { inMemoryVectorStore } from "../services/llm/llm.service.js"
 
 export async function seedDocuments(): Promise<void> {
 	await inMemoryVectorStore.addDocument({

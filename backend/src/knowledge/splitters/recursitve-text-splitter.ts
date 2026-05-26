@@ -1,4 +1,4 @@
-import type { IChunk, IDocument, ITextSplitter } from "./types.js"
+import type { IChunk, IDocument, ITextSplitter } from "../types.js"
 
 export class RecursiveTextSplitter implements ITextSplitter {
 	constructor(

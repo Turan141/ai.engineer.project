@@ -1,4 +1,4 @@
-import type { IDocument, IChunk } from "./types.js"
+import type { IDocument, IChunk } from "../types.js"
 
 export class CharacterTextSplitter {
 	constructor(

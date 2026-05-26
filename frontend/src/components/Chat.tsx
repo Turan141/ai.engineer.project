@@ -304,7 +304,17 @@ export const Chat: React.FC = () => {
 							<div className='chat-message__meta'>
 								{m.role === "assistant" ? "Assistant" : "You"}
 							</div>
-							<div className='chat-message__bubble'>{m.content}</div>
+							<div className='chat-message__bubble'>
+								{m.role === "assistant" && m.content === "" ? (
+									<span className='chat-typing' aria-label='Generating response'>
+										<span />
+										<span />
+										<span />
+									</span>
+								) : (
+									m.content
+								)}
+							</div>
 						</div>
 					))}
 				</div>

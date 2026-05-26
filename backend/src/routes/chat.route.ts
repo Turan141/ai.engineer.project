@@ -1,15 +1,24 @@
 import { Router } from "express"
-import { buildSystemPrompt } from "../utils/prompt_builder.js"
 import type { IChatMessage } from "../types/chat.types.js"
-import { llmService, memoryService, ragService } from "../bootstrap/dependencies.js"
+import {
+	llmService,
+	memoryService,
+	promptBuilderService,
+	ragService
+} from "../bootstrap/dependencies.js"
 
 export const chatRouter = Router()
 
-const SYSTEM_MESSAGE: IChatMessage = { role: "system", content: buildSystemPrompt() }
+const SYSTEM_MESSAGE: IChatMessage = {
+	role: "system",
+	content: promptBuilderService.buildSystemPrompt()
+}
 
 function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
 	return [SYSTEM_MESSAGE, ...messages]
 }
+
+chatRouter.post("/image/generate", async (req, res) => {})
 
 chatRouter.post("/embeddings", async (req, res) => {
 	const { text } = req.body

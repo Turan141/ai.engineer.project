@@ -1,6 +1,6 @@
 import "dotenv/config"
 
-import { inMemoryVectorStore, ragService } from "../services/llm.service.js"
+import { inMemoryVectorStore, ragService } from "../services/llm/llm.service.js"
 import { seedDocuments } from "./seed-documents.js"
 
 async function main(): Promise<void> {

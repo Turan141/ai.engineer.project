@@ -1,6 +1,6 @@
 // src/memory/types.ts
 
-import type { IChatMessage } from "../types/chat.types.js"
+import type { IChatMessage } from "../../types/chat.types.js"
 
 export interface ISummaryService {
 	generateSummary(

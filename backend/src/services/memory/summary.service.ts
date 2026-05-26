@@ -1,6 +1,6 @@
-import type { LLMService } from "../services/llm.service.js"
-import type { IChatMessage } from "../types/chat.types.js"
-import { buildSummaryPrompt } from "../utils/prompt_builder.js"
+import { promptBuilderService } from "../../bootstrap/dependencies.js"
+import type { LLMService } from "../llm/llm.service.js"
+import type { IChatMessage } from "../../types/chat.types.js"
 import type { ISummaryService } from "./types.js"
 
 export class SummaryService implements ISummaryService {
@@ -10,7 +10,10 @@ export class SummaryService implements ISummaryService {
 		currentSummary: string | null,
 		messages: IChatMessage[]
 	): Promise<string> {
-		const summaryPrompt = buildSummaryPrompt(currentSummary, messages)
+		const summaryPrompt = promptBuilderService.buildSummaryPrompt(
+			currentSummary,
+			messages
+		)
 		const llmResponse = await this.llmService.generate({
 			messages: [
 				{

@@ -1,5 +1,4 @@
-import type { IChatMessage, TChatMessageRole } from "../types/chat.types.js"
-import { buildSummaryPrompt } from "../utils/prompt_builder.js"
+import type { IChatMessage, TChatMessageRole } from "../../types/chat.types.js"
 import type { IConversationMemory, ISummaryMemory, ISummaryService } from "./types.js"
 
 export class MemoryService {

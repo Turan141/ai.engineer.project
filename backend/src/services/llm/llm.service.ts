@@ -1,16 +1,13 @@
-import { config } from "../config/config.js"
+import { config } from "../../config/config.js"
 import type {
 	IChatMessage,
 	IEmbeddingProvider,
 	IGenerateParams,
 	ILLMProvider
-} from "../types/chat.types.js"
-import { LMStudioService } from "./ai_services/lmstudio.service.js"
-import { InMemoryVectorStore } from "./vector.store.service.js"
-import { RAGService } from "./rag.service.js"
-import { GeminiService } from "./ai_services/gemini.service.js"
-import { LMStudioEmbeddingService } from "./ai_services/lmstudio.embedding.service.js"
-import { RetrievalService } from "./retrieval_filters/retrieval.service.js"
+} from "../../types/chat.types.js"
+import { LMStudioService } from "../../providers/llm/lmstudio.provider.js"
+import { GeminiService } from "../../providers/llm/gemini.provider.js"
+import { LMStudioEmbeddingService } from "../../providers/embedding/lmstudio.embedding.provider.js"
 
 type TProviderName = "gemini" | "lmstudio"
 type TEmbeddingProviderName = "lmstudio"

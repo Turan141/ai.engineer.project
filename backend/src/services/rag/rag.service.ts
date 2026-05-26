@@ -1,11 +1,11 @@
+import { promptBuilderService } from "../../bootstrap/dependencies.js"
 import type {
 	IChatMessage,
 	IRAGResponse,
 	IRetrievalStrategy,
 	IVectorStore
-} from "../types/chat.types.js"
-import { buildRagPrompt, buildSystemPrompt } from "../utils/prompt_builder.js"
-import type { LLMService } from "./llm.service.js"
+} from "../../types/chat.types.js"
+import type { LLMService } from "../llm/llm.service.js"
 
 const MAX_CONTEXT_DOCUMENTS = 3
 
@@ -39,7 +39,10 @@ export class RAGService {
 			return
 		}
 
-		const ragPrompt = buildRagPrompt(lastUserMessage, contextDocuments)
+		const ragPrompt = promptBuilderService.buildRagPrompt(
+			lastUserMessage,
+			contextDocuments
+		)
 
 		const stream = await this.llmService.generateStream(
 			{

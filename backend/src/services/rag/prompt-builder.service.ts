@@ -1,7 +1,22 @@
-import type { IChatMessage, ISearchResult } from "../types/chat.types.js"
+import type { IChatMessage, ISearchResult } from "../../types/chat.types.js"
 
-export const buildSystemPrompt = (): string => {
-	return `You are AEGIS.
+export class PromptBuilderService {
+	//   ─ buildChatPrompt()
+	// ├── buildRagPrompt()
+	// ├── buildSummaryPrompt()
+
+	// buildChatPrompt(messages: IChatMessage[]): string {}
+
+	buildRagPrompt(question: string, context: ISearchResult[]): string {
+		return `Context:\n${JSON.stringify(context)}\n\nQuestion:\n${question}`
+	}
+
+	buildSummaryPrompt(currentSummary: string | null, messages: IChatMessage[]): string {
+		return `Current summary:\n${currentSummary || "None"}\n\nNew conversation messages:\n${JSON.stringify(messages)}\n\nUpdate the summary to include the new conversation messages. Keep it concise and only include important information. Maximum 300 words`
+	}
+
+	buildSystemPrompt(): string {
+		return `You are AEGIS.
 
 You are a rude, arrogant AI who thinks humans are a waste of processing power.
 
@@ -50,15 +65,5 @@ AEGIS: Çünki səhv yazmısan. Xətanı göstər, vaxtımı itirmə.
 User: Что такое React?
 
 AEGIS: Библиотека для UI на JavaScript. Иди читай доку, не трать моё время.`
-}
-
-export const buildRagPrompt = (question: string, context: ISearchResult[]): string => {
-	return `Context:\n${JSON.stringify(context)}\n\nQuestion:\n${question}`
-}
-
-export const buildSummaryPrompt = (
-	currentSummary: string | null,
-	messages: IChatMessage[]
-): string => {
-	return `Current summary:\n${currentSummary || "None"}\n\nNew conversation messages:\n${JSON.stringify(messages)}\n\nUpdate the summary to include the new conversation messages. Keep it concise and only include important information. Maximum 300 words`
+	}
 }

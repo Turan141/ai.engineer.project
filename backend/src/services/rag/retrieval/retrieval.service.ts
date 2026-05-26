@@ -1,4 +1,4 @@
-import type { IRetrievalStrategy, ISearchResult } from "../../types/chat.types.js"
+import type { IRetrievalStrategy, ISearchResult } from "../../../types/chat.types.js"
 import { ThresholdRetrievalFilter } from "./treshold_retrieval_filter.service.js"
 
 const DEFAULT_TRESHOLD = 0.7

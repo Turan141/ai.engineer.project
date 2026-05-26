@@ -3,8 +3,8 @@ import type {
 	ISearchResult,
 	IVectorDocument,
 	IVectorStore
-} from "../types/chat.types.js"
-import { cosineSimilarity } from "../utils/cosine-similarity.js"
+} from "../../types/chat.types.js"
+import { cosineSimilarity } from "../../utils/cosine-similarity.js"
 
 export class InMemoryVectorStore implements IVectorStore {
 	private documents: IVectorDocument[] = []
