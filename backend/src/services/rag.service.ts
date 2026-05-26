@@ -34,22 +34,9 @@ export class RAGService {
 
 		if (!contextDocuments.length) {
 			// If no relevant documents found, just generate a normal response without context
-			return await this.llmService.generateStream(
-				{
-					messages: [
-						{
-							role: "system",
-							content: buildSystemPrompt()
-						},
-						...messages,
-						{
-							role: "user",
-							content: lastUserMessage
-						}
-					]
-				},
-				signal
-			)
+			const stream = await this.llmService.generateStream({ messages }, signal)
+			yield* stream
+			return
 		}
 
 		const ragPrompt = buildRagPrompt(lastUserMessage, contextDocuments)
