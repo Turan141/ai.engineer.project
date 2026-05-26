@@ -1,88 +1,30 @@
-export type TChatMessageRole = "user" | "assistant" | "system"
+// Barrel — re-exports from shared/ for backward compatibility.
+// Import directly from shared/ in new code.
 
-export interface IInitializable {
-	initialize(): Promise<void>
-}
+export type { TChatMessageRole } from "../shared/types/chat.types.js"
 
-export interface IChatMessage {
-	role: TChatMessageRole
-	content: string
-}
+export type { IInitializable } from "../shared/interfaces/common.interface.js"
 
-export interface IGenerateParams {
-	messages: IChatMessage[]
-}
+export type {
+	IChatMessage,
+	IGenerateParams,
+	ILLMProvider,
+	ILMStudioMessage,
+	ILMStudioChoice,
+	ILMStudioResponse,
+	ILMStudioDelta,
+	ILMStudioStreamChoice,
+	ILMStudioStreamResponse
+} from "../shared/interfaces/llm.interface.js"
 
-export interface ILLMProvider {
-	generate(params: IGenerateParams, signal?: AbortSignal): Promise<string>
-	generateStream(
-		params: IGenerateParams,
-		signal?: AbortSignal
-	): AsyncIterable<{ text: string }>
-}
+export type { IEmbeddingProvider, IEmbeddingResponse } from "../shared/interfaces/embedding.interface.js"
 
-export interface ILMStudioResponse {
-	choices: ILMStudioChoice[]
-}
+export type {
+	IVectorDocument,
+	ISearchResult,
+	IRAGResponse,
+	IVectorStore
+} from "../shared/interfaces/vector-store.interface.js"
 
-export interface ILMStudioChoice {
-	message: ILMStudioMessage
-}
+export type { IRetrievalStrategy } from "../shared/interfaces/retrieval.interface.js"
 
-export interface ILMStudioMessage {
-	role: TChatMessageRole
-	content: string
-}
-
-export interface ILMStudioStreamResponse {
-	choices: ILMStudioStreamChoice[]
-}
-
-export interface ILMStudioStreamChoice {
-	delta: ILMStudioDelta
-}
-
-export interface ILMStudioDelta {
-	content?: string
-}
-
-export interface IEmbeddingResponse {
-	data: Array<{
-		embedding: number[]
-	}>
-}
-
-export interface IEmbeddingProvider {
-	generateEmbedding(text: string, signal?: AbortSignal): Promise<number[]>
-}
-
-export interface IVectorDocument {
-	id: string
-	content: string
-	embedding: number[]
-	source: string
-	metadata: {
-		title: string
-		chunkIndex: number
-	}
-}
-
-export interface ISearchResult {
-	document: IVectorDocument
-	score: number
-}
-
-export interface IRAGResponse {
-	answer: string
-	context: ISearchResult[]
-	sources: string[]
-}
-
-export interface IVectorStore {
-	addDocument(document: IVectorDocument): Promise<void>
-	search(query: string, topK?: number): Promise<ISearchResult[]>
-}
-
-export interface IRetrievalStrategy {
-	filter(results: ISearchResult[]): ISearchResult[]
-}
