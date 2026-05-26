@@ -54,9 +54,7 @@ const App: React.FC = () => {
 				</button>
 			</nav>
 
-			<div className='app-view'>
-				{view === "chat" ? <Chat /> : <ImageGen />}
-			</div>
+			<div className='app-view'>{view === "chat" ? <Chat /> : <ImageGen />}</div>
 		</div>
 	)
 }

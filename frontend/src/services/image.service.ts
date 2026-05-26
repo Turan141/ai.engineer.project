@@ -6,7 +6,9 @@ export async function generateImage(
 	params: IGenerateImageRequest,
 	signal?: AbortSignal
 ): Promise<IGenerateImageResponse> {
-	const res = await fetch(`${API_BASE}/image/generate`, {
+	console.log("Generating image with prompt:", params.prompt)
+	console.log("api  url:", `${API_BASE}/api/image/generate`)
+	const res = await fetch(`${API_BASE}/api/image/generate`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(params),

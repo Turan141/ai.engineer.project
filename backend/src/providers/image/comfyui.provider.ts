@@ -9,7 +9,7 @@ import { config } from "../../config/config.js"
 export class ComfyUIProvider implements IImageProvider {
 	private readonly DEFAULT_WORKFLOW = "./shared/workflows/sdxl_simple_default.json"
 
-	async pollServer() {
+	async pollServer(promptId: string): Promise<void> {
 		try {
 			const response = await fetch("/api/data")
 			const data = await response.json()

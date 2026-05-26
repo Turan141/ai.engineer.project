@@ -145,8 +145,8 @@ export const ImageGen: React.FC = () => {
 										className='img-card__image'
 										onError={(e) => {
 											;(e.currentTarget as HTMLImageElement).style.display = "none"
-											const fallback =
-												e.currentTarget.nextElementSibling as HTMLElement | null
+											const fallback = e.currentTarget
+												.nextElementSibling as HTMLElement | null
 											if (fallback) fallback.style.display = "flex"
 										}}
 									/>

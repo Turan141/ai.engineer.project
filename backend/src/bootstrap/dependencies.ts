@@ -19,7 +19,7 @@ import { ComfyUIProvider } from "../providers/image/comfyui.provider.js"
 
 export const comfyProvider = new ComfyUIProvider()
 export const presetService = new ImagePresetService()
-export const imageService = new ImageService(comfyProvider, presetService)
+export const imageService = new ImageService(comfyProvider)
 export const imageMemory = new InMemoryImageMemory()
 export const promptBuilderService = new PromptBuilderService()
 export const llmService = new LLMService()

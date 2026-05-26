@@ -11,6 +11,7 @@ import {
 export const imageRouter = Router()
 
 imageRouter.post("/image/generate", async (req, res) => {
+	console.log("Awdwadwad")
 	const { prompt } = req.body
 
 	if (typeof prompt !== "string" || prompt.trim() === "") {

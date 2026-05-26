@@ -6,6 +6,7 @@ import { initializeApplication } from "./bootstrap/ApplicationManager.js"
 import { imageRouter } from "./routes/image.routes.js"
 
 const app = express()
+
 app.use(
 	cors({
 		origin: ["https://ai-support-leather.vercel.app", "http://localhost:5173"]
