@@ -1,5 +1,3 @@
-import type { TChatMessageRole } from "../types/chat.types.js"
-
 export interface IChatMessage {
 	role: TChatMessageRole
 	content: string
@@ -41,3 +39,5 @@ export interface ILMStudioStreamChoice {
 export interface ILMStudioStreamResponse {
 	choices: ILMStudioStreamChoice[]
 }
+
+export type TChatMessageRole = "user" | "assistant" | "system"

@@ -21,6 +21,7 @@ export const config = {
 	geminiApiKey: geminiApiKey,
 	llmProvider: llmProvider,
 	defaultProvider: llmProvider,
+	comfyUIBaseUrl: process.env.COMFYUI_BASE_URL || "http://localhost:8188",
 	lmstudioBaseUrl: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234",
 	llmModel: process.env.LLM_MODEL,
 	embeddingModel: process.env.EMBEDDING_MODEL || "text-embedding-3-small",

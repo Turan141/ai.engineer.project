@@ -18,8 +18,6 @@ function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
 	return [SYSTEM_MESSAGE, ...messages]
 }
 
-chatRouter.post("/image/generate", async (req, res) => {})
-
 chatRouter.post("/embeddings", async (req, res) => {
 	const { text } = req.body
 

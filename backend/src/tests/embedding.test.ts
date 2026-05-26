@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { cosineSimilarity } from "../shared/utils/cosine-similarity.js"
+import { cosineSimilarity } from "../utils/cosine-similarity.js"
 import { embeddingProvider } from "../bootstrap/dependencies.js"
 
 async function testEmbeddings(): Promise<void> {

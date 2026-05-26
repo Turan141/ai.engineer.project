@@ -3,8 +3,7 @@ import cors from "cors"
 import express from "express"
 import { chatRouter } from "./routes/chat.route.js"
 import { initializeApplication } from "./bootstrap/ApplicationManager.js"
-
-const PORT = process.env.PORT || 3000
+import { imageRouter } from "./routes/image.routes.js"
 
 const app = express()
 app.use(
@@ -31,6 +30,7 @@ app.use((req, res, next) => {
 
 app.use(express.json())
 app.use("/api", chatRouter)
+app.use("/api", imageRouter)
 
 // Health check endpoint
 app.get("/health", (_req, res) => {
