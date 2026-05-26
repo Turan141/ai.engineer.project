@@ -12,8 +12,11 @@ export class InMemoryConversationMemory implements IConversationMemory {
 		this.conversations.set(sessionId, messages)
 	}
 
-	async clear(sessionId: string): Promise<void> {
-		this.conversations.delete(sessionId)
+	async trim(sessionId: string, qtyToSave: number): Promise<void> {
+		this.conversations.set(
+			sessionId,
+			(this.conversations.get(sessionId) || []).slice(-qtyToSave)
+		)
 	}
 
 	async getMessages(sessionId: string): Promise<IChatMessage[]> {

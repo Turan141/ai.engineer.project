@@ -33,16 +33,26 @@ export class RAGService {
 		const contextDocuments = this.retrievalFilter.filter(searchResults)
 
 		if (!contextDocuments.length) {
-			yield {
-				text: "I don't have enough information in the knowledge base."
-			}
-			return
+			// If no relevant documents found, just generate a normal response without context
+			return await this.llmService.generateStream(
+				{
+					messages: [
+						{
+							role: "system",
+							content: buildSystemPrompt()
+						},
+						...messages,
+						{
+							role: "user",
+							content: lastUserMessage
+						}
+					]
+				},
+				signal
+			)
 		}
 
-		const ragPrompt = buildRagPrompt(
-			lastUserMessage,
-			contextDocuments.map((s) => s.document.content).join("\n")
-		)
+		const ragPrompt = buildRagPrompt(lastUserMessage, contextDocuments)
 
 		const stream = await this.llmService.generateStream(
 			{

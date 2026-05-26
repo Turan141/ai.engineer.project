@@ -8,19 +8,7 @@ export const chatRouter = Router()
 const SYSTEM_MESSAGE: IChatMessage = { role: "system", content: buildSystemPrompt() }
 
 function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
-	const result = [SYSTEM_MESSAGE, ...messages]
-	// Inject language reminder into the last user message so the model respects it
-	const lastUserIdx = result.map((m) => m.role).lastIndexOf("user")
-	const lastUser = result[lastUserIdx]
-	if (lastUserIdx !== -1 && lastUser) {
-		result[lastUserIdx] = {
-			role: lastUser.role,
-			content:
-				lastUser.content +
-				"\n\n[SYSTEM: Reply strictly in the same language as the message above. Do not switch to English.]"
-		}
-	}
-	return result
+	return [SYSTEM_MESSAGE, ...messages]
 }
 
 chatRouter.post("/embeddings", async (req, res) => {
@@ -97,8 +85,8 @@ chatRouter.post("/chat/stream", async (req, res) => {
 	try {
 		const { sessionId, message } = req.body
 
-		await memoryService.addUserMessage(sessionId, message)
-		const messages = await memoryService.getConversation(sessionId)
+		await memoryService.addMessage(sessionId, message, "user")
+		const messages = await memoryService.getConversationContext(sessionId)
 
 		const stream = ragService.askStream(
 			withSystemPrompt(messages),
@@ -115,6 +103,7 @@ chatRouter.post("/chat/stream", async (req, res) => {
 			assistantResponse += chunk.text
 			res.write(`data: ${JSON.stringify(chunk)}\n\n`)
 		}
+		await memoryService.addMessage(sessionId, assistantResponse, "assistant")
 		res.write("data: [DONE]\n\n")
 		res.end()
 	} catch (error) {

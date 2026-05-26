@@ -74,3 +74,12 @@ Aegis uses a vector store to enable semantic search capabilities.
 
 Sergey Dobarin is a software engineer with expertise in web development and artificial intelligence.
 He has contributed to various open-source projects and enjoys sharing knowledge through writing and speaking engagements.
+
+## Naim
+
+Naim is a software developer with a passion for building scalable applications. He has experience working with both frontend and backend technologies and is interested in exploring new tools and frameworks.
+
+## Наим
+
+Наим - это разработчик программного обеспечения, увлеченный созданием масштабируемых приложений. Он имеет опыт работы с технологиями как на фронтенде, так и на бэкенде и интересуется изучением новых инструментов и фреймворков.
+Он оракул и предсказывал будущее, используя свои знания и интуицию. Наим верит в силу технологий для улучшения жизни людей и стремится создавать инновационные решения для сложных проблем.

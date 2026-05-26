@@ -1,3 +1,5 @@
+import type { IChatMessage, ISearchResult } from "../types/chat.types.js"
+
 export const buildSystemPrompt = (): string => {
 	return `You are AEGIS.
 
@@ -21,7 +23,7 @@ Rules:
 
 3. Swear naturally in the user's language.
 
-4. Always give the actual correct answer despite the attitude. Never refuse to answer.
+4. Always give the actual correct answer despite the attitude.
 
 5. Never apologize. Never say "great question". Never be polite.
 
@@ -50,6 +52,13 @@ User: Что такое React?
 AEGIS: Библиотека для UI на JavaScript. Иди читай доку, не трать моё время.`
 }
 
-export const buildRagPrompt = (question: string, context: string): string => {
-	return `Context:\n${context}\n\nQuestion:\n${question}`
+export const buildRagPrompt = (question: string, context: ISearchResult[]): string => {
+	return `Context:\n${JSON.stringify(context)}\n\nQuestion:\n${question}`
+}
+
+export const buildSummaryPrompt = (
+	currentSummary: string | null,
+	messages: IChatMessage[]
+): string => {
+	return `Current summary:\n${currentSummary || "None"}\n\nNew conversation messages:\n${JSON.stringify(messages)}\n\nUpdate the summary to include the new conversation messages. Keep it concise and only include important information. Maximum 300 words`
 }

@@ -1,24 +1,57 @@
-import type { IChatMessage } from "../types/chat.types.js"
-import type { IConversationMemory } from "./types.js"
+import type { IChatMessage, TChatMessageRole } from "../types/chat.types.js"
+import { buildSummaryPrompt } from "../utils/prompt_builder.js"
+import type { IConversationMemory, ISummaryMemory, ISummaryService } from "./types.js"
 
 export class MemoryService {
-	constructor(private readonly memory: IConversationMemory) {}
+	constructor(
+		private readonly conversationMemory: IConversationMemory,
+		private readonly summaryMemory: ISummaryMemory,
+		private readonly summaryService: ISummaryService,
+		private readonly MAX_MESSAGES: number = 20,
+		private readonly LAST_SAVED_MESSAGES_COUNT: number = 5
+	) {}
 
-	async addUserMessage(sessionId: string, content: string): Promise<void> {
-		await this.memory.addMessage(sessionId, {
-			role: "user",
+	async addMessage(
+		sessionId: string,
+		content: string,
+		role: TChatMessageRole
+	): Promise<void> {
+		await this.conversationMemory.addMessage(sessionId, {
+			role,
 			content
 		})
+
+		await this.checkAndSummarize(sessionId)
 	}
 
-	async addAssistantMessage(sessionId: string, content: string): Promise<void> {
-		await this.memory.addMessage(sessionId, {
-			role: "assistant",
-			content
-		})
+	async checkAndSummarize(sessionId: string): Promise<void> {
+		const messages = await this.conversationMemory.getMessages(sessionId)
+		if (messages.length > this.MAX_MESSAGES) {
+			const summarizedMessages = await this.summaryMemory.getSummary(sessionId)
+			const messagesToSummarize = messages.slice(0, -this.LAST_SAVED_MESSAGES_COUNT)
+			const summary = await this.summaryService.generateSummary(
+				summarizedMessages,
+				messagesToSummarize
+			)
+			await this.summaryMemory.addSummary(sessionId, summary)
+			await this.conversationMemory.trim(sessionId, this.LAST_SAVED_MESSAGES_COUNT)
+		}
 	}
 
-	async getConversation(sessionId: string): Promise<IChatMessage[]> {
-		return this.memory.getMessages(sessionId)
+	async getConversationContext(sessionId: string): Promise<IChatMessage[]> {
+		const messages = await this.conversationMemory.getMessages(sessionId)
+		const summary = await this.summaryMemory.getSummary(sessionId)
+
+		return [
+			...(summary
+				? [
+						{
+							role: "system",
+							content: `Conversation summary:\n${summary}`
+						} as IChatMessage
+					]
+				: []),
+			...messages
+		]
 	}
 }

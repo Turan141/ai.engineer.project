@@ -23,5 +23,8 @@ export const config = {
 	defaultProvider: llmProvider,
 	lmstudioBaseUrl: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234",
 	llmModel: process.env.LLM_MODEL,
-	embeddingModel: process.env.EMBEDDING_MODEL || "text-embedding-3-small"
+	embeddingModel: process.env.EMBEDDING_MODEL || "text-embedding-3-small",
+	rag: {
+		treshold: parseFloat(process.env.RAG_TRESHOLD || "0.5")
+	}
 }

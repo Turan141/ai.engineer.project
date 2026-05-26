@@ -76,7 +76,6 @@ export class LLMService {
 
 	async generate(params: IGenerateParams, signal?: AbortSignal): Promise<IChatMessage> {
 		const aiResponse = await this.currentProvider.generate(params, signal)
-
 		return { role: "assistant", content: aiResponse }
 	}
 
