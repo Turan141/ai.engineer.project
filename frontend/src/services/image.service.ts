@@ -1,6 +1,6 @@
 import type { IGenerateImageRequest, IGenerateImageResponse } from "../types/image.types"
 
-const API_BASE = "https://dh141.tail0c91e0.ts.net"
+const API_BASE = import.meta.env.VITE_API_BASE ?? "https://dh141.tail0c91e0.ts.net"
 
 interface IGenerateImageApiResponse {
 	id: string

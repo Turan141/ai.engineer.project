@@ -20,7 +20,10 @@ interface StreamOptions {
 	signal?: AbortSignal
 }
 
-const API_BASE = "https://dh141.tail0c91e0.ts.net"
+// In development (VITE_API_BASE=http://localhost:3000) requests go straight to the
+// backend — bypassing both Vite's proxy and the Tailscale HTTPS endpoint, both of
+// which buffer SSE responses and break streaming.  Production keeps the full URL.
+const API_BASE = import.meta.env.VITE_API_BASE ?? "https://dh141.tail0c91e0.ts.net"
 
 async function getResponseErrorMessage(res: Response): Promise<string> {
 	try {
