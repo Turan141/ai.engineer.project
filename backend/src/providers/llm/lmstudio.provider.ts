@@ -45,7 +45,6 @@ export class LMStudioService implements ILLMProvider {
 		signal?: AbortSignal
 	): AsyncIterable<{ text: string }> {
 		const { messages } = params
-
 		const response = await fetch(`${config.lmstudioBaseUrl}/v1/chat/completions`, {
 			method: "POST",
 			...(signal ? { signal } : {}),

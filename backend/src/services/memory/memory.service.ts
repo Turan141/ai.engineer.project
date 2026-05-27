@@ -6,7 +6,7 @@ export class MemoryService {
 		private readonly conversationMemory: IConversationMemory,
 		private readonly summaryMemory: ISummaryMemory,
 		private readonly summaryService: ISummaryService,
-		private readonly MAX_MESSAGES: number = 20,
+		private readonly MAX_MESSAGES: number = 8,
 		private readonly LAST_SAVED_MESSAGES_COUNT: number = 5
 	) {}
 
@@ -20,7 +20,7 @@ export class MemoryService {
 			content
 		})
 
-		await this.checkAndSummarize(sessionId)
+		void this.checkAndSummarize(sessionId)
 	}
 
 	async checkAndSummarize(sessionId: string): Promise<void> {

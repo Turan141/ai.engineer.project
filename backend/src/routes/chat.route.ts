@@ -94,7 +94,6 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 		await memoryService.addMessage(sessionId, message, "user")
 		const messages = await memoryService.getConversationContext(sessionId)
-
 		const stream = ragService.askStream(
 			withSystemPrompt(messages),
 			abortController.signal
