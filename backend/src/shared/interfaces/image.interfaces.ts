@@ -24,7 +24,7 @@ export interface IImageService {
 	deleteImage(id: string): Promise<void>
 }
 
-export interface IImageStore {
+export interface IImageMemory {
 	save(params: IImageMetadata): Promise<void>
 	get(id: string): Promise<IImageMetadata | null>
 	delete(id: string): Promise<void>

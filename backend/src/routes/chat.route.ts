@@ -75,6 +75,21 @@ chatRouter.post("/chat", async (req, res) => {
 	}
 })
 
+chatRouter.get("/debug/messages/:sessionId", async (req, res) => {
+	const { sessionId } = req.params
+	if (typeof sessionId !== "string" || sessionId.trim() === "") {
+		return res.status(400).json({ error: "Session ID is required" })
+	}
+	try {
+		const messages = await memoryService.getConversationContext(sessionId)
+		console.log(messages)
+		return res.json({ messages })
+	} catch (error) {
+		console.error("Error fetching messages for session:", error)
+		return res.status(500).json({ error: "Failed to fetch messages" })
+	}
+})
+
 chatRouter.post("/chat/stream", async (req, res) => {
 	res.setHeader("Content-Type", "text/event-stream")
 	res.setHeader("Cache-Control", "no-cache, no-transform")

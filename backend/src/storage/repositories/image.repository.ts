@@ -1,9 +1,9 @@
 import type {
 	IImageMetadata,
-	IImageStore
+	IImageMemory
 } from "../../shared/interfaces/image.interfaces.js"
 
-export class InMemoryImageStore implements IImageStore {
+export class ImageMemory implements IImageMemory {
 	private images: IImageMetadata[] = []
 
 	delete(id: string): Promise<void> {

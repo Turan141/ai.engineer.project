@@ -73,6 +73,19 @@ export async function generateChat({
 	return response.message
 }
 
+export async function getDebugMessages(sessionId: string): Promise<IChatMessage[]> {
+	const res = await fetch(
+		`${API_BASE}/api/debug/messages/${encodeURIComponent(sessionId)}`
+	)
+
+	if (!res.ok) {
+		throw new Error(await getResponseErrorMessage(res))
+	}
+
+	const data = (await res.json()) as { messages: IChatMessage[] }
+	return data.messages
+}
+
 export async function generateEmbedding(
 	text: string,
 	signal?: AbortSignal

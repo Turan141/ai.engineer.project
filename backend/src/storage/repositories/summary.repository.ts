@@ -1,6 +1,6 @@
 import type { ISummaryMemory } from "../../services/memory/types.js"
 
-export class InMemorySummaryMemory implements ISummaryMemory {
+export class SummaryMemory implements ISummaryMemory {
 	private readonly summaries: Map<string, string> = new Map()
 
 	addSummary(sessionId: string, summary: string): Promise<void> {

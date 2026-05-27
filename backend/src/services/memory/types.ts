@@ -9,7 +9,7 @@ export interface ISummaryService {
 	): Promise<string>
 }
 
-export interface IConversationMemory {
+export interface IMessageRepository {
 	addMessage(sessionId: string, message: IChatMessage): Promise<void>
 	getMessages(sessionId: string): Promise<IChatMessage[]>
 	trim(sessionId: string, lastSavedMsgCount: number): Promise<void>

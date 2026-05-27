@@ -1,8 +1,14 @@
 # Modern Web Development
 
-Modern web applications are built using JavaScript and TypeScript.
-TypeScript extends JavaScript by adding static type checking.
-This helps developers catch errors before running the application.
+2. Introduce Job Architecture
+3. Persistent Storage Layer
+4. AI Gateway Architecture
+5. Multimodal Chat
+6. Learn Production Inference Stack
+
+   Modern web applications are built using JavaScript and TypeScript.
+   TypeScript extends JavaScript by adding static type checking.
+   This helps developers catch errors before running the application.
 
 ## React
 

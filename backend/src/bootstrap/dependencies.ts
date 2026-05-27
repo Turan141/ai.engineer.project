@@ -2,8 +2,6 @@ import { config } from "../config/config.js"
 import { FileSystemDocumentLoader } from "../knowledge/loaders/document-loader.js"
 import { KnowledgeBase } from "../knowledge/documents/knowledge-base.js"
 import { RecursiveTextSplitter } from "../knowledge/splitters/recursitve-text-splitter.js"
-import { InMemoryConversationMemory } from "../storage/memory/in-memory-conversation-memory.js"
-import { InMemorySummaryMemory } from "../storage/memory/in-memory-summary-memory.js"
 import { MemoryService } from "../services/memory/memory.service.js"
 import { SummaryService } from "../services/memory/summary.service.js"
 import { LMStudioEmbeddingService } from "../providers/embedding/lmstudio.embedding.provider.js"
@@ -13,19 +11,23 @@ import { PromptBuilderService } from "../services/rag/prompt-builder.service.js"
 import { RAGService } from "../services/rag/rag.service.js"
 import { ThresholdRetrievalFilter } from "../services/rag/retrieval/treshold_retrieval_filter.service.js"
 import { InMemoryVectorStore } from "../storage/vector-store/vector.store.service.js"
-import { InMemoryImageStore } from "../storage/memory/in-memory-image-memory.js"
 import { ImagePresetService } from "../services/image/iamge-preset.service.js"
 import { ComfyUIProvider } from "../providers/image/comfyui.provider.js"
+import { ImageMemory } from "../storage/repositories/image.repository.js"
+import { MessageMemory } from "../storage/repositories/message.repository.js"
+import { SummaryMemory } from "../storage/repositories/summary.repository.js"
+import { SQLiteService } from "../storage/sqlite/sqlite.service.js"
 
+export const sqLiteService = new SQLiteService()
 export const comfyProvider = new ComfyUIProvider()
 export const presetService = new ImagePresetService()
-export const imageMemory = new InMemoryImageStore()
+export const imageMemory = new ImageMemory()
 export const imageService = new ImageService(comfyProvider, imageMemory)
 export const promptBuilderService = new PromptBuilderService()
 export const llmService = new LLMService()
-export const conversationMemory = new InMemoryConversationMemory()
+export const conversationMemory = new MessageMemory()
 export const summaryService = new SummaryService(llmService)
-export const summaryMemory = new InMemorySummaryMemory()
+export const summaryMemory = new SummaryMemory()
 export const memoryService = new MemoryService(
 	conversationMemory,
 	summaryMemory,

@@ -1,7 +1,7 @@
 import type { IChatMessage } from "../../types/chat.types.js"
-import type { IConversationMemory } from "../../services/memory/types.js"
+import type { IMessageRepository } from "../../services/memory/types.js"
 
-export class InMemoryConversationMemory implements IConversationMemory {
+export class MessageMemory implements IMessageRepository {
 	private readonly conversations: Map<string, IChatMessage[]> = new Map()
 
 	constructor() {}

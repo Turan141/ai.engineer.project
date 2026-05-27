@@ -3,7 +3,7 @@ import type {
 	IImageGenerationResult,
 	IImageMetadata,
 	IImageService,
-	IImageStore
+	IImageMemory
 } from "../../shared/interfaces/image.interfaces.js"
 import { ComfyUIProvider } from "../../providers/image/comfyui.provider.js"
 import { uuid } from "../../utils/uuid-generation.js"
@@ -11,7 +11,7 @@ import { uuid } from "../../utils/uuid-generation.js"
 export class ImageService implements IImageService {
 	constructor(
 		private comfyProvider: ComfyUIProvider,
-		private imageStore: IImageStore
+		private imageStore: IImageMemory
 	) {}
 
 	async generateImage(

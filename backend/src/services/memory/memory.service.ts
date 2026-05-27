@@ -1,9 +1,9 @@
 import type { IChatMessage, TChatMessageRole } from "../../types/chat.types.js"
-import type { IConversationMemory, ISummaryMemory, ISummaryService } from "./types.js"
+import type { IMessageRepository, ISummaryMemory, ISummaryService } from "./types.js"
 
 export class MemoryService {
 	constructor(
-		private readonly conversationMemory: IConversationMemory,
+		private readonly conversationMemory: IMessageRepository,
 		private readonly summaryMemory: ISummaryMemory,
 		private readonly summaryService: ISummaryService,
 		private readonly MAX_MESSAGES: number = 8,
