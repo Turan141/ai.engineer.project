@@ -23,6 +23,7 @@ export class ComfyUIProvider implements IImageProvider {
 			const response = await fetch(`${config.comfyUIBaseUrl}/history`, {
 				method: "GET"
 			})
+			console.log(response)
 			if (!response.ok) {
 				throw new Error(`Failed to check prompt status: ${response.statusText}`)
 			}
@@ -64,6 +65,7 @@ export class ComfyUIProvider implements IImageProvider {
 		const data: IGenerateImageProviderQuery = await response.json()
 		const promptId = data.prompt_id
 		const generatedImg = await this.waitForCompletion(promptId, signal)
+		console.log(generatedImg)
 		return {
 			fileName: generatedImg.filename
 		}

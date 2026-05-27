@@ -40,9 +40,9 @@ imageRouter.get("/image/:id", async (req, res) => {
 	if (!imageMetadata) {
 		return res.status(404).json({ error: "Image not found" })
 	}
-
-	const filePath = path.resolve((config.comfyUiOutputPath, imageMetadata.fileName))
-	console.log(`Serving image file from path: ${filePath}`)
+	console.log(imageMetadata)
+	const filePath = path.resolve(config.comfyUiOutputPath + "/" + imageMetadata.fileName)
+	console.log(" Serving ", filePath)
 	return res.sendFile(filePath)
 })
 

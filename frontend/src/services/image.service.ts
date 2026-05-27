@@ -7,10 +7,6 @@ interface IGenerateImageApiResponse {
 	url?: string
 }
 
-interface IGetImageApiResponse {
-	url?: string
-}
-
 async function getResponseErrorMessage(res: Response): Promise<string> {
 	let message = `${res.status} ${res.statusText}`
 
@@ -26,19 +22,8 @@ async function getResponseErrorMessage(res: Response): Promise<string> {
 	return message
 }
 
-async function fetchImageUrlById(id: string, signal?: AbortSignal): Promise<string> {
-	const res = await fetch(`${API_BASE}/api/image/${encodeURIComponent(id)}`, { signal })
-
-	if (!res.ok) {
-		throw new Error(await getResponseErrorMessage(res))
-	}
-
-	const data = (await res.json()) as IGetImageApiResponse
-	if (typeof data?.url !== "string" || data.url.trim() === "") {
-		throw new Error("Image URL is missing in get-image response")
-	}
-
-	return data.url
+function buildImageUrlById(id: string): string {
+	return `${API_BASE}/api/image/${encodeURIComponent(id)}`
 }
 
 export async function generateImage(
@@ -64,7 +49,7 @@ export async function generateImage(
 	const resolvedUrl =
 		typeof generated.url === "string" && generated.url.trim() !== ""
 			? generated.url
-			: await fetchImageUrlById(generated.id, signal)
+			: buildImageUrlById(generated.id)
 
 	return {
 		id: generated.id,
