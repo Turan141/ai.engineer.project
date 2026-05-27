@@ -5,7 +5,6 @@ export interface IGenerateImageParams {
 }
 
 export interface IImageGenerationResult {
-	url: string
 	id: string
 }
 
@@ -21,13 +20,15 @@ export interface IImageService {
 		params: IGenerateImageParams,
 		signal: AbortSignal
 	): Promise<IImageGenerationResult>
-	getImage(id: string): Promise<string | null>
+	getImage(id: string): Promise<IImageMetadata | null>
 	deleteImage(id: string): Promise<void>
 }
 
 export interface IImageStore {
-	saveImage(id: string, url: string): Promise<void>
-	getImageUrl(id: string): Promise<string | null>
+	save(params: IImageMetadata): Promise<void>
+	get(id: string): Promise<IImageMetadata | null>
+	delete(id: string): Promise<void>
+	list(): Promise<IImageMetadata[]>
 }
 
 export interface IImageMetadata {
@@ -42,6 +43,16 @@ export interface IGenerateImageProviderResult {
 	fileName: string
 }
 
+export interface IGenerateImageProviderQuery {
+	prompt_id: string
+	number: string
+}
+
+export interface IGenerateImageProviderQueryResult {
+	filename: string
+	subfolder: string
+	type: string
+}
 export interface IImagePresetService {
 	get(): Promise<IGenerateImageParams>
 }

@@ -13,14 +13,14 @@ import { PromptBuilderService } from "../services/rag/prompt-builder.service.js"
 import { RAGService } from "../services/rag/rag.service.js"
 import { ThresholdRetrievalFilter } from "../services/rag/retrieval/treshold_retrieval_filter.service.js"
 import { InMemoryVectorStore } from "../storage/vector-store/vector.store.service.js"
-import { InMemoryImageMemory } from "../storage/memory/in-memory-image-memory.js"
+import { InMemoryImageStore } from "../storage/memory/in-memory-image-memory.js"
 import { ImagePresetService } from "../services/image/iamge-preset.service.js"
 import { ComfyUIProvider } from "../providers/image/comfyui.provider.js"
 
 export const comfyProvider = new ComfyUIProvider()
 export const presetService = new ImagePresetService()
-export const imageService = new ImageService(comfyProvider)
-export const imageMemory = new InMemoryImageMemory()
+export const imageMemory = new InMemoryImageStore()
+export const imageService = new ImageService(comfyProvider, imageMemory)
 export const promptBuilderService = new PromptBuilderService()
 export const llmService = new LLMService()
 export const conversationMemory = new InMemoryConversationMemory()
