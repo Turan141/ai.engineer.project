@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { IChatMessage } from "../types/chat.types"
-import { generateChat, generateEmbedding, streamChat } from "../services/chat.service"
+import { generateChat, generateEmbedding, getDebugMessages, streamChat } from "../services/chat.service"
 
 type TChatMode = "stream" | "single"
 
@@ -54,6 +54,9 @@ export const Chat: React.FC = () => {
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 	const [sessionId] = useState(() => crypto.randomUUID())
+	const [debugMessages, setDebugMessages] = useState<IChatMessage[] | null>(null)
+	const [isDebugLoading, setIsDebugLoading] = useState(false)
+	const [debugError, setDebugError] = useState<string | null>(null)
 	const controllerRef = useRef<AbortController | null>(null)
 	const embeddingControllerRef = useRef<AbortController | null>(null)
 	const messagesRef = useRef<HTMLDivElement | null>(null)
@@ -185,6 +188,19 @@ export const Chat: React.FC = () => {
 		}
 	}
 
+	const handleFetchDebugMessages = async () => {
+		setIsDebugLoading(true)
+		setDebugError(null)
+		try {
+			const msgs = await getDebugMessages(sessionId)
+			setDebugMessages(msgs)
+		} catch (err: any) {
+			setDebugError(err?.message ?? "Failed to fetch debug messages")
+		} finally {
+			setIsDebugLoading(false)
+		}
+	}
+
 	const handleStop = () => {
 		if (controllerRef.current) {
 			controllerRef.current.abort()
@@ -268,33 +284,49 @@ export const Chat: React.FC = () => {
 								</p>
 							)}
 						</div>
+
+					<div className='settings-section'>
+						<div className='settings-section__label'>Debug</div>
+						<button
+							type='button'
+							onClick={handleFetchDebugMessages}
+							disabled={isDebugLoading}
+							className='chat-button chat-button--ghost'
+						>
+							{isDebugLoading ? "Loading..." : "Fetch memory /debug/messages"}
+						</button>
+						<p className='settings-section__hint'>
+							Session: <code>{sessionId}</code>
+						</p>
+						{debugError && (
+							<p className='settings-section__hint' style={{ color: "var(--color-error, #f87171)" }}>
+								{debugError}
+							</p>
+						)}
+						{debugMessages !== null && (
+							<pre className='debug-messages-pre'>{JSON.stringify(debugMessages, null, 2)}</pre>
+						)}
 					</div>
 				</div>
-			)}
+			</div>
+		)}
 
-			<section className='chat-panel'>
-				<header className='chat-header'>
-					<div>
-						<div className='chat-eyebrow'>AI engineer pet</div>
-						<h1>Chat workbench</h1>
-						<p>
-							Обычный chat, streaming chat и embeddings доступны из одного интерфейса.
-						</p>
-					</div>
-					<div
-						className={`chat-status ${isLoading || isEmbeddingLoading ? "is-live" : ""}`}
-					>
-						<span className='chat-status__dot' />
-						{statusLabel}
-					</div>
-				</header>
-
-				<div className='chat-thread' ref={messagesRef}>
-					{messages.length === 0 && (
-						<div className='chat-empty'>
-							<div className='chat-empty__badge'>Start here</div>
-							<h2>Задай вопрос модели</h2>
-							<p>
+		<section className='chat-panel'>
+			<header className='chat-header'>
+				<div>
+					<div className='chat-eyebrow'>AI engineer pet</div>
+					<h1>Chat workbench</h1>
+					<p>
+						Обычный chat, streaming chat и embeddings доступны из одного интерфейса.
+					</p>
+				</div>
+				<div
+					className={`chat-status ${isLoading || isEmbeddingLoading ? "is-live" : ""}`}
+				>
+					<span className='chat-status__dot' />
+					{statusLabel}
+				</div>
+			</header>
 								Например: попроси объяснить баг, переписать код или помочь с архитектурой.
 							</p>
 						</div>

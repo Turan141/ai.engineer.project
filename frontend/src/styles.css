@@ -601,6 +601,30 @@ textarea {
 	line-height: 1.5;
 }
 
+.settings-section__hint code {
+	font-family: monospace;
+	font-size: 0.82rem;
+	background: var(--surface-2, rgba(255,255,255,0.06));
+	padding: 0 4px;
+	border-radius: 4px;
+}
+
+.debug-messages-pre {
+	margin: 8px 0 0;
+	padding: 12px;
+	background: var(--surface-2, rgba(255,255,255,0.05));
+	border: 1px solid var(--border, rgba(255,255,255,0.08));
+	border-radius: 8px;
+	font-family: monospace;
+	font-size: 0.78rem;
+	line-height: 1.5;
+	color: var(--muted);
+	max-height: 260px;
+	overflow-y: auto;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
 @keyframes chat-rise {
 	from {
 		opacity: 0;
