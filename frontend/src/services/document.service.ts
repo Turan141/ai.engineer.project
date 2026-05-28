@@ -43,7 +43,9 @@ function normalizeAnalysisResult(payload: unknown): IDocumentAnalysisResult {
 	}
 
 	const keywords = Array.isArray(response.keywords)
-		? response.keywords.filter((keyword): keyword is string => typeof keyword === "string")
+		? response.keywords.filter(
+				(keyword): keyword is string => typeof keyword === "string"
+			)
 		: []
 
 	const entities =
@@ -56,8 +58,7 @@ function normalizeAnalysisResult(payload: unknown): IDocumentAnalysisResult {
 			: {}
 
 	return {
-		documentType:
-			typeof response.documentType === "string" ? response.documentType : "",
+		documentType: typeof response.documentType === "string" ? response.documentType : "",
 		summary: typeof response.summary === "string" ? response.summary : "",
 		keywords,
 		entities

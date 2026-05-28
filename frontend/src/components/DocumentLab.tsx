@@ -180,7 +180,9 @@ export const DocumentLab: React.FC = () => {
 
 						<button type='button' className='doc-dropzone' onClick={handlePickFile}>
 							<span className='doc-dropzone__eyebrow'>Upload</span>
-							<strong>{selectedFile ? selectedFile.name : "Выбрать документ для обработки"}</strong>
+							<strong>
+								{selectedFile ? selectedFile.name : "Выбрать документ для обработки"}
+							</strong>
 							<span>
 								{selectedFile
 									? `${selectedFile.type || "unknown type"} • ${formatFileSize(selectedFile.size)}`
@@ -276,7 +278,9 @@ export const DocumentLab: React.FC = () => {
 										<span>{activeEntry.createdAt.toLocaleTimeString()}</span>
 										<span>{activeEntry.rawText.length} OCR chars</span>
 										<span>{activeEntry.analysis.keywords.length} keywords</span>
-										<span>{Object.keys(activeEntry.analysis.entities).length} entities</span>
+										<span>
+											{Object.keys(activeEntry.analysis.entities).length} entities
+										</span>
 									</div>
 									<section className='doc-section'>
 										<div className='doc-section__header'>
@@ -288,17 +292,24 @@ export const DocumentLab: React.FC = () => {
 									<section className='doc-section'>
 										<div className='doc-section__header'>
 											<div className='doc-section__title'>Structured analysis</div>
-											<div className='doc-section__hint'>Тип документа, summary, keywords и entities</div>
+											<div className='doc-section__hint'>
+												Тип документа, summary, keywords и entities
+											</div>
 										</div>
 										<div className='doc-analysis'>
 											<div className='doc-analysis__cards'>
 												<div className='doc-analysis__card'>
 													<span className='doc-analysis__label'>Document type</span>
-													<strong>{activeEntry.analysis.documentType || "Unknown"}</strong>
+													<strong>
+														{activeEntry.analysis.documentType || "Unknown"}
+													</strong>
 												</div>
 												<div className='doc-analysis__card'>
 													<span className='doc-analysis__label'>Summary</span>
-													<p>{activeEntry.analysis.summary || "Summary is not available yet."}</p>
+													<p>
+														{activeEntry.analysis.summary ||
+															"Summary is not available yet."}
+													</p>
 												</div>
 											</div>
 											<div className='doc-analysis__block'>
@@ -312,22 +323,28 @@ export const DocumentLab: React.FC = () => {
 														))}
 													</div>
 												) : (
-													<p className='doc-analysis__empty'>Keywords were not detected.</p>
+													<p className='doc-analysis__empty'>
+														Keywords were not detected.
+													</p>
 												)}
 											</div>
 											<div className='doc-analysis__block'>
 												<div className='doc-analysis__label'>Entities</div>
 												{Object.keys(activeEntry.analysis.entities).length > 0 ? (
 													<div className='doc-analysis__entities'>
-														{Object.entries(activeEntry.analysis.entities).map(([key, value]) => (
-															<div key={key} className='doc-analysis__entity'>
-																<span>{key}</span>
-																<strong>{value}</strong>
-															</div>
-														))}
+														{Object.entries(activeEntry.analysis.entities).map(
+															([key, value]) => (
+																<div key={key} className='doc-analysis__entity'>
+																	<span>{key}</span>
+																	<strong>{value}</strong>
+																</div>
+															)
+														)}
 													</div>
 												) : (
-													<p className='doc-analysis__empty'>Named entities were not detected.</p>
+													<p className='doc-analysis__empty'>
+														Named entities were not detected.
+													</p>
 												)}
 											</div>
 										</div>
