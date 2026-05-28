@@ -255,9 +255,9 @@ export const Chat: React.FC = () => {
 		? "Generating"
 		: isHistoryLoading
 			? "Loading history"
-		: isEmbeddingLoading
-			? "Embedding"
-			: "Ready"
+			: isEmbeddingLoading
+				? "Embedding"
+				: "Ready"
 
 	return (
 		<div className='chat-shell'>

@@ -90,9 +90,12 @@ export async function getChatHistory(
 	sessionId: string,
 	signal?: AbortSignal
 ): Promise<IChatMessage[]> {
-	const res = await fetch(`${API_BASE}/api/chat/history/${encodeURIComponent(sessionId)}`, {
-		signal
-	})
+	const res = await fetch(
+		`${API_BASE}/api/chat/history/${encodeURIComponent(sessionId)}`,
+		{
+			signal
+		}
+	)
 
 	if (!res.ok) {
 		throw new Error(await getResponseErrorMessage(res))

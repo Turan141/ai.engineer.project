@@ -1,11 +1,12 @@
 import type { IChatMessage, ISearchResult } from "../../types/chat.types.js"
 
 export class PromptBuilderService {
-	//   ─ buildChatPrompt()
-	// ├── buildRagPrompt()
-	// ├── buildSummaryPrompt()
-
-	// buildChatPrompt(messages: IChatMessage[]): string {}
+	buildDocumentAnalysisPrompt(documentText: string): string {
+		return `Extract structured information from this document.
+						Return JSON only.
+						Document:
+						${documentText}`
+	}
 
 	buildRagPrompt(question: string, context: ISearchResult[]): string {
 		const contextText = context
