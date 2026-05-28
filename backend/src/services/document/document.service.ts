@@ -17,8 +17,6 @@ export class DocumentService {
 		analysis: IDocumentAnalysisResult
 	}> {
 		const rawText = await this.documentOcrService.extractText(filePath)
-		const embedding = this.llmService.generateEmbedding(rawText)
-		console.log("Generated embedding for document:", embedding)
 		const analysis = await this.documentAnalysisService.analyzeDocument(rawText)
 
 		return {

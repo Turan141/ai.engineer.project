@@ -1,6 +1,6 @@
 import { Router } from "express"
 import multer from "multer"
-import { documentService } from "../bootstrap/dependencies.js"
+import { documentService, knowledgeBase } from "../bootstrap/dependencies.js"
 
 export const documentRouter = Router()
 
@@ -13,6 +13,24 @@ const upload = multer({
 		}
 	})
 })
+
+documentRouter.post(
+	"/document/uploadKnowledge",
+	upload.single("file"),
+	async (req, res) => {
+		try {
+			const { file } = req
+			if (!file) {
+				return res.status(400).json({ error: "File is required for knowledge ingestion" })
+			}
+			await knowledgeBase.ingest(file.path)
+			res.json({ success: true, message: "Document ingested successfully" })
+		} catch (error) {
+			console.error("Error ingesting document:", error)
+			return res.status(500).json({ error: "Failed to ingest document" })
+		}
+	}
+)
 
 documentRouter.post("/document/ocr", upload.single("file"), async (req, res) => {
 	try {

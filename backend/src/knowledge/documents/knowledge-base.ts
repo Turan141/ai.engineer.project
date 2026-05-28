@@ -8,10 +8,6 @@ export class KnowledgeBase {
 		private readonly vectorStore: IVectorStore
 	) {}
 
-	async initialize(): Promise<void> {
-		await this.ingest("./docs")
-	}
-
 	async ingest(folderPath: string): Promise<void> {
 		const documents = await this.loader.loadDocuments(folderPath)
 

@@ -10,7 +10,6 @@ import { LLMService } from "../services/llm/llm.service.js"
 import { PromptBuilderService } from "../services/rag/prompt-builder.service.js"
 import { RAGService } from "../services/rag/rag.service.js"
 import { ThresholdRetrievalFilter } from "../services/rag/retrieval/treshold_retrieval_filter.service.js"
-import { InMemoryVectorStore } from "../storage/vector-store/vector.store.service.js"
 import { ImagePresetService } from "../services/image/iamge-preset.service.js"
 import { ComfyUIProvider } from "../providers/image/comfyui.provider.js"
 import { ImageMemory } from "../storage/repositories/image.repository.js"
@@ -20,6 +19,7 @@ import { SQLiteSummaryRepository } from "../storage/sqlite/sqlite-summary.reposi
 import { DocumentService } from "../services/document/document.service.js"
 import { DocumentAnalysisService } from "../services/document/document-analysis.service.js"
 import { DocumentOCRService } from "../services/document/document-ocr.service.js"
+import { SQLiteVectorRepository } from "../storage/sqlite/sq-lite-vectors.repository.js"
 
 export const sqLiteService = new SQLiteService()
 export const llmService = new LLMService()
@@ -44,9 +44,16 @@ export const memoryService = new MemoryService(
 	summaryRepository
 )
 export const embeddingProvider = new LMStudioEmbeddingService()
-export const vectorStore = new InMemoryVectorStore(embeddingProvider)
+export const sqliteVectorRepository = new SQLiteVectorRepository(
+	sqLiteService,
+	embeddingProvider
+)
 export const loader = new FileSystemDocumentLoader()
 export const splitter = new RecursiveTextSplitter()
-export const knowledgeBase = new KnowledgeBase(loader, splitter, vectorStore)
+export const knowledgeBase = new KnowledgeBase(loader, splitter, sqliteVectorRepository)
 export const retrievalFilter = new ThresholdRetrievalFilter(config.rag.treshold)
-export const ragService = new RAGService(vectorStore, llmService, retrievalFilter)
+export const ragService = new RAGService(
+	sqliteVectorRepository,
+	llmService,
+	retrievalFilter
+)

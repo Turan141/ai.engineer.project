@@ -1,11 +1,14 @@
 import Database from "better-sqlite3"
+import * as sqliteVec from "sqlite-vec"
 
 export class SQLiteService {
 	private readonly db: Database.Database
+	private readonly sqliteVec = sqliteVec
 
 	constructor(path: string = "aegis.db") {
 		this.db = new Database(path)
 		this.db.pragma("journal_mode = WAL")
+		this.sqliteVec.load(this.db)
 	}
 
 	initialize(): void {
@@ -31,6 +34,17 @@ export class SQLiteService {
         role TEXT NOT NULL,
         content TEXT NOT NULL,
         created_at INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS document_chunks (
+        id TEXT PRIMARY KEY,
+        document_id TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE VIRTUAL TABLE IF NOT EXISTS chunk_embeddings USING vec0(
+        embedding FLOAT[768]
       );
 
       
