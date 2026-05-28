@@ -9,7 +9,7 @@ const App: React.FC = () => {
 	const [view, setView] = useState<TView>("chat")
 
 	return (
-		<div className='app-root'>
+		<div className={`app-root ${view === "document" ? "app-root--document" : ""}`}>
 			<nav className='app-nav'>
 				<button
 					type='button'
@@ -78,7 +78,7 @@ const App: React.FC = () => {
 				</button>
 			</nav>
 
-			<div className='app-view'>
+			<div className={`app-view app-view--${view}`}>
 				{view === "chat" ? <Chat /> : view === "image" ? <ImageGen /> : <DocumentLab />}
 			</div>
 		</div>

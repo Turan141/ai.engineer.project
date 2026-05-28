@@ -145,17 +145,27 @@ export const DocumentLab: React.FC = () => {
 		}, 1600)
 	}
 
+	const handleSelectEntry = (entryId: string) => {
+		setActiveEntryId(entryId)
+		setActiveResultTab("analysis")
+	}
+
 	return (
-		<div className='chat-shell'>
-			<section className='chat-panel doc-panel'>
+		<div className='chat-shell chat-shell--document'>
+			<section className='chat-panel chat-panel--document doc-panel'>
 				<header className='chat-header'>
-					<div>
+					<div className='doc-header-copy'>
 						<div className='chat-eyebrow'>AI engineer pet</div>
 						<h1>Document Review</h1>
 						<p>
 							Загружай сканы или фото документов и получай OCR плюс структурированный
 							разбор: тип, summary, keywords и entities.
 						</p>
+						<div className='doc-header-highlights'>
+							<span className='doc-header-chip'>OCR</span>
+							<span className='doc-header-chip'>Summary</span>
+							<span className='doc-header-chip'>Entities</span>
+						</div>
 					</div>
 					<div className={`chat-status ${isLoading ? "is-live" : ""}`}>
 						<span className='chat-status__dot' />
@@ -209,11 +219,11 @@ export const DocumentLab: React.FC = () => {
 
 						{error && <div className='img-error'>{error}</div>}
 
-						<div className='chat-actions'>
+						<div className='doc-actions'>
 							{selectedFile && !isLoading && (
 								<button
 									type='button'
-									className='chat-button chat-button--ghost'
+									className='chat-button chat-button--ghost doc-action-button'
 									onClick={handleClear}
 								>
 									Clear
@@ -222,7 +232,7 @@ export const DocumentLab: React.FC = () => {
 							{isLoading ? (
 								<button
 									type='button'
-									className='chat-button chat-button--ghost'
+									className='chat-button chat-button--ghost doc-action-button'
 									onClick={handleStop}
 								>
 									Stop
@@ -230,7 +240,7 @@ export const DocumentLab: React.FC = () => {
 							) : (
 								<button
 									type='button'
-									className='chat-button chat-button--primary'
+									className='chat-button chat-button--primary doc-action-button doc-action-button--primary'
 									disabled={!selectedFile}
 									onClick={handleProcess}
 								>
@@ -286,7 +296,11 @@ export const DocumentLab: React.FC = () => {
 										</span>
 									</div>
 									<div className='doc-result__toolbar'>
-										<div className='doc-tab-switch' role='tablist' aria-label='Document result view'>
+										<div
+											className='doc-tab-switch'
+											role='tablist'
+											aria-label='Document result view'
+										>
 											<button
 												type='button'
 												role='tab'
@@ -413,7 +427,7 @@ export const DocumentLab: React.FC = () => {
 									key={entry.id}
 									type='button'
 									className={`doc-history__card ${entry.id === activeEntry?.id ? "is-active" : ""}`}
-									onClick={() => setActiveEntryId(entry.id)}
+									onClick={() => handleSelectEntry(entry.id)}
 								>
 									<div className='doc-history__meta'>
 										<span>{entry.fileName}</span>
