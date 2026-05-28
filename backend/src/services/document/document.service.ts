@@ -1,3 +1,4 @@
+import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type {
 	IDocumentAnalysisResult,
 	IDocumentAnalysisService,
@@ -7,7 +8,8 @@ import type {
 export class DocumentService {
 	constructor(
 		private readonly documentAnalysisService: IDocumentAnalysisService,
-		private readonly documentOcrService: IDocumentOCRService
+		private readonly documentOcrService: IDocumentOCRService,
+		private readonly llmService: ILLMService
 	) {}
 
 	async processDocument(filePath: string): Promise<{
@@ -15,6 +17,8 @@ export class DocumentService {
 		analysis: IDocumentAnalysisResult
 	}> {
 		const rawText = await this.documentOcrService.extractText(filePath)
+		const embedding = this.llmService.generateEmbedding(rawText)
+		console.log("Generated embedding for document:", embedding)
 		const analysis = await this.documentAnalysisService.analyzeDocument(rawText)
 
 		return {

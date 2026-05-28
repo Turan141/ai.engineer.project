@@ -1,9 +1,9 @@
 import { promptBuilderService } from "../../bootstrap/dependencies.js"
+import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type { IDocumentAnalysisResult } from "../../types/chat.types.js"
-import type { LLMService } from "../llm/llm.service.js"
 
 export class DocumentAnalysisService {
-	constructor(private readonly llmService: LLMService) {}
+	constructor(private readonly llmService: ILLMService) {}
 
 	async analyzeDocument(text: string): Promise<IDocumentAnalysisResult> {
 		const analysisPrompt = promptBuilderService.buildDocumentAnalysisPrompt(text)

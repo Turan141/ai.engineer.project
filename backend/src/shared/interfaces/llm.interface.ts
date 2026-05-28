@@ -4,6 +4,25 @@ export interface IGenerateParams {
 	messages: IChatMessage[]
 }
 
+export interface ILLMService {
+	setProvider(name: string): void
+
+	getProviderName(): string
+
+	getAvailableProviders(): string[]
+
+	generate(params: IGenerateParams, signal?: AbortSignal): Promise<IChatMessage>
+
+	generateStream(
+		params: IGenerateParams,
+		signal?: AbortSignal
+	): Promise<AsyncIterable<{ text: string }>>
+
+	generateEmbedding(text: string, signal?: AbortSignal): Promise<number[]>
+
+	setEmbeddingProvider(name: string): void
+}
+
 export interface ILLMProvider {
 	generate(params: IGenerateParams, signal?: AbortSignal): Promise<string>
 	generateStream(

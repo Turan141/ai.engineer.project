@@ -31,7 +31,8 @@ export const documentAnalysisService = new DocumentAnalysisService(llmService)
 export const documentOcrService = new DocumentOCRService()
 export const documentService = new DocumentService(
 	documentAnalysisService,
-	documentOcrService
+	documentOcrService,
+	llmService
 )
 export const promptBuilderService = new PromptBuilderService()
 export const messagesRepository = new SQLiteMessageRepository(sqLiteService)

@@ -1,11 +1,5 @@
 import { Router } from "express"
-import {
-	imageService,
-	llmService,
-	memoryService,
-	promptBuilderService,
-	ragService
-} from "../bootstrap/dependencies.js"
+import { imageService } from "../bootstrap/dependencies.js"
 import { config } from "../config/config.js"
 import path from "path"
 

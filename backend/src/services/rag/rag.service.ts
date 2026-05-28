@@ -1,18 +1,18 @@
 import { promptBuilderService } from "../../bootstrap/dependencies.js"
+import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type {
 	IChatMessage,
 	IRAGResponse,
 	IRetrievalStrategy,
 	IVectorStore
 } from "../../types/chat.types.js"
-import type { LLMService } from "../llm/llm.service.js"
 
 const MAX_CONTEXT_DOCUMENTS = 3
 
 export class RAGService {
 	constructor(
 		private readonly vectorStore: IVectorStore,
-		private readonly llmService: LLMService,
+		private readonly llmService: ILLMService,
 		private readonly retrievalFilter: IRetrievalStrategy
 	) {}
 

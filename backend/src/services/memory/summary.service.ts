@@ -1,10 +1,10 @@
 import { promptBuilderService } from "../../bootstrap/dependencies.js"
-import type { LLMService } from "../llm/llm.service.js"
+import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type { IChatMessage } from "../../types/chat.types.js"
 import type { ISummaryService } from "./types.js"
 
 export class SummaryService implements ISummaryService {
-	constructor(private readonly llmService: LLMService) {}
+	constructor(private readonly llmService: ILLMService) {}
 
 	async generateSummary(
 		currentSummary: string | null,

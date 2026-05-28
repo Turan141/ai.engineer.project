@@ -8,6 +8,7 @@ import type {
 import { LMStudioService } from "../../providers/llm/lmstudio.provider.js"
 import { GeminiService } from "../../providers/llm/gemini.provider.js"
 import { LMStudioEmbeddingService } from "../../providers/embedding/lmstudio.embedding.provider.js"
+import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 
 type TProviderName = "gemini" | "lmstudio"
 type TEmbeddingProviderName = "lmstudio"
@@ -21,7 +22,7 @@ const providers: Record<TProviderName, ILLMProvider> = {
 	lmstudio: new LMStudioService()
 }
 
-export class LLMService {
+export class LLMService implements ILLMService {
 	private currentProviderName: TProviderName
 	private currentProvider: ILLMProvider
 	private currentEmbeddingProviderName: TEmbeddingProviderName
