@@ -6,6 +6,7 @@ import type {
 } from "../types/document.types"
 
 const ACCEPTED_FILE_TYPES = "image/png,image/jpeg,image/webp,image/bmp,image/tiff"
+type TResultTab = "ocr" | "analysis"
 
 function formatFileSize(size: number): string {
 	if (size < 1024) {
@@ -27,6 +28,7 @@ export const DocumentLab: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null)
 	const [entries, setEntries] = useState<IDocumentProcessEntry[]>([])
 	const [activeEntryId, setActiveEntryId] = useState<string | null>(null)
+	const [activeResultTab, setActiveResultTab] = useState<TResultTab>("analysis")
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [copiedField, setCopiedField] = useState<"rawText" | "analysis" | null>(null)
@@ -92,6 +94,7 @@ export const DocumentLab: React.FC = () => {
 
 			setEntries((prev) => [nextEntry, ...prev])
 			setActiveEntryId(nextEntry.id)
+			setActiveResultTab("analysis")
 		} catch (err: any) {
 			if (err?.name !== "AbortError") {
 				setError(err?.message ?? "Failed to process document")
@@ -282,73 +285,98 @@ export const DocumentLab: React.FC = () => {
 											{Object.keys(activeEntry.analysis.entities).length} entities
 										</span>
 									</div>
-									<section className='doc-section'>
-										<div className='doc-section__header'>
-											<div className='doc-section__title'>OCR text</div>
-											<div className='doc-section__hint'>Исходное распознавание</div>
+									<div className='doc-result__toolbar'>
+										<div className='doc-tab-switch' role='tablist' aria-label='Document result view'>
+											<button
+												type='button'
+												role='tab'
+												aria-selected={activeResultTab === "analysis"}
+												className={`doc-tab ${activeResultTab === "analysis" ? "is-active" : ""}`}
+												onClick={() => setActiveResultTab("analysis")}
+											>
+												Analysis
+											</button>
+											<button
+												type='button'
+												role='tab'
+												aria-selected={activeResultTab === "ocr"}
+												className={`doc-tab ${activeResultTab === "ocr" ? "is-active" : ""}`}
+												onClick={() => setActiveResultTab("ocr")}
+											>
+												OCR
+											</button>
 										</div>
-										<pre className='doc-result__text'>{activeEntry.rawText}</pre>
-									</section>
-									<section className='doc-section'>
-										<div className='doc-section__header'>
-											<div className='doc-section__title'>Structured analysis</div>
-											<div className='doc-section__hint'>
-												Тип документа, summary, keywords и entities
+									</div>
+									{activeResultTab === "ocr" ? (
+										<section className='doc-section doc-section--single'>
+											<div className='doc-section__header'>
+												<div className='doc-section__title'>OCR text</div>
+												<div className='doc-section__hint'>Исходное распознавание</div>
 											</div>
-										</div>
-										<div className='doc-analysis'>
-											<div className='doc-analysis__cards'>
-												<div className='doc-analysis__card'>
-													<span className='doc-analysis__label'>Document type</span>
-													<strong>
-														{activeEntry.analysis.documentType || "Unknown"}
-													</strong>
+											<pre className='doc-result__text'>{activeEntry.rawText}</pre>
+										</section>
+									) : (
+										<section className='doc-section doc-section--single'>
+											<div className='doc-section__header'>
+												<div className='doc-section__title'>Structured analysis</div>
+												<div className='doc-section__hint'>
+													Тип документа, summary, keywords и entities
 												</div>
-												<div className='doc-analysis__card'>
-													<span className='doc-analysis__label'>Summary</span>
-													<p>
-														{activeEntry.analysis.summary ||
-															"Summary is not available yet."}
-													</p>
+											</div>
+											<div className='doc-analysis'>
+												<div className='doc-analysis__cards'>
+													<div className='doc-analysis__card'>
+														<span className='doc-analysis__label'>Document type</span>
+														<strong>
+															{activeEntry.analysis.documentType || "Unknown"}
+														</strong>
+													</div>
+													<div className='doc-analysis__card'>
+														<span className='doc-analysis__label'>Summary</span>
+														<p>
+															{activeEntry.analysis.summary ||
+																"Summary is not available yet."}
+														</p>
+													</div>
+												</div>
+												<div className='doc-analysis__block'>
+													<div className='doc-analysis__label'>Keywords</div>
+													{activeEntry.analysis.keywords.length > 0 ? (
+														<div className='doc-analysis__keywords'>
+															{activeEntry.analysis.keywords.map((keyword) => (
+																<span key={keyword} className='doc-analysis__keyword'>
+																	{keyword}
+																</span>
+															))}
+														</div>
+													) : (
+														<p className='doc-analysis__empty'>
+															Keywords were not detected.
+														</p>
+													)}
+												</div>
+												<div className='doc-analysis__block'>
+													<div className='doc-analysis__label'>Entities</div>
+													{Object.keys(activeEntry.analysis.entities).length > 0 ? (
+														<div className='doc-analysis__entities'>
+															{Object.entries(activeEntry.analysis.entities).map(
+																([key, value]) => (
+																	<div key={key} className='doc-analysis__entity'>
+																		<span>{key}</span>
+																		<strong>{value}</strong>
+																	</div>
+																)
+															)}
+														</div>
+													) : (
+														<p className='doc-analysis__empty'>
+															Named entities were not detected.
+														</p>
+													)}
 												</div>
 											</div>
-											<div className='doc-analysis__block'>
-												<div className='doc-analysis__label'>Keywords</div>
-												{activeEntry.analysis.keywords.length > 0 ? (
-													<div className='doc-analysis__keywords'>
-														{activeEntry.analysis.keywords.map((keyword) => (
-															<span key={keyword} className='doc-analysis__keyword'>
-																{keyword}
-															</span>
-														))}
-													</div>
-												) : (
-													<p className='doc-analysis__empty'>
-														Keywords were not detected.
-													</p>
-												)}
-											</div>
-											<div className='doc-analysis__block'>
-												<div className='doc-analysis__label'>Entities</div>
-												{Object.keys(activeEntry.analysis.entities).length > 0 ? (
-													<div className='doc-analysis__entities'>
-														{Object.entries(activeEntry.analysis.entities).map(
-															([key, value]) => (
-																<div key={key} className='doc-analysis__entity'>
-																	<span>{key}</span>
-																	<strong>{value}</strong>
-																</div>
-															)
-														)}
-													</div>
-												) : (
-													<p className='doc-analysis__empty'>
-														Named entities were not detected.
-													</p>
-												)}
-											</div>
-										</div>
-									</section>
+										</section>
+									)}
 								</div>
 							) : (
 								<div className='chat-empty doc-empty-state'>
