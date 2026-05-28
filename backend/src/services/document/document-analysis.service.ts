@@ -7,7 +7,8 @@ export class DocumentAnalysisService {
 
 	async analyzeDocument(text: string): Promise<IChatMessage> {
 		const analysisPrompt = promptBuilderService.buildDocumentAnalysisPrompt(text)
-		return await this.llmService.generate({
+
+		const response = await this.llmService.generate({
 			messages: [
 				{
 					role: "system",
@@ -19,5 +20,12 @@ export class DocumentAnalysisService {
 				}
 			]
 		})
+
+		const parsed = JSON.parse(response.content)
+
+		return {
+			role: "assistant",
+			content: JSON.stringify(parsed)
+		}
 	}
 }

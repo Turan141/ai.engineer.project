@@ -18,15 +18,22 @@ import { SQLiteService } from "../storage/sqlite/sqlite.service.js"
 import { SQLiteMessageRepository } from "../storage/sqlite/sqlite-message.repository.js"
 import { SQLiteSummaryRepository } from "../storage/sqlite/sqlite-summary.repository.js"
 import { DocumentService } from "../services/document/document.service.js"
+import { DocumentAnalysisService } from "../services/document/document-analysis.service.js"
+import { DocumentOCRService } from "../services/document/document-ocr.service.js"
 
 export const sqLiteService = new SQLiteService()
+export const llmService = new LLMService()
 export const comfyProvider = new ComfyUIProvider()
 export const presetService = new ImagePresetService()
 export const imageMemory = new ImageMemory()
 export const imageService = new ImageService(comfyProvider, imageMemory)
-export const documentService = new DocumentService()
+export const documentAnalysisService = new DocumentAnalysisService(llmService)
+export const documentOcrService = new DocumentOCRService()
+export const documentService = new DocumentService(
+	documentAnalysisService,
+	documentOcrService
+)
 export const promptBuilderService = new PromptBuilderService()
-export const llmService = new LLMService()
 export const messagesRepository = new SQLiteMessageRepository(sqLiteService)
 export const summaryService = new SummaryService(llmService)
 export const summaryRepository = new SQLiteSummaryRepository(sqLiteService)

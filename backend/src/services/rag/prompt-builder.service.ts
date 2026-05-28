@@ -2,10 +2,24 @@ import type { IChatMessage, ISearchResult } from "../../types/chat.types.js"
 
 export class PromptBuilderService {
 	buildDocumentAnalysisPrompt(documentText: string): string {
-		return `Extract structured information from this document.
-						Return JSON only.
-						Document:
-						${documentText}`
+		return `
+					Analyze the following document and return ONLY valid JSON.
+
+					Do not use markdown.
+					Do not wrap the response in code blocks.
+
+					Return this exact structure:
+
+					{
+						"documentType": "string",
+						"summary": "string",
+						"keywords": ["string"],
+						"entities": {}
+					}
+
+					Document:
+					${documentText}
+		`
 	}
 
 	buildRagPrompt(question: string, context: ISearchResult[]): string {

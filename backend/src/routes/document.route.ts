@@ -25,7 +25,7 @@ documentRouter.post("/document/ocr", upload.single("file"), async (req, res) => 
 			return res.status(400).json({ error: "File is required for OCR processing" })
 		}
 
-		const text = await documentService.extractTextFromImage(req.file.path)
+		const text = await documentService.processDocument(req.file.path)
 
 		if (!text) {
 			return res.status(500).json({ error: "OCR processing failed to extract text" })

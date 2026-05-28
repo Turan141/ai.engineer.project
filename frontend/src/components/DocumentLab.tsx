@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { extractDocumentText } from "../services/document.service"
-import type { IDocumentOcrEntry } from "../types/document.types"
+import { processDocument } from "../services/document.service"
+import type { IDocumentProcessEntry } from "../types/document.types"
 
 const ACCEPTED_FILE_TYPES = "image/png,image/jpeg,image/webp,image/bmp,image/tiff"
 
@@ -18,11 +18,11 @@ function formatFileSize(size: number): string {
 
 export const DocumentLab: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null)
-	const [entries, setEntries] = useState<IDocumentOcrEntry[]>([])
+	const [entries, setEntries] = useState<IDocumentProcessEntry[]>([])
 	const [activeEntryId, setActiveEntryId] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [isCopied, setIsCopied] = useState(false)
+	const [copiedField, setCopiedField] = useState<"text" | "analysis" | null>(null)
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const controllerRef = useRef<AbortController | null>(null)
 	const copyTimeoutRef = useRef<number | null>(null)
@@ -34,7 +34,8 @@ export const DocumentLab: React.FC = () => {
 		return URL.createObjectURL(selectedFile)
 	}, [selectedFile])
 
-	const activeEntry = entries.find((entry) => entry.id === activeEntryId) ?? entries[0] ?? null
+	const activeEntry =
+		entries.find((entry) => entry.id === activeEntryId) ?? entries[0] ?? null
 
 	useEffect(() => {
 		return () => {
@@ -71,13 +72,14 @@ export const DocumentLab: React.FC = () => {
 		controllerRef.current = controller
 
 		try {
-			const result = await extractDocumentText(selectedFile, controller.signal)
-			const nextEntry: IDocumentOcrEntry = {
+				const result = await processDocument(selectedFile, controller.signal)
+				const nextEntry: IDocumentProcessEntry = {
 				id: crypto.randomUUID(),
 				fileName: selectedFile.name,
 				fileSize: selectedFile.size,
 				mimeType: selectedFile.type,
 				text: result.text,
+					analysis: result.analysis,
 				createdAt: new Date()
 			}
 
@@ -104,18 +106,23 @@ export const DocumentLab: React.FC = () => {
 		setError(null)
 	}
 
-	const handleCopy = async () => {
-		if (!activeEntry?.text) {
+	const handleCopy = async (field: "text" | "analysis") => {
+		if (!activeEntry) {
 			return
 		}
 
-		await navigator.clipboard.writeText(activeEntry.text)
-		setIsCopied(true)
+		const value = field === "text" ? activeEntry.text : activeEntry.analysis
+		if (!value) {
+			return
+		}
+
+		await navigator.clipboard.writeText(value)
+		setCopiedField(field)
 		if (copyTimeoutRef.current !== null) {
 			window.clearTimeout(copyTimeoutRef.current)
 		}
 		copyTimeoutRef.current = window.setTimeout(() => {
-			setIsCopied(false)
+			setCopiedField(null)
 			copyTimeoutRef.current = null
 		}, 1600)
 	}
@@ -126,8 +133,11 @@ export const DocumentLab: React.FC = () => {
 				<header className='chat-header'>
 					<div>
 						<div className='chat-eyebrow'>AI engineer pet</div>
-						<h1>Document OCR</h1>
-						<p>Загружай сканы или фото документов и получай извлеченный текст через backend document service.</p>
+						<h1>Document Review</h1>
+						<p>
+							Загружай сканы или фото документов и получай OCR плюс краткий AI-анализ из
+							нового document service.
+						</p>
 					</div>
 					<div className={`chat-status ${isLoading ? "is-live" : ""}`}>
 						<span className='chat-status__dot' />
@@ -142,7 +152,7 @@ export const DocumentLab: React.FC = () => {
 								<div className='chat-composer__title'>Source image</div>
 								<div className='chat-composer__hint'>PNG, JPG, WebP, BMP, TIFF</div>
 							</div>
-							<span className='chat-composer__count'>OCR</span>
+							<span className='chat-composer__count'>OCR + AI</span>
 						</div>
 
 						<input
@@ -165,7 +175,11 @@ export const DocumentLab: React.FC = () => {
 
 						{selectedFile && previewUrl && (
 							<div className='doc-preview'>
-								<img src={previewUrl} alt={selectedFile.name} className='doc-preview__image' />
+								<img
+									src={previewUrl}
+									alt={selectedFile.name}
+									className='doc-preview__image'
+								/>
 								<div className='doc-preview__meta'>
 									<span>{selectedFile.name}</span>
 									<span>{formatFileSize(selectedFile.size)}</span>
@@ -177,12 +191,20 @@ export const DocumentLab: React.FC = () => {
 
 						<div className='chat-actions'>
 							{selectedFile && !isLoading && (
-								<button type='button' className='chat-button chat-button--ghost' onClick={handleClear}>
+								<button
+									type='button'
+									className='chat-button chat-button--ghost'
+									onClick={handleClear}
+								>
 									Clear
 								</button>
 							)}
 							{isLoading ? (
-								<button type='button' className='chat-button chat-button--ghost' onClick={handleStop}>
+								<button
+									type='button'
+									className='chat-button chat-button--ghost'
+									onClick={handleStop}
+								>
 									Stop
 								</button>
 							) : (
@@ -192,7 +214,7 @@ export const DocumentLab: React.FC = () => {
 									disabled={!selectedFile}
 									onClick={handleProcess}
 								>
-									Run OCR
+									Process document
 								</button>
 							)}
 						</div>
@@ -201,37 +223,64 @@ export const DocumentLab: React.FC = () => {
 					<div className='doc-result'>
 						<div className='doc-result__header'>
 							<div>
-								<div className='chat-composer__title'>Extracted text</div>
-								<div className='chat-composer__hint'>Результат активного распознавания</div>
+								<div className='chat-composer__title'>Processing result</div>
+								<div className='chat-composer__hint'>OCR-текст и анализ для активного документа</div>
 							</div>
-							<div className='doc-result__actions'>
-								{activeEntry && (
+							{activeEntry && (
+								<div className='doc-result__actions'>
 									<button
 										type='button'
 										className='chat-button chat-button--ghost chat-button--compact'
-										onClick={() => void handleCopy()}
+										onClick={() => void handleCopy("text")}
 									>
-										{isCopied ? "Copied" : "Copy text"}
+										{copiedField === "text" ? "Copied OCR" : "Copy OCR"}
 									</button>
-								)}
-							</div>
+									<button
+										type='button'
+										className='chat-button chat-button--ghost chat-button--compact'
+										onClick={() => void handleCopy("analysis")}
+										disabled={!activeEntry.analysis}
+									>
+										{copiedField === "analysis" ? "Copied analysis" : "Copy analysis"}
+									</button>
+								</div>
+							)}
 						</div>
 
 						<div className='doc-result__body'>
 							{activeEntry ? (
-								<>
+								<div className='doc-sections'>
 									<div className='doc-result__meta'>
 										<span>{activeEntry.fileName}</span>
 										<span>{activeEntry.createdAt.toLocaleTimeString()}</span>
-										<span>{activeEntry.text.length} chars</span>
+										<span>{activeEntry.text.length} OCR chars</span>
+										<span>{activeEntry.analysis.length} analysis chars</span>
 									</div>
-									<pre className='doc-result__text'>{activeEntry.text}</pre>
-								</>
+									<section className='doc-section'>
+										<div className='doc-section__header'>
+											<div className='doc-section__title'>OCR text</div>
+											<div className='doc-section__hint'>Исходное распознавание</div>
+										</div>
+										<pre className='doc-result__text'>{activeEntry.text}</pre>
+									</section>
+									<section className='doc-section'>
+										<div className='doc-section__header'>
+											<div className='doc-section__title'>AI analysis</div>
+											<div className='doc-section__hint'>Краткие выводы по документу</div>
+										</div>
+										<pre className='doc-result__text doc-result__text--analysis'>
+											{activeEntry.analysis || "Анализ пока пустой."}
+										</pre>
+									</section>
+								</div>
 							) : (
 								<div className='chat-empty doc-empty-state'>
 									<div className='chat-empty__badge'>Output</div>
 									<h2>Пока пусто</h2>
-									<p>Выбери файл и запусти OCR, чтобы увидеть извлеченный текст в этой панели.</p>
+									<p>
+										Выбери файл и запусти обработку, чтобы увидеть OCR-текст и анализ в
+										этой панели.
+									</p>
 								</div>
 							)}
 						</div>
@@ -240,14 +289,17 @@ export const DocumentLab: React.FC = () => {
 
 				<div className='doc-history'>
 					<div className='doc-history__header'>
-						<div className='chat-composer__title'>Recent scans</div>
+						<div className='chat-composer__title'>Recent documents</div>
 						<span className='chat-composer__count'>{entries.length} items</span>
 					</div>
 					{entries.length === 0 ? (
 						<div className='chat-empty doc-history__empty'>
 							<div className='chat-empty__badge'>History</div>
 							<h2>Нет обработанных файлов</h2>
-							<p>После первого OCR здесь появятся последние результаты для быстрого переключения.</p>
+							<p>
+								После первой обработки здесь появятся последние документы для быстрого
+								переключения.
+							</p>
 						</div>
 					) : (
 						<div className='doc-history__grid'>
@@ -262,7 +314,7 @@ export const DocumentLab: React.FC = () => {
 										<span>{entry.fileName}</span>
 										<span>{entry.createdAt.toLocaleTimeString()}</span>
 									</div>
-									<p>{entry.text.slice(0, 180) || "No text extracted"}</p>
+									<p>{entry.analysis.slice(0, 180) || entry.text.slice(0, 180) || "No content extracted"}</p>
 								</button>
 							))}
 						</div>

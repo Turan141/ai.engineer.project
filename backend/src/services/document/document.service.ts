@@ -1,10 +1,12 @@
-import type { DocumentAnalysisService } from "./document-analysis.service.js"
-import type { DocumentOCRService } from "./document-ocr.service.js"
+import type {
+	IDocumentAnalysisService,
+	IDocumentOCRService
+} from "../../types/chat.types.js"
 
 export class DocumentService {
 	constructor(
-		private readonly documentAnalysisService: DocumentAnalysisService,
-		private readonly documentOcrService: DocumentOCRService
+		private readonly documentAnalysisService: IDocumentAnalysisService,
+		private readonly documentOcrService: IDocumentOCRService
 	) {}
 
 	async processDocument(filePath: string): Promise<{ text: string; analysis: string }> {

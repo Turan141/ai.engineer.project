@@ -1,9 +1,17 @@
+import os
 import sys
+
+os.environ["FLAGS_use_mkldnn"] = "0"
+
 from paddleocr import PaddleOCR
 
 image_path = sys.argv[1]
 
-ocr = PaddleOCR(use_angle_cls=True, lang="en")
+ocr = PaddleOCR(
+    use_angle_cls=True,
+    lang="en",
+    show_log=False
+)
 
 result = ocr.ocr(image_path)
 

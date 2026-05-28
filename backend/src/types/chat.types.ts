@@ -29,3 +29,10 @@ export type {
 	IChatMessage,
 	TChatMessageRole
 } from "../shared/interfaces/chat.interface.js"
+
+export type {
+	IDocumentAnalysisResult,
+	IDocumentOCRResult,
+	IDocumentAnalysisService,
+	IDocumentOCRService
+} from "../shared/interfaces/document.interface.js"
