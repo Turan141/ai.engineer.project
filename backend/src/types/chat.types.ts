@@ -1,7 +1,6 @@
 export type { IInitializable } from "../shared/interfaces/common.interface.js"
 
 export type {
-	IChatMessage,
 	IGenerateParams,
 	ILLMProvider,
 	ILMStudioMessage,
@@ -9,8 +8,7 @@ export type {
 	ILMStudioResponse,
 	ILMStudioDelta,
 	ILMStudioStreamChoice,
-	ILMStudioStreamResponse,
-	TChatMessageRole
+	ILMStudioStreamResponse
 } from "../shared/interfaces/llm.interface.js"
 
 export type {
@@ -26,3 +24,8 @@ export type {
 } from "../shared/interfaces/vector-store.interface.js"
 
 export type { IRetrievalStrategy } from "../shared/interfaces/retrieval.interface.js"
+
+export type {
+	IChatMessage,
+	TChatMessageRole
+} from "../shared/interfaces/chat.interface.js"

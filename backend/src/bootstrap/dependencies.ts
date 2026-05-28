@@ -14,9 +14,9 @@ import { InMemoryVectorStore } from "../storage/vector-store/vector.store.servic
 import { ImagePresetService } from "../services/image/iamge-preset.service.js"
 import { ComfyUIProvider } from "../providers/image/comfyui.provider.js"
 import { ImageMemory } from "../storage/repositories/image.repository.js"
-import { MessageMemory } from "../storage/repositories/message.repository.js"
-import { SummaryMemory } from "../storage/repositories/summary.repository.js"
 import { SQLiteService } from "../storage/sqlite/sqlite.service.js"
+import { SQLiteMessageRepository } from "../storage/sqlite/sqlite-message.repository.js"
+import { SQLiteSummaryRepository } from "../storage/sqlite/sqlite-summary.repository.js"
 
 export const sqLiteService = new SQLiteService()
 export const comfyProvider = new ComfyUIProvider()
@@ -25,13 +25,13 @@ export const imageMemory = new ImageMemory()
 export const imageService = new ImageService(comfyProvider, imageMemory)
 export const promptBuilderService = new PromptBuilderService()
 export const llmService = new LLMService()
-export const conversationMemory = new MessageMemory()
+export const messagesRepository = new SQLiteMessageRepository(sqLiteService)
 export const summaryService = new SummaryService(llmService)
-export const summaryMemory = new SummaryMemory()
+export const summaryRepository = new SQLiteSummaryRepository(sqLiteService)
 export const memoryService = new MemoryService(
-	conversationMemory,
-	summaryMemory,
-	summaryService
+	summaryService,
+	messagesRepository,
+	summaryRepository
 )
 export const embeddingProvider = new LMStudioEmbeddingService()
 export const vectorStore = new InMemoryVectorStore(embeddingProvider)

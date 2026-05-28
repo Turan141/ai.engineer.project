@@ -1,11 +1,11 @@
 import type { IChatMessage, TChatMessageRole } from "../../types/chat.types.js"
-import type { IMessageRepository, ISummaryMemory, ISummaryService } from "./types.js"
+import type { IMessageRepository, ISummaryRepository, ISummaryService } from "./types.js"
 
 export class MemoryService {
 	constructor(
-		private readonly conversationMemory: IMessageRepository,
-		private readonly summaryMemory: ISummaryMemory,
 		private readonly summaryService: ISummaryService,
+		private readonly messageRepository: IMessageRepository,
+		private readonly summaryRepository: ISummaryRepository,
 		private readonly MAX_MESSAGES: number = 8,
 		private readonly LAST_SAVED_MESSAGES_COUNT: number = 5
 	) {}
@@ -15,7 +15,7 @@ export class MemoryService {
 		content: string,
 		role: TChatMessageRole
 	): Promise<void> {
-		await this.conversationMemory.addMessage(sessionId, {
+		await this.messageRepository.addMessage(sessionId, {
 			role,
 			content
 		})
@@ -23,23 +23,27 @@ export class MemoryService {
 		void this.checkAndSummarize(sessionId)
 	}
 
+	async getMessages(sessionId: string): Promise<IChatMessage[]> {
+		return this.messageRepository.getMessages(sessionId)
+	}
+
 	async checkAndSummarize(sessionId: string): Promise<void> {
-		const messages = await this.conversationMemory.getMessages(sessionId)
+		const messages = await this.messageRepository.getMessages(sessionId)
 		if (messages.length > this.MAX_MESSAGES) {
-			const summarizedMessages = await this.summaryMemory.getSummary(sessionId)
+			const summarizedMessages = await this.summaryRepository.getSummary(sessionId)
 			const messagesToSummarize = messages.slice(0, -this.LAST_SAVED_MESSAGES_COUNT)
 			const summary = await this.summaryService.generateSummary(
 				summarizedMessages,
 				messagesToSummarize
 			)
-			await this.summaryMemory.addSummary(sessionId, summary)
-			await this.conversationMemory.trim(sessionId, this.LAST_SAVED_MESSAGES_COUNT)
+			await this.summaryRepository.addSummary(sessionId, summary)
+			await this.messageRepository.trim(sessionId, this.LAST_SAVED_MESSAGES_COUNT)
 		}
 	}
 
 	async getConversationContext(sessionId: string): Promise<IChatMessage[]> {
-		const messages = await this.conversationMemory.getMessages(sessionId)
-		const summary = await this.summaryMemory.getSummary(sessionId)
+		const messages = await this.messageRepository.getMessages(sessionId)
+		const summary = await this.summaryRepository.getSummary(sessionId)
 
 		return [
 			...(summary

@@ -1,7 +1,4 @@
-export interface IChatMessage {
-	role: TChatMessageRole
-	content: string
-}
+import type { IChatMessage, TChatMessageRole } from "./chat.interface.js"
 
 export interface IGenerateParams {
 	messages: IChatMessage[]
@@ -39,5 +36,3 @@ export interface ILMStudioStreamChoice {
 export interface ILMStudioStreamResponse {
 	choices: ILMStudioStreamChoice[]
 }
-
-export type TChatMessageRole = "user" | "assistant" | "system"

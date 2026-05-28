@@ -18,6 +18,16 @@ function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
 	return [SYSTEM_MESSAGE, ...messages]
 }
 
+chatRouter.get("/chat/history/:sessionId", async (req, res) => {
+	const { sessionId } = req.params
+	if (typeof sessionId !== "string" || sessionId.trim() === "") {
+		return res.status(400).json({ error: "Session ID is required" })
+	}
+
+	const history = await memoryService.getConversationContext(sessionId)
+	return res.json({ history })
+})
+
 chatRouter.post("/embeddings", async (req, res) => {
 	const { text } = req.body
 
