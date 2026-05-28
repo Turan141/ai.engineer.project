@@ -73,6 +73,42 @@ export async function generateChat({
 	return response.message
 }
 
+function isVisibleChatMessage(message: unknown): message is IChatMessage {
+	if (!message || typeof message !== "object") {
+		return false
+	}
+
+	const candidate = message as { role?: unknown; content?: unknown }
+
+	return (
+		(candidate.role === "user" || candidate.role === "assistant") &&
+		typeof candidate.content === "string"
+	)
+}
+
+export async function getChatHistory(
+	sessionId: string,
+	signal?: AbortSignal
+): Promise<IChatMessage[]> {
+	const res = await fetch(`${API_BASE}/api/chat/history/${encodeURIComponent(sessionId)}`, {
+		signal
+	})
+
+	if (!res.ok) {
+		throw new Error(await getResponseErrorMessage(res))
+	}
+
+	const data = (await res.json()) as {
+		history?: unknown[]
+	}
+
+	if (!Array.isArray(data.history)) {
+		return []
+	}
+
+	return data.history.filter(isVisibleChatMessage)
+}
+
 export async function getDebugMessages(sessionId: string): Promise<IChatMessage[]> {
 	const res = await fetch(
 		`${API_BASE}/api/debug/messages/${encodeURIComponent(sessionId)}`

@@ -3,6 +3,7 @@ import { IChatMessage } from "../types/chat.types"
 import {
 	generateChat,
 	generateEmbedding,
+	getChatHistory,
 	getDebugMessages,
 	streamChat
 } from "../services/chat.service"
@@ -15,6 +16,7 @@ interface IEmbeddingPreview {
 }
 
 const EMBEDDING_PREVIEW_SIZE = 8
+const SESSION_ID_STORAGE_KEY = "ai-engineer-pet-chat-session-id"
 
 function updateLastAssistantMessage(
 	messages: IChatMessage[],
@@ -55,16 +57,51 @@ export const Chat: React.FC = () => {
 	const [input, setInput] = useState("")
 	const [mode, setMode] = useState<TChatMode>("stream")
 	const [isLoading, setIsLoading] = useState(false)
+	const [isHistoryLoading, setIsHistoryLoading] = useState(false)
 	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-	const [sessionId] = useState(() => crypto.randomUUID())
+	const [sessionId] = useState(() => {
+		const storedSessionId = window.localStorage.getItem(SESSION_ID_STORAGE_KEY)?.trim()
+
+		if (storedSessionId) {
+			return storedSessionId
+		}
+
+		const nextSessionId = crypto.randomUUID()
+		window.localStorage.setItem(SESSION_ID_STORAGE_KEY, nextSessionId)
+		return nextSessionId
+	})
 	const [debugMessages, setDebugMessages] = useState<IChatMessage[] | null>(null)
 	const [isDebugLoading, setIsDebugLoading] = useState(false)
 	const [debugError, setDebugError] = useState<string | null>(null)
 	const controllerRef = useRef<AbortController | null>(null)
 	const embeddingControllerRef = useRef<AbortController | null>(null)
 	const messagesRef = useRef<HTMLDivElement | null>(null)
+
+	useEffect(() => {
+		const controller = new AbortController()
+		setIsHistoryLoading(true)
+
+		void getChatHistory(sessionId, controller.signal)
+			.then((loadedMessages) => {
+				setMessages((prev) => (prev.length === 0 ? loadedMessages : prev))
+			})
+			.catch((err: any) => {
+				if (err?.name !== "AbortError") {
+					console.error(err)
+				}
+			})
+			.finally(() => {
+				if (!controller.signal.aborted) {
+					setIsHistoryLoading(false)
+				}
+			})
+
+		return () => {
+			controller.abort()
+		}
+	}, [sessionId])
 
 	useEffect(() => {
 		return () => {
@@ -95,7 +132,7 @@ export const Chat: React.FC = () => {
 	const handleSend = async () => {
 		const trimmed = input.trim()
 
-		if (!trimmed || isLoading) {
+		if (!trimmed || isLoading || isHistoryLoading) {
 			return
 		}
 
@@ -165,7 +202,7 @@ export const Chat: React.FC = () => {
 	const handleGenerateEmbedding = async () => {
 		const trimmed = input.trim()
 
-		if (!trimmed || isEmbeddingLoading) {
+		if (!trimmed || isEmbeddingLoading || isHistoryLoading) {
 			return
 		}
 
@@ -216,6 +253,8 @@ export const Chat: React.FC = () => {
 
 	const statusLabel = isLoading
 		? "Generating"
+		: isHistoryLoading
+			? "Loading history"
 		: isEmbeddingLoading
 			? "Embedding"
 			: "Ready"
@@ -250,7 +289,7 @@ export const Chat: React.FC = () => {
 									type='button'
 									onClick={() => setMode("stream")}
 									className={`chat-pill ${mode === "stream" ? "is-active" : ""}`}
-									disabled={isLoading}
+									disabled={isLoading || isHistoryLoading}
 								>
 									Stream /chat/stream
 								</button>
@@ -258,7 +297,7 @@ export const Chat: React.FC = () => {
 									type='button'
 									onClick={() => setMode("single")}
 									className={`chat-pill ${mode === "single" ? "is-active" : ""}`}
-									disabled={isLoading}
+									disabled={isLoading || isHistoryLoading}
 								>
 									Single /chat
 								</button>
@@ -278,7 +317,7 @@ export const Chat: React.FC = () => {
 									handleGenerateEmbedding()
 									setIsSettingsOpen(false)
 								}}
-								disabled={input.trim() === "" || isEmbeddingLoading}
+								disabled={input.trim() === "" || isEmbeddingLoading || isHistoryLoading}
 								className='chat-button chat-button--ghost'
 							>
 								{isEmbeddingLoading ? "Embedding..." : "Generate /embeddings"}
@@ -382,6 +421,7 @@ export const Chat: React.FC = () => {
 								type='button'
 								className='chat-settings-btn'
 								onClick={() => setIsSettingsOpen(true)}
+								disabled={isHistoryLoading}
 								aria-label='Open options'
 							>
 								<svg
@@ -418,7 +458,7 @@ export const Chat: React.FC = () => {
 						rows={4}
 						className='chat-input'
 						placeholder='Type your message...'
-						disabled={isLoading}
+						disabled={isLoading || isHistoryLoading}
 					/>
 
 					{embeddingPreview && (
@@ -452,7 +492,7 @@ export const Chat: React.FC = () => {
 						<button
 							type='button'
 							onClick={handleSend}
-							disabled={isLoading || input.trim() === ""}
+							disabled={isLoading || isHistoryLoading || input.trim() === ""}
 							className='chat-button chat-button--primary'
 						>
 							Send
