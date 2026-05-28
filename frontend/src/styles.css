@@ -1076,6 +1076,99 @@ textarea {
 	background: linear-gradient(180deg, rgba(78, 135, 245, 0.14), rgba(7, 11, 20, 0.72));
 }
 
+.doc-analysis {
+	display: grid;
+	gap: 12px;
+	padding: 16px;
+	border-radius: 18px;
+	background: linear-gradient(180deg, rgba(78, 135, 245, 0.12), rgba(7, 11, 20, 0.76));
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	overflow: auto;
+	min-height: 0;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.doc-analysis__cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 10px;
+}
+
+.doc-analysis__card,
+.doc-analysis__block {
+	display: grid;
+	gap: 8px;
+	padding: 14px;
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.doc-analysis__label {
+	font-size: 0.74rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: #b8cdf8;
+}
+
+.doc-analysis__card strong {
+	font-size: 1.05rem;
+	letter-spacing: -0.03em;
+}
+
+.doc-analysis__card p,
+.doc-analysis__empty {
+	margin: 0;
+	line-height: 1.6;
+	color: #d9e3f3;
+}
+
+.doc-analysis__keywords {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.doc-analysis__keyword {
+	padding: 7px 10px;
+	border-radius: 999px;
+	background: rgba(255, 209, 102, 0.12);
+	border: 1px solid rgba(255, 209, 102, 0.2);
+	font-size: 0.82rem;
+	color: #fff4d6;
+}
+
+.doc-analysis__entities {
+	display: grid;
+	gap: 10px;
+}
+
+.doc-analysis__entity {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 12px;
+	border-radius: 14px;
+	background: rgba(7, 11, 20, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	align-items: flex-start;
+}
+
+.doc-analysis__entity span {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--muted);
+}
+
+.doc-analysis__entity strong {
+	font-size: 0.9rem;
+	line-height: 1.5;
+	text-align: right;
+	word-break: break-word;
+}
+
 .doc-empty-state,
 .doc-history__empty {
 	min-height: 100%;
@@ -1142,6 +1235,13 @@ textarea {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.doc-history__type {
+	font-size: 0.74rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: #b8cdf8;
 }
 
 .doc-history__card p {
@@ -1262,6 +1362,18 @@ textarea {
 
 	.doc-sections {
 		grid-template-rows: auto repeat(2, minmax(180px, auto));
+	}
+
+	.doc-analysis__cards {
+		grid-template-columns: 1fr;
+	}
+
+	.doc-analysis__entity {
+		flex-direction: column;
+	}
+
+	.doc-analysis__entity strong {
+		text-align: left;
 	}
 
 	.doc-history__grid {

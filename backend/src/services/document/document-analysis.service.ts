@@ -1,11 +1,11 @@
 import { promptBuilderService } from "../../bootstrap/dependencies.js"
-import type { IChatMessage } from "../../types/chat.types.js"
+import type { IDocumentAnalysisResult } from "../../types/chat.types.js"
 import type { LLMService } from "../llm/llm.service.js"
 
 export class DocumentAnalysisService {
 	constructor(private readonly llmService: LLMService) {}
 
-	async analyzeDocument(text: string): Promise<IChatMessage> {
+	async analyzeDocument(text: string): Promise<IDocumentAnalysisResult> {
 		const analysisPrompt = promptBuilderService.buildDocumentAnalysisPrompt(text)
 
 		const response = await this.llmService.generate({
@@ -21,11 +21,11 @@ export class DocumentAnalysisService {
 			]
 		})
 
-		const parsed = JSON.parse(response.content)
-
-		return {
-			role: "assistant",
-			content: JSON.stringify(parsed)
+		try {
+			return JSON.parse(response.content) as IDocumentAnalysisResult
+		} catch (error) {
+			console.error("Failed to parse document analysis response:", error)
+			throw new Error("Document analysis failed: Invalid response format")
 		}
 	}
 }

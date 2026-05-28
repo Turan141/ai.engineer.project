@@ -1,6 +1,13 @@
+export interface IDocumentAnalysisResult {
+	documentType: string
+	summary: string
+	keywords: string[]
+	entities: Record<string, string>
+}
+
 export interface IDocumentProcessResult {
-	text: string
-	analysis: string
+	rawText: string
+	analysis: IDocumentAnalysisResult
 }
 
 export interface IDocumentProcessEntry {
@@ -8,7 +15,7 @@ export interface IDocumentProcessEntry {
 	fileName: string
 	fileSize: number
 	mimeType: string
-	text: string
-	analysis: string
+	rawText: string
+	analysis: IDocumentAnalysisResult
 	createdAt: Date
 }

@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { processDocument } from "../services/document.service"
-import type { IDocumentProcessEntry } from "../types/document.types"
+import type {
+	IDocumentAnalysisResult,
+	IDocumentProcessEntry
+} from "../types/document.types"
 
 const ACCEPTED_FILE_TYPES = "image/png,image/jpeg,image/webp,image/bmp,image/tiff"
 
@@ -16,13 +19,17 @@ function formatFileSize(size: number): string {
 	return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function formatAnalysisForClipboard(analysis: IDocumentAnalysisResult): string {
+	return JSON.stringify(analysis, null, 2)
+}
+
 export const DocumentLab: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null)
 	const [entries, setEntries] = useState<IDocumentProcessEntry[]>([])
 	const [activeEntryId, setActiveEntryId] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [copiedField, setCopiedField] = useState<"text" | "analysis" | null>(null)
+	const [copiedField, setCopiedField] = useState<"rawText" | "analysis" | null>(null)
 	const fileInputRef = useRef<HTMLInputElement | null>(null)
 	const controllerRef = useRef<AbortController | null>(null)
 	const copyTimeoutRef = useRef<number | null>(null)
@@ -72,14 +79,14 @@ export const DocumentLab: React.FC = () => {
 		controllerRef.current = controller
 
 		try {
-				const result = await processDocument(selectedFile, controller.signal)
-				const nextEntry: IDocumentProcessEntry = {
+			const result = await processDocument(selectedFile, controller.signal)
+			const nextEntry: IDocumentProcessEntry = {
 				id: crypto.randomUUID(),
 				fileName: selectedFile.name,
 				fileSize: selectedFile.size,
 				mimeType: selectedFile.type,
-				text: result.text,
-					analysis: result.analysis,
+				rawText: result.rawText,
+				analysis: result.analysis,
 				createdAt: new Date()
 			}
 
@@ -106,18 +113,26 @@ export const DocumentLab: React.FC = () => {
 		setError(null)
 	}
 
-	const handleCopy = async (field: "text" | "analysis") => {
+	const handleCopy = async (field: "rawText" | "analysis") => {
 		if (!activeEntry) {
 			return
 		}
 
-		const value = field === "text" ? activeEntry.text : activeEntry.analysis
+		const value =
+			field === "rawText"
+				? activeEntry.rawText
+				: formatAnalysisForClipboard(activeEntry.analysis)
 		if (!value) {
 			return
 		}
 
-		await navigator.clipboard.writeText(value)
-		setCopiedField(field)
+		try {
+			await navigator.clipboard.writeText(value)
+			setCopiedField(field)
+		} catch {
+			setError("Failed to copy content to clipboard")
+			return
+		}
 		if (copyTimeoutRef.current !== null) {
 			window.clearTimeout(copyTimeoutRef.current)
 		}
@@ -135,8 +150,8 @@ export const DocumentLab: React.FC = () => {
 						<div className='chat-eyebrow'>AI engineer pet</div>
 						<h1>Document Review</h1>
 						<p>
-							Загружай сканы или фото документов и получай OCR плюс краткий AI-анализ из
-							нового document service.
+							Загружай сканы или фото документов и получай OCR плюс структурированный
+							разбор: тип, summary, keywords и entities.
 						</p>
 					</div>
 					<div className={`chat-status ${isLoading ? "is-live" : ""}`}>
@@ -152,7 +167,7 @@ export const DocumentLab: React.FC = () => {
 								<div className='chat-composer__title'>Source image</div>
 								<div className='chat-composer__hint'>PNG, JPG, WebP, BMP, TIFF</div>
 							</div>
-							<span className='chat-composer__count'>OCR + AI</span>
+							<span className='chat-composer__count'>OCR + structured analysis</span>
 						</div>
 
 						<input
@@ -165,7 +180,7 @@ export const DocumentLab: React.FC = () => {
 
 						<button type='button' className='doc-dropzone' onClick={handlePickFile}>
 							<span className='doc-dropzone__eyebrow'>Upload</span>
-							<strong>{selectedFile ? selectedFile.name : "Выбрать файл для OCR"}</strong>
+							<strong>{selectedFile ? selectedFile.name : "Выбрать документ для обработки"}</strong>
 							<span>
 								{selectedFile
 									? `${selectedFile.type || "unknown type"} • ${formatFileSize(selectedFile.size)}`
@@ -224,22 +239,28 @@ export const DocumentLab: React.FC = () => {
 						<div className='doc-result__header'>
 							<div>
 								<div className='chat-composer__title'>Processing result</div>
-								<div className='chat-composer__hint'>OCR-текст и анализ для активного документа</div>
+								<div className='chat-composer__hint'>
+									OCR-текст и структурированный анализ для активного документа
+								</div>
 							</div>
 							{activeEntry && (
 								<div className='doc-result__actions'>
 									<button
 										type='button'
 										className='chat-button chat-button--ghost chat-button--compact'
-										onClick={() => void handleCopy("text")}
+										onClick={() => void handleCopy("rawText")}
 									>
-										{copiedField === "text" ? "Copied OCR" : "Copy OCR"}
+										{copiedField === "rawText" ? "Copied OCR" : "Copy OCR"}
 									</button>
 									<button
 										type='button'
 										className='chat-button chat-button--ghost chat-button--compact'
 										onClick={() => void handleCopy("analysis")}
-										disabled={!activeEntry.analysis}
+										disabled={
+											!activeEntry.analysis.summary &&
+											activeEntry.analysis.keywords.length === 0 &&
+											Object.keys(activeEntry.analysis.entities).length === 0
+										}
 									>
 										{copiedField === "analysis" ? "Copied analysis" : "Copy analysis"}
 									</button>
@@ -253,24 +274,63 @@ export const DocumentLab: React.FC = () => {
 									<div className='doc-result__meta'>
 										<span>{activeEntry.fileName}</span>
 										<span>{activeEntry.createdAt.toLocaleTimeString()}</span>
-										<span>{activeEntry.text.length} OCR chars</span>
-										<span>{activeEntry.analysis.length} analysis chars</span>
+										<span>{activeEntry.rawText.length} OCR chars</span>
+										<span>{activeEntry.analysis.keywords.length} keywords</span>
+										<span>{Object.keys(activeEntry.analysis.entities).length} entities</span>
 									</div>
 									<section className='doc-section'>
 										<div className='doc-section__header'>
 											<div className='doc-section__title'>OCR text</div>
 											<div className='doc-section__hint'>Исходное распознавание</div>
 										</div>
-										<pre className='doc-result__text'>{activeEntry.text}</pre>
+										<pre className='doc-result__text'>{activeEntry.rawText}</pre>
 									</section>
 									<section className='doc-section'>
 										<div className='doc-section__header'>
-											<div className='doc-section__title'>AI analysis</div>
-											<div className='doc-section__hint'>Краткие выводы по документу</div>
+											<div className='doc-section__title'>Structured analysis</div>
+											<div className='doc-section__hint'>Тип документа, summary, keywords и entities</div>
 										</div>
-										<pre className='doc-result__text doc-result__text--analysis'>
-											{activeEntry.analysis || "Анализ пока пустой."}
-										</pre>
+										<div className='doc-analysis'>
+											<div className='doc-analysis__cards'>
+												<div className='doc-analysis__card'>
+													<span className='doc-analysis__label'>Document type</span>
+													<strong>{activeEntry.analysis.documentType || "Unknown"}</strong>
+												</div>
+												<div className='doc-analysis__card'>
+													<span className='doc-analysis__label'>Summary</span>
+													<p>{activeEntry.analysis.summary || "Summary is not available yet."}</p>
+												</div>
+											</div>
+											<div className='doc-analysis__block'>
+												<div className='doc-analysis__label'>Keywords</div>
+												{activeEntry.analysis.keywords.length > 0 ? (
+													<div className='doc-analysis__keywords'>
+														{activeEntry.analysis.keywords.map((keyword) => (
+															<span key={keyword} className='doc-analysis__keyword'>
+																{keyword}
+															</span>
+														))}
+													</div>
+												) : (
+													<p className='doc-analysis__empty'>Keywords were not detected.</p>
+												)}
+											</div>
+											<div className='doc-analysis__block'>
+												<div className='doc-analysis__label'>Entities</div>
+												{Object.keys(activeEntry.analysis.entities).length > 0 ? (
+													<div className='doc-analysis__entities'>
+														{Object.entries(activeEntry.analysis.entities).map(([key, value]) => (
+															<div key={key} className='doc-analysis__entity'>
+																<span>{key}</span>
+																<strong>{value}</strong>
+															</div>
+														))}
+													</div>
+												) : (
+													<p className='doc-analysis__empty'>Named entities were not detected.</p>
+												)}
+											</div>
+										</div>
 									</section>
 								</div>
 							) : (
@@ -314,7 +374,14 @@ export const DocumentLab: React.FC = () => {
 										<span>{entry.fileName}</span>
 										<span>{entry.createdAt.toLocaleTimeString()}</span>
 									</div>
-									<p>{entry.analysis.slice(0, 180) || entry.text.slice(0, 180) || "No content extracted"}</p>
+									{entry.analysis.documentType && (
+										<div className='doc-history__type'>{entry.analysis.documentType}</div>
+									)}
+									<p>
+										{entry.analysis.summary.slice(0, 180) ||
+											entry.rawText.slice(0, 180) ||
+											"No content extracted"}
+									</p>
 								</button>
 							))}
 						</div>

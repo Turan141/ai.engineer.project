@@ -1,13 +1,15 @@
 export interface IDocumentAnalysisResult {
-	text: string
-	analysis: string
+	documentType: string
+	summary: string
+	keywords: string[]
+	entities: Record<string, string>
 }
 export interface IDocumentOCRResult {
 	text: string
 }
 
 export interface IDocumentAnalysisService {
-	analyzeDocument(text: string): Promise<{ content: string }>
+	analyzeDocument(text: string): Promise<IDocumentAnalysisResult>
 }
 
 export interface IDocumentOCRService {
