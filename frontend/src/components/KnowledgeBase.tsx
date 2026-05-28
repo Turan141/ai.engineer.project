@@ -92,8 +92,8 @@ export const KnowledgeBase: React.FC = () => {
 						<div className='chat-eyebrow'>RAG Knowledge Base</div>
 						<h1>Knowledge</h1>
 						<p>
-							Загружай документы в векторное хранилище. Они будут доступны ИИ при
-							ответах в чате.
+							Загружай документы в векторное хранилище. Они будут доступны ИИ при ответах
+							в чате.
 						</p>
 					</div>
 
@@ -155,7 +155,9 @@ export const KnowledgeBase: React.FC = () => {
 
 					<div className='kb-dropzone__copy'>
 						<strong>Перетащи файлы или кликни для выбора</strong>
-						<span>Поддерживаются: {ACCEPTED.join(", ")} · несколько файлов одновременно</span>
+						<span>
+							Поддерживаются: {ACCEPTED.join(", ")} · несколько файлов одновременно
+						</span>
 					</div>
 				</div>
 

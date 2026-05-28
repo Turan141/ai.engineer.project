@@ -38,16 +38,26 @@ export class SQLiteVectorRepository implements IVectorStore {
 			.getDb()
 			.prepare(
 				`
-            SELECT dc.id, dc.content, dc.document_id, ce.embedding
-            FROM chunk_embeddings ce
-            JOIN document_chunks dc ON dc.rowid = ce.rowid
-            WHERE vss_search(ce.embedding, ?)
-            LIMIT ?
+          SELECT
+            dc.id,
+            dc.content,
+            dc.document_id,
+            distance
+          FROM chunk_embeddings ce
+          JOIN document_chunks dc
+            ON dc.rowid = ce.rowid
+          WHERE ce.embedding MATCH ?
+            AND k = ${topK}
+          ORDER BY distance
         `
 			)
-			.all(JSON.stringify(embedding), topK) as any[]
+			.all(JSON.stringify(embedding)) as Array<{
+			id: string
+			content: string
+			document_id: string
+			distance: number
+		}>
 
-		// Маппинг в ISearchResult
 		return rows.map((row) => ({
 			document: {
 				id: row.id,
@@ -56,7 +66,7 @@ export class SQLiteVectorRepository implements IVectorStore {
 				embedding: [],
 				metadata: { title: row.document_id, chunkIndex: 0 }
 			},
-			score: cosineSimilarity(embedding, JSON.parse(row.embedding))
+			score: 1 - row.distance
 		}))
 	}
 }

@@ -1020,8 +1020,15 @@ textarea {
 }
 
 @keyframes kb-pulse {
-	0%, 100% { opacity: 1; transform: scale(1); }
-	50% { opacity: 0.55; transform: scale(0.8); }
+	0%,
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.55;
+		transform: scale(0.8);
+	}
 }
 
 /* Drop zone */
@@ -1032,11 +1039,7 @@ textarea {
 	padding: 24px 28px;
 	border: 1.5px dashed rgba(78, 135, 245, 0.3);
 	border-radius: 24px;
-	background: linear-gradient(
-		135deg,
-		rgba(78, 135, 245, 0.06),
-		rgba(138, 76, 255, 0.04)
-	);
+	background: linear-gradient(135deg, rgba(78, 135, 245, 0.06), rgba(138, 76, 255, 0.04));
 	cursor: pointer;
 	text-align: left;
 	color: var(--text-strong);
@@ -1050,11 +1053,7 @@ textarea {
 .kb-dropzone:hover,
 .kb-dropzone.is-over {
 	border-color: rgba(78, 135, 245, 0.65);
-	background: linear-gradient(
-		135deg,
-		rgba(78, 135, 245, 0.12),
-		rgba(138, 76, 255, 0.08)
-	);
+	background: linear-gradient(135deg, rgba(78, 135, 245, 0.12), rgba(138, 76, 255, 0.08));
 	transform: translateY(-2px);
 	box-shadow: 0 8px 32px rgba(78, 135, 245, 0.14);
 }
@@ -1074,7 +1073,9 @@ textarea {
 	border: 1px solid rgba(78, 135, 245, 0.2);
 	color: #a0bcf8;
 	flex-shrink: 0;
-	transition: background 180ms ease, transform 180ms ease;
+	transition:
+		background 180ms ease,
+		transform 180ms ease;
 }
 
 .kb-dropzone:hover .kb-dropzone__icon,
@@ -1199,7 +1200,9 @@ textarea {
 }
 
 @keyframes kb-spin {
-	to { transform: rotate(360deg); }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .kb-item__info {
