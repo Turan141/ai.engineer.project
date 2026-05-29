@@ -1,22 +1,12 @@
 import { Router } from "express"
-import multer from "multer"
 import { documentService, knowledgeBase } from "../bootstrap/dependencies.js"
+import { createUpload } from "../utils/file-uploader.js"
 
 export const documentRouter = Router()
 
-const upload = multer({
-	// storage: multer.memoryStorage()
-	storage: multer.diskStorage({
-		destination: "uploads/knowledge",
-		filename: (_, file, cb) => {
-			cb(null, file.originalname)
-		}
-	})
-})
-
 documentRouter.post(
 	"/document/uploadKnowledge",
-	upload.single("file"),
+	createUpload("knowledge").single("file"),
 	async (req, res) => {
 		try {
 			const { file } = req
@@ -43,26 +33,30 @@ documentRouter.delete("/document/deleteAllKnowledge", async (req, res) => {
 	}
 })
 
-documentRouter.post("/document/ocr", upload.single("file"), async (req, res) => {
-	try {
-		const { file } = req
-		if (!file) {
-			return res.status(400).json({ error: "File is required for OCR processing" })
+documentRouter.post(
+	"/document/ocr",
+	createUpload("ocr").single("file"),
+	async (req, res) => {
+		try {
+			const { file } = req
+			if (!file) {
+				return res.status(400).json({ error: "File is required for OCR processing" })
+			}
+
+			if (!req.file) {
+				return res.status(400).json({ error: "File is required for OCR processing" })
+			}
+
+			const text = await documentService.processDocument(req.file.path)
+
+			if (!text) {
+				return res.status(500).json({ error: "OCR processing failed to extract text" })
+			}
+
+			res.json({ success: true, text })
+		} catch (error) {
+			console.error("Error processing OCR:", error)
+			return res.status(500).json({ error: "Failed to process OCR" })
 		}
-
-		if (!req.file) {
-			return res.status(400).json({ error: "File is required for OCR processing" })
-		}
-
-		const text = await documentService.processDocument(req.file.path)
-
-		if (!text) {
-			return res.status(500).json({ error: "OCR processing failed to extract text" })
-		}
-
-		res.json({ success: true, text })
-	} catch (error) {
-		console.error("Error processing OCR:", error)
-		return res.status(500).json({ error: "Failed to process OCR" })
 	}
-})
+)
