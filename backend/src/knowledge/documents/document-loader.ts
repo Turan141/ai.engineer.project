@@ -3,7 +3,7 @@ import path from "path"
 import { promises as fs } from "fs"
 
 export class FileSystemDocumentLoader implements IDocumentLoader {
-	private readonly supportedExtensions = [".md"]
+	private readonly supportedExtensions = [".md", ".pdf", ".txt"]
 
 	async loadDocuments(file: Express.Multer.File): Promise<IDocument[]> {
 		const ext = path.extname(file.originalname).toLowerCase()
