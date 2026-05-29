@@ -5,7 +5,7 @@ import type {
 	IDocumentProcessEntry
 } from "../types/document.types"
 
-const ACCEPTED_FILE_TYPES = "image/png,image/jpeg,image/webp,image/bmp,image/tiff"
+const ACCEPTED_FILE_TYPES = "image/png,image/jpeg,image/webp,image/bmp,image/tiff,application/pdf"
 type TResultTab = "ocr" | "analysis"
 
 function formatFileSize(size: number): string {
@@ -183,11 +183,19 @@ export const DocumentLab: React.FC = () => {
 
 						{selectedFile && previewUrl && (
 							<div className='doc-preview'>
-								<img
-									src={previewUrl}
-									alt={selectedFile.name}
-									className='doc-preview__image'
-								/>
+								{selectedFile.type === "application/pdf" ? (
+									<iframe
+										src={previewUrl}
+										title={selectedFile.name}
+										className='doc-preview__pdf'
+									/>
+								) : (
+									<img
+										src={previewUrl}
+										alt={selectedFile.name}
+										className='doc-preview__image'
+									/>
+								)}
 								<div className='doc-preview__meta'>
 									<span>{selectedFile.name}</span>
 									<span>{formatFileSize(selectedFile.size)}</span>
@@ -256,7 +264,9 @@ export const DocumentLab: React.FC = () => {
 											<span>{entry.createdAt.toLocaleTimeString()}</span>
 										</div>
 										{entry.analysis.documentType && (
-											<div className='doc-history__type'>{entry.analysis.documentType}</div>
+											<div className='doc-history__type'>
+												{entry.analysis.documentType}
+											</div>
 										)}
 										<p>
 											{entry.analysis.summary.slice(0, 180) ||
