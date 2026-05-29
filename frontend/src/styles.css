@@ -1862,6 +1862,15 @@ textarea {
 	max-width: 640px;
 }
 
+/* uploader + history side by side */
+.doc-workspace--with-history {
+	grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+}
+
+.doc-workspace--with-history .doc-history__grid {
+	grid-template-columns: 1fr;
+}
+
 @keyframes skeleton-pulse {
 	0%,
 	100% {

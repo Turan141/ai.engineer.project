@@ -151,7 +151,7 @@ export const DocumentLab: React.FC = () => {
 					</div>
 				</header>
 
-				<div className='doc-workspace doc-workspace--single'>
+				<div className='doc-workspace doc-workspace--with-history'>
 					<div className='chat-composer doc-uploader'>
 						<div className='chat-composer__topline'>
 							<div>
@@ -227,47 +227,47 @@ export const DocumentLab: React.FC = () => {
 							)}
 						</div>
 					</div>
-				</div>
 
-				<div className='doc-history'>
-					<div className='doc-history__header'>
-						<div className='chat-composer__title'>Recent documents</div>
-						<span className='chat-composer__count'>{entries.length} items</span>
+					<div className='doc-history'>
+						<div className='doc-history__header'>
+							<div className='chat-composer__title'>Recent documents</div>
+							<span className='chat-composer__count'>{entries.length} items</span>
+						</div>
+						{entries.length === 0 ? (
+							<div className='chat-empty doc-history__empty'>
+								<div className='chat-empty__badge'>History</div>
+								<h2>Нет обработанных файлов</h2>
+								<p>
+									После первой обработки здесь появятся последние документы для быстрого
+									переключения.
+								</p>
+							</div>
+						) : (
+							<div className='doc-history__grid'>
+								{entries.map((entry) => (
+									<button
+										key={entry.id}
+										type='button'
+										className={`doc-history__card ${entry.id === modalEntry?.id ? "is-active" : ""}`}
+										onClick={() => handleSelectEntry(entry)}
+									>
+										<div className='doc-history__meta'>
+											<span>{entry.fileName}</span>
+											<span>{entry.createdAt.toLocaleTimeString()}</span>
+										</div>
+										{entry.analysis.documentType && (
+											<div className='doc-history__type'>{entry.analysis.documentType}</div>
+										)}
+										<p>
+											{entry.analysis.summary.slice(0, 180) ||
+												entry.rawText.slice(0, 180) ||
+												"No content extracted"}
+										</p>
+									</button>
+								))}
+							</div>
+						)}
 					</div>
-					{entries.length === 0 ? (
-						<div className='chat-empty doc-history__empty'>
-							<div className='chat-empty__badge'>History</div>
-							<h2>Нет обработанных файлов</h2>
-							<p>
-								После первой обработки здесь появятся последние документы для быстрого
-								переключения.
-							</p>
-						</div>
-					) : (
-						<div className='doc-history__grid'>
-							{entries.map((entry) => (
-								<button
-									key={entry.id}
-									type='button'
-									className={`doc-history__card ${entry.id === modalEntry?.id ? "is-active" : ""}`}
-									onClick={() => handleSelectEntry(entry)}
-								>
-									<div className='doc-history__meta'>
-										<span>{entry.fileName}</span>
-										<span>{entry.createdAt.toLocaleTimeString()}</span>
-									</div>
-									{entry.analysis.documentType && (
-										<div className='doc-history__type'>{entry.analysis.documentType}</div>
-									)}
-									<p>
-										{entry.analysis.summary.slice(0, 180) ||
-											entry.rawText.slice(0, 180) ||
-											"No content extracted"}
-									</p>
-								</button>
-							))}
-						</div>
-					)}
 				</div>
 			</section>
 
