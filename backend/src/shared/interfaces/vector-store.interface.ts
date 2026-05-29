@@ -23,4 +23,5 @@ export interface IRAGResponse {
 export interface IVectorStore {
 	addDocument(document: IVectorDocument): Promise<void>
 	search(embedding: string, topK?: number): Promise<ISearchResult[]>
+	clearAllKnowledge(): Promise<void>
 }

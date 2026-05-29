@@ -12,7 +12,7 @@ export interface IChunk {
 }
 
 export interface IDocumentLoader {
-	loadDocuments(path: string): Promise<IDocument[]>
+	loadDocuments(path: Express.Multer.File): Promise<IDocument[]>
 }
 
 export interface ITextSplitter {

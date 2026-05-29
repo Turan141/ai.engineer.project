@@ -8,12 +8,11 @@ export class KnowledgeBase {
 		private readonly vectorStore: IVectorStore
 	) {}
 
-	async ingest(folderPath: string): Promise<void> {
-		const documents = await this.loader.loadDocuments(folderPath)
+	async ingest(file: Express.Multer.File): Promise<void> {
+		const documents = await this.loader.loadDocuments(file)
 
 		for (const doc of documents) {
 			const chunks = this.splitter.split(doc)
-
 			for (const chunk of chunks) {
 				await this.vectorStore.addDocument({
 					id: chunk.id,
@@ -26,6 +25,22 @@ export class KnowledgeBase {
 					}
 				})
 			}
+		}
+	}
+
+	async deleteAllKnowledge(): Promise<void> {
+		const fs = await import("fs/promises")
+		const path = await import("path")
+
+		this.vectorStore.clearAllKnowledge()
+
+		const uploadsDir = path.resolve(process.cwd(), "uploads")
+		try {
+			const files = await fs.readdir(uploadsDir)
+			await Promise.all(files.map((file) => fs.unlink(path.join(uploadsDir, file))))
+		} catch (error) {
+			console.error("Error deleting knowledge files:", error)
+			throw new Error("Failed to delete knowledge")
 		}
 	}
 }

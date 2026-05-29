@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react"
-import { uploadToKnowledgeBase } from "../services/knowledge.service"
+import { deleteAllKnowledge, uploadToKnowledgeBase } from "../services/knowledge.service"
 
 type TUploadStatus = "idle" | "uploading" | "done" | "error"
 
@@ -21,6 +21,7 @@ const ACCEPTED = [".md", ".txt"]
 export const KnowledgeBase: React.FC = () => {
 	const [entries, setEntries] = useState<IUploadEntry[]>([])
 	const [isDragOver, setIsDragOver] = useState(false)
+	const [isDeleting, setIsDeleting] = useState(false)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const updateEntry = (id: string, patch: Partial<IUploadEntry>) => {
@@ -79,6 +80,20 @@ export const KnowledgeBase: React.FC = () => {
 		setEntries((prev) => prev.filter((e) => e.id !== id))
 	}
 
+	const handleDeleteAll = async () => {
+		if (!confirm("Удалить всю базу знаний? Это действие нельзя отменить.")) return
+		setIsDeleting(true)
+		try {
+			await deleteAllKnowledge()
+			setEntries([])
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : "Delete failed"
+			alert(msg)
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
 	const doneCount = entries.filter((e) => e.status === "done").length
 	const errorCount = entries.filter((e) => e.status === "error").length
 	const uploadingCount = entries.filter((e) => e.status === "uploading").length
@@ -113,6 +128,16 @@ export const KnowledgeBase: React.FC = () => {
 							</div>
 						)}
 					</div>
+
+					<button
+						type='button'
+						className='kb-delete-all'
+						onClick={() => void handleDeleteAll()}
+						disabled={isDeleting}
+						aria-label='Delete all knowledge'
+					>
+						{isDeleting ? "Удаление..." : "Очистить базу"}
+					</button>
 				</header>
 
 				{/* Drop zone */}

@@ -1,5 +1,4 @@
 import { config } from "../config/config.js"
-import { FileSystemDocumentLoader } from "../knowledge/loaders/document-loader.js"
 import { KnowledgeBase } from "../knowledge/documents/knowledge-base.js"
 import { RecursiveTextSplitter } from "../knowledge/splitters/recursitve-text-splitter.js"
 import { MemoryService } from "../services/memory/memory.service.js"
@@ -20,6 +19,7 @@ import { DocumentService } from "../services/document/document.service.js"
 import { DocumentAnalysisService } from "../services/document/document-analysis.service.js"
 import { DocumentOCRService } from "../services/document/document-ocr.service.js"
 import { SQLiteVectorRepository } from "../storage/sqlite/sq-lite-vectors.repository.js"
+import { FileSystemDocumentLoader } from "../knowledge/documents/document-loader.js"
 
 export const sqLiteService = new SQLiteService()
 export const llmService = new LLMService()

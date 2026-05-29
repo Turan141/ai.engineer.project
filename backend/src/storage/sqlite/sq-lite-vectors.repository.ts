@@ -4,7 +4,6 @@ import type {
 	IVectorDocument,
 	ISearchResult
 } from "../../types/chat.types.js"
-import { cosineSimilarity } from "../../utils/cosine-similarity.js"
 import type { SQLiteService } from "./sqlite.service.js"
 
 export class SQLiteVectorRepository implements IVectorStore {
@@ -20,7 +19,7 @@ export class SQLiteVectorRepository implements IVectorStore {
 		const result = this.sqliteService
 			.getDb()
 			.prepare(
-				`INSERT INTO document_chunks (id, document_id, content, created_at)
+				`INSERT OR REPLACE INTO document_chunks (id, document_id, content, created_at)
                       VALUES (?, ?, ?, ?)`
 			)
 			.run(id, source, content, Date.now())
@@ -28,7 +27,12 @@ export class SQLiteVectorRepository implements IVectorStore {
 		this.sqliteService
 			.getDb()
 			.prepare(`INSERT INTO chunk_embeddings (rowid, embedding) VALUES (?, ?)`)
-			.run(result.lastInsertRowid, JSON.stringify(embedding))
+			.run(BigInt(result.lastInsertRowid), new Float32Array(embedding))
+	}
+
+	async clearAllKnowledge(): Promise<void> {
+		this.sqliteService.getDb().prepare(`DELETE FROM document_chunks`).run()
+		this.sqliteService.getDb().prepare(`DELETE FROM chunk_embeddings`).run()
 	}
 
 	async search(query: string, topK: number = 5): Promise<ISearchResult[]> {
@@ -66,7 +70,7 @@ export class SQLiteVectorRepository implements IVectorStore {
 				embedding: [],
 				metadata: { title: row.document_id, chunkIndex: 0 }
 			},
-			score: 1 - row.distance
+			score: row.distance
 		}))
 	}
 }

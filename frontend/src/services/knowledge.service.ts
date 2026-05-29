@@ -17,6 +17,18 @@ async function getResponseErrorMessage(res: Response): Promise<string> {
 	return `Network error: ${res.status} ${res.statusText}`
 }
 
+export async function deleteAllKnowledge(signal?: AbortSignal): Promise<void> {
+	const res = await fetch(`${API_BASE}/api/document/deleteAllKnowledge`, {
+		method: "DELETE",
+		signal
+	})
+
+	if (!res.ok) {
+		const msg = await getResponseErrorMessage(res)
+		throw new Error(msg)
+	}
+}
+
 export async function uploadToKnowledgeBase(
 	file: File,
 	signal?: AbortSignal
