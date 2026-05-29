@@ -141,18 +141,13 @@ export const DocumentLab: React.FC = () => {
 		<div className='chat-shell chat-shell--document'>
 			<section className='chat-panel chat-panel--document doc-panel'>
 				<header className='chat-header'>
-					<div className='doc-header-copy'>
+					<div>
 						<div className='chat-eyebrow'>AI engineer pet</div>
 						<h1>Document Review</h1>
 						<p>
 							Загружай сканы или фото документов и получай OCR плюс структурированный
 							разбор: тип, summary, keywords и entities.
 						</p>
-						<div className='doc-header-highlights'>
-							<span className='doc-header-chip'>OCR</span>
-							<span className='doc-header-chip'>Summary</span>
-							<span className='doc-header-chip'>Entities</span>
-						</div>
 					</div>
 					<div className={`chat-status ${isLoading ? "is-live" : ""}`}>
 						<span className='chat-status__dot' />

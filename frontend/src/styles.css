@@ -1298,30 +1298,6 @@ textarea {
 	padding: 20px;
 }
 
-.doc-header-copy {
-	display: grid;
-	gap: 10px;
-}
-
-.doc-header-highlights {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-
-.doc-header-chip {
-	display: inline-flex;
-	align-items: center;
-	padding: 6px 10px;
-	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.05);
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	font-size: 0.72rem;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: #cdd9ee;
-}
-
 .chat-panel--document {
 	grid-template-rows: auto minmax(0, 1fr) minmax(120px, auto);
 }
