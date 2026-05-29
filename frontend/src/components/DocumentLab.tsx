@@ -139,7 +139,7 @@ export const DocumentLab: React.FC = () => {
 
 	return (
 		<div className='chat-shell'>
-			<section className='chat-panel doc-panel'>
+			<section className='chat-panel'>
 				<header className='chat-header'>
 					<div>
 						<div className='chat-eyebrow'>AI engineer pet</div>
