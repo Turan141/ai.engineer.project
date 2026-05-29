@@ -1277,10 +1277,9 @@ textarea {
    ════════════════════════════════════════ */
 
 .doc-panel {
-	grid-template-rows: auto minmax(0, 1fr) minmax(120px, 0.62fr);
+	grid-template-rows: auto minmax(0, 1fr);
 	gap: 14px;
 	padding: 20px;
-	max-height: calc(100dvh - 120px);
 }
 
 .doc-header-copy {
@@ -1307,20 +1306,8 @@ textarea {
 	color: #cdd9ee;
 }
 
-.chat-shell--document {
-	align-items: stretch;
-	justify-content: stretch;
-	padding: 18px 20px 20px;
-	max-width: none;
-}
-
 .chat-panel--document {
-	width: 100%;
-	max-width: none;
-	height: 100%;
-	max-height: calc(100dvh - 106px);
-	margin: 0;
-	border-radius: 30px;
+	grid-template-rows: auto minmax(0, 1fr) minmax(120px, auto);
 }
 
 .doc-workspace {
@@ -2006,11 +1993,6 @@ textarea {
 
 	.chat-shell--document {
 		padding: 6px;
-	}
-
-	.chat-panel--document {
-		max-height: none;
-		border-radius: 14px;
 	}
 
 	.doc-uploader {

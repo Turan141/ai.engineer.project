@@ -33,6 +33,11 @@ documentRouter.delete("/document/deleteAllKnowledge", async (req, res) => {
 	}
 })
 
+documentRouter.get("/document/hisotry", async (req, res) => {
+	const documents = await knowledgeBase.getIngestedDocuments()
+	res.json({ success: true, documents: [] })
+})
+
 documentRouter.post(
 	"/document/ocr",
 	createUpload("ocr").single("file"),

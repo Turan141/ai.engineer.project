@@ -5,7 +5,8 @@ import type {
 	IDocumentProcessEntry
 } from "../types/document.types"
 
-const ACCEPTED_FILE_TYPES = "image/png,image/jpeg,image/webp,image/bmp,image/tiff,application/pdf"
+const ACCEPTED_FILE_TYPES =
+	"image/png,image/jpeg,image/webp,image/bmp,image/tiff,application/pdf"
 type TResultTab = "ocr" | "analysis"
 
 function formatFileSize(size: number): string {
