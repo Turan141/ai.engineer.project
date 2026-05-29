@@ -138,6 +138,20 @@ export async function generateEmbedding(
 	return response.embedding
 }
 
+export async function clearChatHistory(
+	sessionId: string,
+	signal?: AbortSignal
+): Promise<void> {
+	const res = await fetch(
+		`${API_BASE}/api/chat/messages/${encodeURIComponent(sessionId)}`,
+		{ method: "DELETE", signal }
+	)
+
+	if (!res.ok) {
+		throw new Error(await getResponseErrorMessage(res))
+	}
+}
+
 export async function streamChat({
 	sessionId,
 	message,

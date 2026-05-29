@@ -85,6 +85,20 @@ chatRouter.post("/chat", async (req, res) => {
 	}
 })
 
+chatRouter.delete("/chat/messages/:sessionId", async (req, res) => {
+	const { sessionId } = req.params
+	if (typeof sessionId !== "string" || sessionId.trim() === "") {
+		return res.status(400).json({ error: "Session ID is required" })
+	}
+	try {
+		await memoryService.clearConversationContext(sessionId)
+		return res.json({ success: true, message: "Conversation context cleared" })
+	} catch (error) {
+		console.error("Error clearing conversation context:", error)
+		return res.status(500).json({ error: "Failed to clear conversation context" })
+	}
+})
+
 chatRouter.get("/debug/messages/:sessionId", async (req, res) => {
 	const { sessionId } = req.params
 	if (typeof sessionId !== "string" || sessionId.trim() === "") {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { IChatMessage } from "../types/chat.types"
 import {
+	clearChatHistory,
 	generateChat,
 	generateEmbedding,
 	getChatHistory,
@@ -59,6 +60,7 @@ export const Chat: React.FC = () => {
 	const [isLoading, setIsLoading] = useState(false)
 	const [isHistoryLoading, setIsHistoryLoading] = useState(false)
 	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
+	const [isClearing, setIsClearing] = useState(false)
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 	const [sessionId] = useState(() => {
@@ -128,6 +130,20 @@ export const Chat: React.FC = () => {
 		document.addEventListener("keydown", handleEscape)
 		return () => document.removeEventListener("keydown", handleEscape)
 	}, [isSettingsOpen])
+
+	const handleClearChat = async () => {
+		if (!confirm("Очистить историю чата?")) return
+		setIsClearing(true)
+		try {
+			await clearChatHistory(sessionId)
+			setMessages([])
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : "Clear failed"
+			alert(msg)
+		} finally {
+			setIsClearing(false)
+		}
+	}
 
 	const handleSend = async () => {
 		const trimmed = input.trim()
@@ -375,6 +391,15 @@ export const Chat: React.FC = () => {
 						<span className='chat-status__dot' />
 						{statusLabel}
 					</div>
+					<button
+						type='button'
+						className='kb-delete-all'
+						onClick={() => void handleClearChat()}
+						disabled={isClearing || isLoading}
+						aria-label='Clear chat history'
+					>
+						{isClearing ? "Очистка..." : "Очистить чат"}
+					</button>
 				</header>
 
 				<div className='chat-thread' ref={messagesRef}>

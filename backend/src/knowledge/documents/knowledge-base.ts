@@ -34,7 +34,7 @@ export class KnowledgeBase {
 
 		this.vectorStore.clearAllKnowledge()
 
-		const uploadsDir = path.resolve(process.cwd(), "uploads")
+		const uploadsDir = path.resolve(process.cwd(), "uploads/knowledge")
 		try {
 			const files = await fs.readdir(uploadsDir)
 			await Promise.all(files.map((file) => fs.unlink(path.join(uploadsDir, file))))

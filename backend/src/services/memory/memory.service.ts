@@ -41,6 +41,11 @@ export class MemoryService {
 		}
 	}
 
+	async clearConversationContext(sessionId: string): Promise<void> {
+		await this.messageRepository.trim(sessionId, 0)
+		await this.summaryRepository.clear(sessionId)
+	}
+
 	async getConversationContext(sessionId: string): Promise<IChatMessage[]> {
 		const messages = await this.messageRepository.getMessages(sessionId)
 		const summary = await this.summaryRepository.getSummary(sessionId)

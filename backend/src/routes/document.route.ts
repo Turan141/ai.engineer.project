@@ -7,7 +7,7 @@ export const documentRouter = Router()
 const upload = multer({
 	// storage: multer.memoryStorage()
 	storage: multer.diskStorage({
-		destination: "uploads/",
+		destination: "uploads/knowledge",
 		filename: (_, file, cb) => {
 			cb(null, file.originalname)
 		}
