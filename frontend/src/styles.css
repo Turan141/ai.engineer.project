@@ -688,6 +688,7 @@ textarea {
 		overflow: hidden;
 	}
 
+	/* ── Shell & panel ── */
 	.chat-shell {
 		padding: 6px;
 		height: 100dvh;
@@ -1952,11 +1953,14 @@ textarea {
 }
 
 @media (max-width: 720px) {
+	/* ── Hide verbose header content ── */
 	.chat-header p,
-	.chat-eyebrow {
+	.chat-eyebrow,
+	.doc-header-highlights {
 		display: none;
 	}
 
+	/* ── Status badge ── */
 	.chat-status {
 		padding: 7px 11px;
 		font-size: 0.82rem;
@@ -1980,7 +1984,7 @@ textarea {
 		max-width: 92%;
 	}
 
-	/* ── Composer: compact ── */
+	/* ── Composer ── */
 	.chat-composer {
 		gap: 8px;
 		padding: 11px;
@@ -2017,63 +2021,90 @@ textarea {
 		padding: 10px 12px;
 	}
 
+	/* ── Navigation: icon-only pills ── */
 	.app-nav {
-		padding: 12px 10px 0;
+		padding: 10px 8px 0;
 	}
 
 	.app-nav__bar {
-		overflow-x: auto;
-		scrollbar-width: none;
+		width: 100%;
+		justify-content: stretch;
+		border-radius: 14px;
 	}
 
 	.app-nav__pill {
-		padding: 9px 14px;
-		white-space: nowrap;
+		flex: 1;
+		justify-content: center;
+		padding: 10px 6px;
+		font-size: 0;       /* hide label text */
+		gap: 0;
+		border-radius: 10px;
 	}
 
-	.doc-workspace {
-		grid-template-columns: 1fr;
-		gap: 8px;
+	.app-nav__pill svg {
+		width: 18px;
+		height: 18px;
 	}
 
-	.doc-result,
-	.doc-history {
-		padding: 10px;
-		border-radius: 18px;
-	}
-
-	.doc-header-highlights {
-		gap: 6px;
-	}
-
-	.doc-result__header,
-	.doc-history__header,
-	.doc-section__header,
-	.doc-preview__meta,
-	.doc-history__meta {
-		align-items: flex-start;
-		flex-direction: column;
-	}
-
-	.doc-sections {
-		grid-template-rows: auto auto minmax(140px, auto);
+	/* ── Document Lab ── */
+	.chat-shell--document {
+		padding: 6px;
 	}
 
 	.doc-panel {
-		max-height: none;
 		padding: 12px;
-		gap: 10px;
-		grid-template-rows: auto auto minmax(120px, auto);
+		gap: 8px;
+		grid-template-rows: auto minmax(0, 1fr);
 	}
 
-	.chat-shell--document {
-		padding: 6px;
+	/* Stack uploader and history vertically */
+	.doc-workspace,
+	.doc-workspace--with-history {
+		grid-template-columns: 1fr;
+		gap: 8px;
 	}
 
 	.doc-uploader {
 		overflow: visible;
 	}
 
+	/* History becomes a compact horizontal strip */
+	.doc-history {
+		padding: 10px;
+		border-radius: 16px;
+		grid-template-rows: auto auto;
+		max-height: 140px;
+	}
+
+	.doc-history__grid,
+	.doc-workspace--with-history .doc-history__grid {
+		flex-direction: row;
+		overflow-x: auto;
+		overflow-y: hidden;
+		gap: 6px;
+		padding-bottom: 4px;
+	}
+
+	.doc-history__card {
+		min-width: 200px;
+		flex-shrink: 0;
+	}
+
+	.doc-history__meta {
+		flex-direction: row;
+		align-items: baseline;
+	}
+
+	/* Preview compact */
+	.doc-preview__image {
+		max-height: 110px;
+	}
+
+	.doc-preview__pdf {
+		height: 140px;
+	}
+
+	/* Actions */
 	.doc-actions {
 		justify-content: stretch;
 		gap: 8px;
@@ -2083,21 +2114,9 @@ textarea {
 		flex: 1 1 auto;
 	}
 
-	.doc-preview__image {
-		max-height: 120px;
-	}
-
+	/* Analysis */
 	.doc-analysis__cards {
 		grid-template-columns: 1fr;
-	}
-
-	.doc-result__toolbar,
-	.doc-tab-switch {
-		width: 100%;
-	}
-
-	.doc-tab {
-		flex: 1;
 	}
 
 	.doc-analysis__entity {
@@ -2108,22 +2127,21 @@ textarea {
 		text-align: left;
 	}
 
-	.doc-history__grid {
-		display: grid;
-		grid-auto-flow: column;
-		grid-auto-columns: minmax(220px, 84vw);
-		grid-template-columns: none;
-		overflow-x: auto;
-		overflow-y: hidden;
+	/* Modal → full-screen bottom sheet */
+	.doc-modal-backdrop {
+		align-items: flex-end;
+		padding: 0;
 	}
 
-	.doc-dropzone,
-	.doc-result__text,
-	.doc-history__card {
-		border-radius: 16px;
+	.doc-modal {
+		max-width: 100%;
+		width: 100%;
+		max-height: 92dvh;
+		border-radius: 20px 20px 0 0;
+		margin: 0;
 	}
 
-	/* ── Settings modal: bottom sheet ── */
+	/* Settings modal: bottom sheet */
 	.chat-mode-switch {
 		width: 100%;
 	}
@@ -2152,12 +2170,7 @@ textarea {
 		gap: 8px;
 	}
 
-	.doc-header-highlights {
-		display: none;
-	}
-
 	.doc-uploader,
-	.doc-result,
 	.doc-history {
 		padding: 9px;
 	}
@@ -2170,17 +2183,12 @@ textarea {
 		max-height: 88px;
 	}
 
-	.doc-result__meta {
-		font-size: 0.68rem;
-		gap: 6px;
+	.doc-preview__pdf {
+		height: 110px;
 	}
 
-	.doc-history__grid {
-		grid-auto-columns: minmax(190px, 80vw);
-	}
-
-	.doc-history__card p {
-		-webkit-line-clamp: 2;
+	.doc-history {
+		max-height: 120px;
 	}
 }
 
