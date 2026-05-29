@@ -118,3 +118,40 @@ export async function processDocument(
 }
 
 export const extractDocumentText = processDocument
+
+export async function getDocumentHistory(): Promise<IDocumentProcessEntry[]> {
+	const res = await fetch(`${API_BASE}/api/document/history`)
+	if (!res.ok) {
+		throw new Error(await getResponseErrorMessage(res))
+	}
+	const payload = (await res.json()) as {
+		success: boolean
+		documents: Array<{
+			id: string
+			source: string
+			raw_text: string
+			analysis: string
+			created_at: number
+		}>
+	}
+	return payload.documents.map((doc) => {
+		const fileName = doc.source.split(/[\\/]/).pop() ?? doc.source
+		return {
+			id: doc.id,
+			fileName,
+			fileSize: 0,
+			mimeType: "",
+			rawText: doc.raw_text,
+			analysis: normalizeAnalysisResult(
+				(() => {
+					try {
+						return JSON.parse(doc.analysis)
+					} catch {
+						return {}
+					}
+				})()
+			),
+			createdAt: new Date(doc.created_at)
+		}
+	})
+}

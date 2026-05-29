@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { processDocument } from "../services/document.service"
+import { getDocumentHistory, processDocument } from "../services/document.service"
 import type {
 	IDocumentAnalysisResult,
 	IDocumentProcessEntry
@@ -35,6 +35,12 @@ export const DocumentLab: React.FC = () => {
 		if (!selectedFile) return null
 		return URL.createObjectURL(selectedFile)
 	}, [selectedFile])
+
+	useEffect(() => {
+		getDocumentHistory()
+			.then((history) => setEntries(history))
+			.catch(() => {/* history load failure is non-critical */})
+	}, [])
 
 	useEffect(() => {
 		return () => {

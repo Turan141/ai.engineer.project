@@ -26,6 +26,7 @@ export class SQLiteService {
 		if (!this.db) {
 			throw new Error("Database not initialized")
 		}
+		// `SELECT DISTINCT document_id AS id, document_id AS source FROM document_chunks`
 
 		this.db?.exec(`
       CREATE TABLE IF NOT EXISTS messages (
@@ -33,6 +34,13 @@ export class SQLiteService {
         session_id TEXT NOT NULL,
         role TEXT NOT NULL,
         content TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS documents_analyze (
+        id TEXT PRIMARY KEY,
+        source TEXT NOT NULL,
+        title TEXT,
         created_at INTEGER NOT NULL
       );
 

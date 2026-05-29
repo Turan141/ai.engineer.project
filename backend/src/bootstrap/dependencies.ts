@@ -20,6 +20,7 @@ import { DocumentAnalysisService } from "../services/document/document-analysis.
 import { DocumentOCRService } from "../services/document/document-ocr.service.js"
 import { SQLiteVectorRepository } from "../storage/sqlite/sq-lite-vectors.repository.js"
 import { FileSystemDocumentLoader } from "../knowledge/documents/document-loader.js"
+import { SQLiteDocumentRepository } from "../storage/sqlite/sqlite-document.repository.js"
 
 export const sqLiteService = new SQLiteService()
 export const llmService = new LLMService()
@@ -29,15 +30,17 @@ export const imageMemory = new ImageMemory()
 export const imageService = new ImageService(comfyProvider, imageMemory)
 export const documentAnalysisService = new DocumentAnalysisService(llmService)
 export const documentOcrService = new DocumentOCRService()
+export const summaryRepository = new SQLiteSummaryRepository(sqLiteService)
+export const documentRepository = new SQLiteDocumentRepository(sqLiteService)
 export const documentService = new DocumentService(
 	documentAnalysisService,
 	documentOcrService,
-	llmService
+	documentRepository
 )
 export const promptBuilderService = new PromptBuilderService()
 export const messagesRepository = new SQLiteMessageRepository(sqLiteService)
 export const summaryService = new SummaryService(llmService)
-export const summaryRepository = new SQLiteSummaryRepository(sqLiteService)
+
 export const memoryService = new MemoryService(
 	summaryService,
 	messagesRepository,

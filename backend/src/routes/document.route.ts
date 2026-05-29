@@ -33,9 +33,9 @@ documentRouter.delete("/document/deleteAllKnowledge", async (req, res) => {
 	}
 })
 
-documentRouter.get("/document/hisotry", async (req, res) => {
-	const documents = await knowledgeBase.getIngestedDocuments()
-	res.json({ success: true, documents: [] })
+documentRouter.get("/document/history", async (req, res) => {
+	const documents = await documentService.getDocuments()
+	res.json({ success: true, documents })
 })
 
 documentRouter.post(
@@ -48,11 +48,7 @@ documentRouter.post(
 				return res.status(400).json({ error: "File is required for OCR processing" })
 			}
 
-			if (!req.file) {
-				return res.status(400).json({ error: "File is required for OCR processing" })
-			}
-
-			const text = await documentService.processDocument(req.file.path)
+			const text = await documentService.processDocument(file.path)
 
 			if (!text) {
 				return res.status(500).json({ error: "OCR processing failed to extract text" })
