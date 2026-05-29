@@ -26,7 +26,7 @@ export class SQLiteService {
 	private runMigrations(): void {
 		const migrations = [
 			`ALTER TABLE documents_analyze ADD COLUMN raw_text TEXT`,
-			`ALTER TABLE documents_analyze ADD COLUMN analysis TEXT`,
+			`ALTER TABLE documents_analyze ADD COLUMN analysis TEXT`
 		]
 		for (const sql of migrations) {
 			try {
