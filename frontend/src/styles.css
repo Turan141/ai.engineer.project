@@ -52,6 +52,7 @@ textarea {
 
 #root {
 	display: flex;
+	flex-direction: column;
 }
 
 .chat-shell {
@@ -688,10 +689,22 @@ textarea {
 		overflow: hidden;
 	}
 
+	.app-root {
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.app-view {
+		overflow: hidden;
+	}
+
 	/* ── Shell & panel ── */
 	.chat-shell {
 		padding: 6px;
-		height: 100dvh;
+		flex: 1;
+		min-height: 0;
+		height: 100%;
 		overflow: hidden;
 		align-items: stretch;
 		width: 100%;
@@ -701,7 +714,9 @@ textarea {
 		padding: 12px;
 		border-radius: 14px;
 		gap: 10px;
+		width: 100%;
 		height: 100%;
+		min-height: 0;
 		grid-template-rows: auto 1fr auto;
 		overflow: hidden;
 	}
@@ -2036,7 +2051,7 @@ textarea {
 		flex: 1;
 		justify-content: center;
 		padding: 10px 6px;
-		font-size: 0;       /* hide label text */
+		font-size: 0; /* hide label text */
 		gap: 0;
 		border-radius: 10px;
 	}
