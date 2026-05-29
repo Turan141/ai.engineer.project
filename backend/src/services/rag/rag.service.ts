@@ -1,17 +1,19 @@
 import { promptBuilderService } from "../../bootstrap/dependencies.js"
+import { createLogger } from "../../shared/logger.js"
 import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type {
 	IChatMessage,
-	IRAGResponse,
 	IRetrievalStrategy,
 	IVectorStore
 } from "../../types/chat.types.js"
+import type { HybridSearchService } from "./retrieval/hybrid-search.service.js"
 
 const MAX_CONTEXT_DOCUMENTS = 3
+const log = createLogger("RAGService")
 
 export class RAGService {
 	constructor(
-		private readonly vectorStore: IVectorStore,
+		private readonly hybridSearchService: HybridSearchService,
 		private readonly llmService: ILLMService,
 		private readonly retrievalFilter: IRetrievalStrategy
 	) {}
@@ -20,24 +22,42 @@ export class RAGService {
 		messages: IChatMessage[],
 		signal: AbortSignal
 	): AsyncIterable<{ text: string }> {
+		const t0 = Date.now()
 		const lastUserMessage =
 			messages.filter((msg) => msg.role === "user").at(-1)?.content ?? ""
 
-		const searchResults = await this.vectorStore.search(
+		const searchResults = await this.hybridSearchService.search(
 			lastUserMessage,
 			MAX_CONTEXT_DOCUMENTS
 		)
 
-		console.log("QUESTION:", lastUserMessage)
+		log.info(
+			{
+				query: lastUserMessage.slice(0, 120),
+				searchResults: searchResults.length,
+				scores: searchResults.map((r) => +r.score.toFixed(3))
+			},
+			"rag:search"
+		)
 
 		const contextDocuments = this.retrievalFilter.filter(searchResults)
 
 		if (!contextDocuments.length) {
-			// If no relevant documents found, just generate a normal response without context
+			log.info({ path: "direct", reason: "no_context_above_threshold" }, "rag:route")
 			const stream = await this.llmService.generateStream({ messages }, signal)
 			yield* stream
+			log.info({ path: "direct", totalMs: Date.now() - t0 }, "rag:done")
 			return
 		}
+
+		log.info(
+			{
+				path: "rag",
+				contextDocs: contextDocuments.length,
+				sources: contextDocuments.map((d) => d.document.source)
+			},
+			"rag:route"
+		)
 
 		const ragPrompt = promptBuilderService.buildRagPrompt(
 			lastUserMessage,
@@ -60,5 +80,7 @@ export class RAGService {
 		for await (const chunk of stream) {
 			yield chunk
 		}
+
+		log.info({ path: "rag", totalMs: Date.now() - t0 }, "rag:done")
 	}
 }

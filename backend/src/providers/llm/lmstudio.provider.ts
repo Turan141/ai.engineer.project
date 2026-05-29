@@ -75,7 +75,6 @@ export class LMStudioService implements ILLMProvider {
 
 		while (true) {
 			const { done, value } = await reader.read()
-
 			if (done) {
 				break
 			}
@@ -83,7 +82,6 @@ export class LMStudioService implements ILLMProvider {
 			buffer += decoder.decode(value, { stream: true })
 
 			const events = buffer.split("\n\n")
-
 			buffer = events.pop() || ""
 
 			for (const event of events) {
@@ -100,7 +98,6 @@ export class LMStudioService implements ILLMProvider {
 				}
 
 				const jsonStr = event.replace("data: ", "").trim()
-
 				if (!jsonStr) {
 					continue
 				}
@@ -112,7 +109,6 @@ export class LMStudioService implements ILLMProvider {
 				try {
 					const json = JSON.parse(jsonStr)
 					const content = json.choices?.[0]?.delta?.content
-
 					if (content) {
 						yield { text: content }
 					}

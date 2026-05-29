@@ -1,10 +1,12 @@
 import "dotenv/config"
 import cors from "cors"
 import express from "express"
+import { randomUUID } from "node:crypto"
 import { chatRouter } from "./routes/chat.route.js"
 import { initializeApplication } from "./bootstrap/ApplicationManager.js"
 import { imageRouter } from "./routes/image.routes.js"
 import { documentRouter } from "./routes/document.route.js"
+import { logger } from "./shared/logger.js"
 
 const app = express()
 
@@ -31,6 +33,29 @@ app.use((req, res, next) => {
 })
 
 app.use(express.json())
+
+// Request logging: requestId, method, url, status, durationMs
+app.use((req, res, next) => {
+	const requestId = randomUUID()
+	const start = Date.now()
+	;(req as any).requestId = requestId
+
+	res.on("finish", () => {
+		logger.info(
+			{
+				requestId,
+				method: req.method,
+				url: req.url,
+				status: res.statusCode,
+				durationMs: Date.now() - start
+			},
+			"http"
+		)
+	})
+
+	next()
+})
+
 app.use("/api", chatRouter)
 app.use("/api", imageRouter)
 app.use("/api", documentRouter)
@@ -44,7 +69,7 @@ async function bootstrap(): Promise<void> {
 	await initializeApplication()
 
 	app.listen(process.env.PORT, () => {
-		console.log(`Server started`)
+		logger.info({ port: process.env.PORT ?? 3000 }, "server started")
 	})
 }
 

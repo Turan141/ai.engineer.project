@@ -141,6 +141,7 @@ chatRouter.post("/chat/stream", async (req, res) => {
 		let assistantResponse = ""
 
 		for await (const chunk of stream) {
+			console.log(stream)
 			if (abortController.signal.aborted) {
 				console.log("Request aborted by the client")
 				break

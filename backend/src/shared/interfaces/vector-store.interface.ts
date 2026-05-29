@@ -25,3 +25,7 @@ export interface IVectorStore {
 	search(embedding: string, topK?: number): Promise<ISearchResult[]>
 	clearAllKnowledge(): Promise<void>
 }
+
+export interface IKeywordStore {
+	search(query: string, topK: number): Promise<ISearchResult[]>
+}

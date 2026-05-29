@@ -21,42 +21,57 @@ import { DocumentOCRService } from "../services/document/document-ocr.service.js
 import { SQLiteVectorRepository } from "../storage/sqlite/sq-lite-vectors.repository.js"
 import { FileSystemDocumentLoader } from "../knowledge/documents/document-loader.js"
 import { SQLiteDocumentRepository } from "../storage/sqlite/sqlite-document.repository.js"
+import { SQLiteKeywordRepository } from "../storage/sqlite/sq-lite-keyword.repository.js"
+import { HybridSearchService } from "../services/rag/retrieval/hybrid-search.service.js"
 
-export const sqLiteService = new SQLiteService()
-export const llmService = new LLMService()
+// Providers
 export const comfyProvider = new ComfyUIProvider()
-export const presetService = new ImagePresetService()
-export const imageMemory = new ImageMemory()
-export const imageService = new ImageService(comfyProvider, imageMemory)
-export const documentAnalysisService = new DocumentAnalysisService(llmService)
-export const documentOcrService = new DocumentOCRService()
+export const embeddingProvider = new LMStudioEmbeddingService()
+
+// SQLite
+export const sqLiteService = new SQLiteService()
+
+// Repositories
 export const summaryRepository = new SQLiteSummaryRepository(sqLiteService)
 export const documentRepository = new SQLiteDocumentRepository(sqLiteService)
+export const messagesRepository = new SQLiteMessageRepository(sqLiteService)
+export const sqliteKeywordRepository = new SQLiteKeywordRepository(sqLiteService)
+export const sqliteVectorRepository = new SQLiteVectorRepository(
+	sqLiteService,
+	embeddingProvider
+)
+
+// Memory
+export const imageMemory = new ImageMemory()
+
+// Filters
+export const retrievalFilter = new ThresholdRetrievalFilter(config.rag.treshold)
+
+// Knowledge
+export const loader = new FileSystemDocumentLoader()
+export const splitter = new RecursiveTextSplitter()
+export const knowledgeBase = new KnowledgeBase(loader, splitter, sqliteVectorRepository)
+
+// Services
+export const llmService = new LLMService()
+export const presetService = new ImagePresetService()
+export const documentAnalysisService = new DocumentAnalysisService(llmService)
+export const imageService = new ImageService(comfyProvider, imageMemory)
+export const documentOcrService = new DocumentOCRService()
+export const promptBuilderService = new PromptBuilderService()
+export const summaryService = new SummaryService(llmService)
+export const hybridService = new HybridSearchService(
+	sqliteVectorRepository,
+	sqliteKeywordRepository
+)
+export const ragService = new RAGService(hybridService, llmService, retrievalFilter)
 export const documentService = new DocumentService(
 	documentAnalysisService,
 	documentOcrService,
 	documentRepository
 )
-export const promptBuilderService = new PromptBuilderService()
-export const messagesRepository = new SQLiteMessageRepository(sqLiteService)
-export const summaryService = new SummaryService(llmService)
-
 export const memoryService = new MemoryService(
 	summaryService,
 	messagesRepository,
 	summaryRepository
-)
-export const embeddingProvider = new LMStudioEmbeddingService()
-export const sqliteVectorRepository = new SQLiteVectorRepository(
-	sqLiteService,
-	embeddingProvider
-)
-export const loader = new FileSystemDocumentLoader()
-export const splitter = new RecursiveTextSplitter()
-export const knowledgeBase = new KnowledgeBase(loader, splitter, sqliteVectorRepository)
-export const retrievalFilter = new ThresholdRetrievalFilter(config.rag.treshold)
-export const ragService = new RAGService(
-	sqliteVectorRepository,
-	llmService,
-	retrievalFilter
 )

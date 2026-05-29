@@ -5,6 +5,9 @@ import type {
 	ISearchResult
 } from "../../types/chat.types.js"
 import type { SQLiteService } from "./sqlite.service.js"
+import { createLogger } from "../../shared/logger.js"
+
+const log = createLogger("VectorRepository")
 
 export class SQLiteVectorRepository implements IVectorStore {
 	constructor(
@@ -14,7 +17,13 @@ export class SQLiteVectorRepository implements IVectorStore {
 
 	async addDocument(params: IVectorDocument): Promise<void> {
 		const { id, content, source, metadata } = params
+
+		const t0 = Date.now()
 		const embedding = await this.embeddingProvider.generateEmbedding(content)
+		log.debug(
+			{ source, contentLength: content.length, embeddingMs: Date.now() - t0 },
+			"embed:done"
+		)
 
 		const result = this.sqliteService
 			.getDb()
@@ -36,8 +45,11 @@ export class SQLiteVectorRepository implements IVectorStore {
 	}
 
 	async search(query: string, topK: number = 5): Promise<ISearchResult[]> {
+		const t0 = Date.now()
 		const embedding = await this.embeddingProvider.generateEmbedding(query)
+		const embedMs = Date.now() - t0
 
+		const t1 = Date.now()
 		const rows = this.sqliteService
 			.getDb()
 			.prepare(
@@ -61,6 +73,16 @@ export class SQLiteVectorRepository implements IVectorStore {
 			document_id: string
 			distance: number
 		}>
+
+		log.info(
+			{
+				topK,
+				results: rows.length,
+				embedMs,
+				searchMs: Date.now() - t1
+			},
+			"vector:search"
+		)
 
 		return rows.map((row) => ({
 			document: {
