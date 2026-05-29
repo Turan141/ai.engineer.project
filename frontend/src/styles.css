@@ -1691,9 +1691,9 @@ textarea {
 }
 
 .doc-history__grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-	gap: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 	overflow: auto;
 	padding-right: 2px;
 	scrollbar-width: thin;
@@ -1701,66 +1701,75 @@ textarea {
 }
 
 .doc-history__card {
-	display: grid;
-	gap: 8px;
-	padding: 10px 12px;
-	border-radius: 16px;
-	border: 1px solid rgba(255, 255, 255, 0.08);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px 10px;
+	border-radius: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.07);
 	background: rgba(255, 255, 255, 0.03);
 	text-align: left;
 	color: var(--text-strong);
 	transition:
-		border-color 180ms ease,
-		background 180ms ease,
-		transform 180ms ease,
-		box-shadow 180ms ease;
+		border-color 160ms ease,
+		background 160ms ease;
+	cursor: pointer;
 }
 
 .doc-history__card:hover {
-	transform: translateY(-1px);
-	border-color: rgba(255, 209, 102, 0.25);
-	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(255, 209, 102, 0.22);
+	background: rgba(255, 255, 255, 0.055);
 }
 
 .doc-history__card.is-active {
 	border-color: rgba(255, 209, 102, 0.34);
-	background: rgba(255, 209, 102, 0.08);
-	box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
+	background: rgba(255, 209, 102, 0.07);
+}
+
+.doc-history__card-body {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+	flex: 1;
 }
 
 .doc-history__meta {
 	display: flex;
+	align-items: baseline;
 	justify-content: space-between;
-	gap: 8px;
-	font-size: 0.72rem;
-	color: var(--muted);
+	gap: 6px;
 }
 
 .doc-history__meta span:first-child {
-	font-weight: 700;
+	font-size: 0.8rem;
+	font-weight: 600;
 	color: var(--text-strong);
-	max-width: 70%;
+	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	max-width: 75%;
+}
+
+.doc-history__meta span:last-child {
+	font-size: 0.68rem;
+	color: var(--muted);
 	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 .doc-history__type {
-	font-size: 0.68rem;
+	font-size: 0.67rem;
 	text-transform: uppercase;
-	letter-spacing: 0.12em;
-	color: #b8cdf8;
+	letter-spacing: 0.1em;
+	color: #8aadee;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .doc-history__card p {
-	margin: 0;
-	font-size: 0.8rem;
-	line-height: 1.45;
-	color: #d9e3f3;
-	display: -webkit-box;
-	-webkit-line-clamp: 3;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
+	display: none;
 }
 
 /* ── Document result modal ─────────────────────────────── */
@@ -1851,6 +1860,72 @@ textarea {
 	margin: 0;
 }
 
+.doc-ocr {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	overflow: auto;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.doc-ocr__row {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 6px 10px;
+	border-radius: 8px;
+	background: rgba(78, 135, 245, 0.07);
+	border: 1px solid rgba(78, 135, 245, 0.14);
+}
+
+.doc-ocr__key {
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #8aadee;
+	white-space: nowrap;
+	min-width: 110px;
+	flex-shrink: 0;
+}
+
+.doc-ocr__val {
+	font-size: 0.83rem;
+	color: #edf3ff;
+	word-break: break-word;
+}
+
+.doc-ocr__block {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 7px 10px;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.025);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.doc-ocr__num {
+	font-size: 0.65rem;
+	font-weight: 700;
+	color: rgba(255, 255, 255, 0.2);
+	min-width: 18px;
+	padding-top: 2px;
+	text-align: right;
+	flex-shrink: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.doc-ocr__text {
+	margin: 0;
+	font-size: 0.83rem;
+	line-height: 1.55;
+	color: #d9e3f3;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
 /* single-column workspace (no result panel) */
 .doc-workspace--single {
 	grid-template-columns: 1fr;
@@ -1863,7 +1938,7 @@ textarea {
 }
 
 .doc-workspace--with-history .doc-history__grid {
-	grid-template-columns: 1fr;
+	flex-direction: column;
 }
 
 @keyframes skeleton-pulse {

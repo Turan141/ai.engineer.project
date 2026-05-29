@@ -268,20 +268,17 @@ export const DocumentLab: React.FC = () => {
 										className={`doc-history__card ${entry.id === modalEntry?.id ? "is-active" : ""}`}
 										onClick={() => handleSelectEntry(entry)}
 									>
-										<div className='doc-history__meta'>
-											<span>{entry.fileName}</span>
-											<span>{entry.createdAt.toLocaleTimeString()}</span>
-										</div>
-										{entry.analysis.documentType && (
-											<div className='doc-history__type'>
-												{entry.analysis.documentType}
+										<div className='doc-history__card-body'>
+											<div className='doc-history__meta'>
+												<span>{entry.fileName}</span>
+												<span>{entry.createdAt.toLocaleTimeString()}</span>
 											</div>
-										)}
-										<p>
-											{entry.analysis.summary.slice(0, 180) ||
-												entry.rawText.slice(0, 180) ||
-												"No content extracted"}
-										</p>
+											{entry.analysis.documentType && (
+												<div className='doc-history__type'>
+													{entry.analysis.documentType}
+												</div>
+											)}
+										</div>
 									</button>
 								))}
 							</div>
@@ -359,7 +356,37 @@ export const DocumentLab: React.FC = () => {
 
 						<div className='doc-modal__body'>
 							{modalTab === "ocr" ? (
-								<pre className='doc-result__text'>{modalEntry.rawText}</pre>
+								<div className='doc-ocr'>
+									{modalEntry.rawText
+										.split(/\n{2,}/)
+										.map((block) => block.trim())
+										.filter(Boolean)
+										.map((block, i) => {
+											const lines = block.split("\n").filter(Boolean)
+											const isKeyValue =
+												lines.length === 1 && /^[^:]{1,40}:\s*.+$/.test(lines[0])
+											if (isKeyValue) {
+												const colon = lines[0].indexOf(":")
+												const key = lines[0].slice(0, colon).trim()
+												const val = lines[0].slice(colon + 1).trim()
+												return (
+													<div key={i} className='doc-ocr__row'>
+														<span className='doc-ocr__key'>{key}</span>
+														<span className='doc-ocr__val'>{val}</span>
+													</div>
+												)
+											}
+											return (
+												<div key={i} className='doc-ocr__block'>
+													<span className='doc-ocr__num'>{i + 1}</span>
+													<p className='doc-ocr__text'>{block}</p>
+												</div>
+											)
+										})}
+									{!modalEntry.rawText.trim() && (
+										<p className='doc-analysis__empty'>No OCR text extracted.</p>
+									)}
+								</div>
 							) : (
 								<div className='doc-analysis'>
 									<div className='doc-analysis__cards'>

@@ -13,6 +13,7 @@ export class SQLiteService {
 
 	initialize(): void {
 		this.createTables()
+		this.runMigrations()
 	}
 
 	getDb(): Database.Database {
@@ -20,6 +21,20 @@ export class SQLiteService {
 			throw new Error("Database not initialized")
 		}
 		return this.db
+	}
+
+	private runMigrations(): void {
+		const migrations = [
+			`ALTER TABLE documents_analyze ADD COLUMN raw_text TEXT`,
+			`ALTER TABLE documents_analyze ADD COLUMN analysis TEXT`,
+		]
+		for (const sql of migrations) {
+			try {
+				this.db.exec(sql)
+			} catch {
+				// Column already exists — ignore
+			}
+		}
 	}
 
 	private createTables(): void {
@@ -41,6 +56,8 @@ export class SQLiteService {
         id TEXT PRIMARY KEY,
         source TEXT NOT NULL,
         title TEXT,
+        raw_text TEXT,
+        analysis TEXT,
         created_at INTEGER NOT NULL
       );
 

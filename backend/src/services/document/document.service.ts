@@ -30,7 +30,7 @@ export class DocumentService {
 	}> {
 		const rawText = await this.documentOcrService.extractText(filePath)
 		const analysis = await this.documentAnalysisService.analyzeDocument(rawText)
-		this.documentRepository.addDocument(filePath, rawText, analysis)
+		await this.documentRepository.addDocument(filePath, rawText, analysis)
 
 		return {
 			rawText,
