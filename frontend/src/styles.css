@@ -1298,10 +1298,6 @@ textarea {
 	padding: 20px;
 }
 
-.chat-panel--document {
-	grid-template-rows: auto minmax(0, 1fr) minmax(120px, auto);
-}
-
 .doc-workspace {
 	display: grid;
 	grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
