@@ -5,7 +5,13 @@ export class SQLiteDocumentRepository {
 	constructor(private readonly sqliteService: SQLiteService) {}
 
 	async getDocuments(): Promise<
-		Array<{ id: string; source: string; raw_text: string; analysis: string; created_at: number }>
+		Array<{
+			id: string
+			source: string
+			raw_text: string
+			analysis: string
+			created_at: number
+		}>
 	> {
 		const stmt = this.sqliteService.getDb().prepare(`
       SELECT

@@ -13,7 +13,13 @@ export class DocumentService {
 	) {}
 
 	async getDocuments(): Promise<
-		Array<{ id: string; source: string; raw_text: string; analysis: string; created_at: number }>
+		Array<{
+			id: string
+			source: string
+			raw_text: string
+			analysis: string
+			created_at: number
+		}>
 	> {
 		return this.documentRepository.getDocuments()
 	}

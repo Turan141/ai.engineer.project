@@ -39,7 +39,9 @@ export const DocumentLab: React.FC = () => {
 	useEffect(() => {
 		getDocumentHistory()
 			.then((history) => setEntries(history))
-			.catch(() => {/* history load failure is non-critical */})
+			.catch(() => {
+				/* history load failure is non-critical */
+			})
 	}, [])
 
 	useEffect(() => {
