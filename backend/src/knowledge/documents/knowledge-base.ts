@@ -1,3 +1,4 @@
+import type { IKeywordStore } from "../../shared/interfaces/vector-store.interface.js"
 import type { IVectorStore } from "../../types/chat.types.js"
 import type { IDocumentLoader, ITextSplitter } from "../types.js"
 
@@ -5,7 +6,8 @@ export class KnowledgeBase {
 	constructor(
 		private readonly loader: IDocumentLoader,
 		private readonly splitter: ITextSplitter,
-		private readonly vectorStore: IVectorStore
+		private readonly vectorStore: IVectorStore,
+		private readonly keywordStore: IKeywordStore
 	) {}
 
 	async ingest(file: Express.Multer.File): Promise<void> {
@@ -14,6 +16,17 @@ export class KnowledgeBase {
 		for (const doc of documents) {
 			const chunks = this.splitter.split(doc)
 			for (const chunk of chunks) {
+				await this.keywordStore.addDocument({
+					id: chunk.id,
+					content: chunk.content,
+					source: chunk.source,
+					embedding: [], // Embedding will be generated in the keyword store service if needed
+					metadata: {
+						title: doc.source,
+						chunkIndex: chunk.chunkIndex
+					}
+				})
+
 				await this.vectorStore.addDocument({
 					id: chunk.id,
 					content: chunk.content,
@@ -32,7 +45,8 @@ export class KnowledgeBase {
 		const fs = await import("fs/promises")
 		const path = await import("path")
 
-		this.vectorStore.clearAllKnowledge()
+		await this.vectorStore.clearAllKnowledge()
+		await this.keywordStore.clearAllKnowledge()
 
 		const uploadsDir = path.resolve(process.cwd(), "uploads/knowledge")
 		try {

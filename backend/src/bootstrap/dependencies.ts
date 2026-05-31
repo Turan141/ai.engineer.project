@@ -50,7 +50,12 @@ export const retrievalFilter = new ThresholdRetrievalFilter(config.rag.treshold)
 // Knowledge
 export const loader = new FileSystemDocumentLoader()
 export const splitter = new RecursiveTextSplitter()
-export const knowledgeBase = new KnowledgeBase(loader, splitter, sqliteVectorRepository)
+export const knowledgeBase = new KnowledgeBase(
+	loader,
+	splitter,
+	sqliteVectorRepository,
+	sqliteKeywordRepository
+)
 
 // Services
 export const llmService = new LLMService()

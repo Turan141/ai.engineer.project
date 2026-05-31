@@ -13,7 +13,6 @@ export class HybridSearchService {
 			this.keywordStore.search(query, topK),
 			this.vectorStore.search(query, topK)
 		])
-
 		const combinedResultsMap = new Map<string, ISearchResult>()
 
 		keywordResults.forEach((result) => {
@@ -27,7 +26,6 @@ export class HybridSearchService {
 		})
 
 		const results = Array.from(combinedResultsMap.values()).slice(0, topK)
-
 		logger.info(
 			{
 				query,

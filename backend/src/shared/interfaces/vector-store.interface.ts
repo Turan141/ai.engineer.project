@@ -27,5 +27,7 @@ export interface IVectorStore {
 }
 
 export interface IKeywordStore {
+	addDocument(document: IVectorDocument): Promise<void>
 	search(query: string, topK: number): Promise<ISearchResult[]>
+	clearAllKnowledge(): Promise<void>
 }

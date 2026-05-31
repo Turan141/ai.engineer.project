@@ -68,9 +68,17 @@ export class SQLiteService {
         created_at INTEGER NOT NULL
       );
 
-      CREATE VIRTUAL TABLE IF NOT EXISTS chunk_embeddings USING vec0(
-        embedding FLOAT[768]
-      );
+      CREATE VIRTUAL TABLE IF NOT EXISTS chunk_embeddings 
+        USING vec0(
+          embedding FLOAT[768]
+        );
+
+      CREATE VIRTUAL TABLE IF NOT EXISTS document_chunks_fts
+        USING fts5(
+          content,
+          document_id,
+          chunk_id
+        );
 
       
       CREATE INDEX IF NOT EXISTS idx_messages_session
