@@ -3,7 +3,6 @@ import Chat from "./Chat"
 import { DocumentLab } from "./DocumentLab"
 import { ImageGen } from "./ImageGen"
 import { KnowledgeBase } from "./KnowledgeBase"
-import { Analytics } from "@vercel/analytics/nuxt/runtime"
 
 type TView = "chat" | "image" | "document" | "knowledge"
 
@@ -115,7 +114,6 @@ const App: React.FC = () => {
 					<KnowledgeBase />
 				)}
 			</div>
-			<Analytics />
 		</div>
 	)
 }
