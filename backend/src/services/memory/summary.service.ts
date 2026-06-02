@@ -18,7 +18,7 @@ export class SummaryService implements ISummaryService {
 			messages: [
 				{
 					role: "system",
-					content: "You are a helpful assistant that summarizes conversations."
+					content: "You are an assistant that summarizes conversations."
 				},
 				{ role: "user", content: summaryPrompt }
 			]

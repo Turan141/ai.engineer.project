@@ -6,6 +6,7 @@ import { chatRouter } from "./routes/chat.route.js"
 import { initializeApplication } from "./bootstrap/ApplicationManager.js"
 import { imageRouter } from "./routes/image.routes.js"
 import { documentRouter } from "./routes/document.route.js"
+import { debugRouter } from "./routes/debug.route.js"
 import { logger } from "./shared/logger.js"
 
 const app = express()
@@ -59,6 +60,7 @@ app.use((req, res, next) => {
 app.use("/api", chatRouter)
 app.use("/api", imageRouter)
 app.use("/api", documentRouter)
+app.use("/api", debugRouter)
 
 // Health check endpoint
 app.get("/health", (_req, res) => {

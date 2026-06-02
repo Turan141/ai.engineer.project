@@ -36,3 +36,8 @@ export type {
 	IDocumentAnalysisService,
 	IDocumentOCRService
 } from "../shared/interfaces/document.interface.js"
+
+export type {
+	IRetrievalTestCase,
+	IEvaluationResult
+} from "../shared/interfaces/retrieval-evaluation.interface.js"

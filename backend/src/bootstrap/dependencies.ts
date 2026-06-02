@@ -23,6 +23,9 @@ import { FileSystemDocumentLoader } from "../knowledge/documents/document-loader
 import { SQLiteDocumentRepository } from "../storage/sqlite/sqlite-document.repository.js"
 import { SQLiteKeywordRepository } from "../storage/sqlite/sq-lite-keyword.repository.js"
 import { HybridSearchService } from "../services/rag/retrieval/hybrid-search.service.js"
+import { RetrievalEvaluationService } from "../services/retrieval-evaluation/retrieval-evaluation.service.js"
+import { FileSystemService } from "../services/file-system/file-system.service.js"
+import { ReplaceTextService } from "../services/file-system/replace-text.service.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -80,3 +83,6 @@ export const memoryService = new MemoryService(
 	messagesRepository,
 	summaryRepository
 )
+export const retrievalEvaluationService = new RetrievalEvaluationService(hybridService)
+export const fileSystemService = new FileSystemService()
+export const replaceTextService = new ReplaceTextService(fileSystemService)
