@@ -8,14 +8,10 @@ interface JsonRequestOptions {
 	signal?: AbortSignal
 }
 
-interface ChatOptions {
-	messages: IChatMessage[]
-	signal?: AbortSignal
-}
-
 interface StreamOptions {
 	sessionId: string
 	message: string
+	mode: "agent" | "chat"
 	onChunk: OnChunk
 	signal?: AbortSignal
 }
@@ -58,19 +54,6 @@ async function postJson<T>({ path, body, signal }: JsonRequestOptions): Promise<
 	}
 
 	return res.json() as Promise<T>
-}
-
-export async function generateChat({
-	messages,
-	signal
-}: ChatOptions): Promise<IChatMessage> {
-	const response = await postJson<{ message: IChatMessage }>({
-		path: "/api/chat",
-		body: { messages },
-		signal
-	})
-
-	return response.message
 }
 
 function isVisibleChatMessage(message: unknown): message is IChatMessage {
@@ -155,13 +138,14 @@ export async function clearChatHistory(
 export async function streamChat({
 	sessionId,
 	message,
+	mode,
 	onChunk,
 	signal
 }: StreamOptions): Promise<void> {
 	const res = await fetch(`${API_BASE}/api/chat/stream`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-		body: JSON.stringify({ sessionId, message }),
+		body: JSON.stringify({ sessionId, message, mode }),
 		signal
 	})
 
@@ -227,6 +211,9 @@ export async function streamChat({
 				if (parsed && typeof parsed.text === "string") {
 					onChunk(parsed.text)
 				}
+				if (parsed && parsed.type === "tool_result") {
+					onChunk(JSON.stringify(parsed.result, null, 2))
+				}
 			}
 		}
 
@@ -249,6 +236,9 @@ export async function streamChat({
 				}
 				if (parsed && typeof parsed.text === "string") {
 					onChunk(parsed.text)
+				}
+				if (parsed && parsed.type === "tool_result") {
+					onChunk(JSON.stringify(parsed.result, null, 2))
 				}
 			}
 		}

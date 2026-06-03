@@ -1,19 +1,14 @@
 import { Router } from "express"
 import type { IChatMessage } from "../types/chat.types.js"
-import type {
-	IAgentDecision,
-	IAgentResponse
-} from "../shared/interfaces/agent.interface.js"
+import type { IAgentDecision } from "../shared/interfaces/agent.interface.js"
 import {
 	agentService,
 	llmService,
 	memoryService,
 	promptBuilderService,
 	ragService,
-	replaceTextTool,
 	toolExecutorService
 } from "../bootstrap/dependencies.js"
-import { EAgentAction } from "../shared/enums/agent.enums.js"
 
 export const chatRouter = Router()
 
@@ -34,34 +29,6 @@ chatRouter.get("/chat/history/:sessionId", async (req, res) => {
 
 	const history = await memoryService.getConversationContext(sessionId)
 	return res.json({ history })
-})
-
-chatRouter.post("/chat", async (req, res) => {
-	const { messages } = req.body
-	const abortController = new AbortController()
-
-	req.on("close", () => {
-		abortController.abort()
-	})
-
-	if (!Array.isArray(messages)) {
-		return res.status(400).json({ error: "Messages are required" })
-	}
-
-	try {
-		const message = await llmService.generate(
-			{ messages: withSystemPrompt(messages) },
-			abortController.signal
-		)
-		return res.json({ message })
-	} catch (error) {
-		if ((error as any)?.name === "AbortError") {
-			return
-		}
-
-		console.error("Error generating chat response:", error)
-		return res.status(500).json({ error: "Failed to generate chat response" })
-	}
 })
 
 chatRouter.post("/embeddings", async (req, res) => {
@@ -144,25 +111,30 @@ chatRouter.post("/chat/stream", async (req, res) => {
 	})
 
 	try {
-		const { sessionId, message } = req.body
+		const { sessionId, message, mode = "agent" } = req.body
 
-		const resp = await agentService.handle(message)
+		if (mode === "agent") {
+			const resp = await agentService.handle(message)
 
-		console.log("Agent response:", resp)
+			console.log("Agent response:", resp)
 
-		if (resp.type === "tool") {
-			const result = await toolExecutorService.execute(resp as IAgentDecision)
-			res.write(
-				`data: ${JSON.stringify({
-					type: "tool_result",
-					result
-				})}\n\n`
-			)
+			if (resp.type === "tool") {
+				const result = await toolExecutorService.execute(resp as IAgentDecision)
+				console.log("Tool execution result:", result)
+				res.write(
+					`data: ${JSON.stringify({
+						type: "tool_result",
+						result
+					})}\n\n`
+				)
 
-			res.write("data: [DONE]\n\n")
-			res.end()
+				res.write("data: [DONE]\n\n")
+				res.end()
+				await memoryService.addMessage(sessionId, message, "user")
+				await memoryService.addMessage(sessionId, JSON.stringify(result), "assistant")
 
-			return
+				return
+			}
 		}
 
 		await memoryService.addMessage(sessionId, message, "user")

@@ -2,14 +2,12 @@ import React, { useEffect, useRef, useState } from "react"
 import { IChatMessage } from "../types/chat.types"
 import {
 	clearChatHistory,
-	generateChat,
 	generateEmbedding,
 	getChatHistory,
 	getDebugMessages,
 	streamChat
 } from "../services/chat.service"
 
-type TChatMode = "stream" | "single"
 type TChatExperience = "agent" | "chat"
 
 interface IChatProps {
@@ -70,7 +68,6 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 	const [isClearing, setIsClearing] = useState(false)
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-	const mode: TChatMode = experience === "agent" ? "stream" : "single"
 	const sessionStorageKey = SESSION_ID_STORAGE_KEY_BY_EXPERIENCE[experience]
 	const [sessionId] = useState(() => {
 		const storedSessionId = window.localStorage.getItem(sessionStorageKey)?.trim()
@@ -182,28 +179,20 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 		controllerRef.current = controller
 
 		try {
-			if (mode === "single") {
-				const assistantMessage = await generateChat({
-					messages: conversation,
-					signal: controller.signal
-				})
-
-				setMessages((prev) => updateLastAssistantMessage(prev, () => assistantMessage))
-			} else {
-				await streamChat({
-					sessionId,
-					message: trimmed,
-					signal: controller.signal,
-					onChunk: (text) => {
-						setMessages((prev) =>
-							updateLastAssistantMessage(prev, (message) => ({
-								...message,
-								content: message.content + text
-							}))
-						)
-					}
-				})
-			}
+			await streamChat({
+				sessionId,
+				message: trimmed,
+				mode: experience,
+				signal: controller.signal,
+				onChunk: (text) => {
+					setMessages((prev) =>
+						updateLastAssistantMessage(prev, (message) => ({
+							...message,
+							content: message.content + text
+						}))
+					)
+				}
+			})
 		} catch (err: any) {
 			if (err?.name === "AbortError") {
 				setMessages((prev) => removeEmptyAssistantMessage(prev))
@@ -311,7 +300,7 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 							<div className='settings-section__label'>Mode</div>
 							<div className='chat-mode-switch' aria-label='Current mode'>
 								<span className='chat-pill is-active'>
-									{experience === "agent" ? "Agent /chat/stream" : "Chat /chat"}
+									{experience === "agent" ? "Agent /chat/stream" : "Chat /chat/stream"}
 								</span>
 							</div>
 							<p className='settings-section__hint'>
@@ -380,7 +369,7 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 						<p>
 							{experience === "agent"
 								? "Agent mode uses /chat/stream and can route tool actions from the prompt."
-								: "Regular chat mode uses the standard /chat endpoint."}
+								: "Regular chat mode uses /chat/stream without agent tool routing."}
 						</p>
 					</div>
 					<div
