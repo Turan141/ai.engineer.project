@@ -24,10 +24,12 @@ import { SQLiteDocumentRepository } from "../storage/sqlite/sqlite-document.repo
 import { SQLiteKeywordRepository } from "../storage/sqlite/sq-lite-keyword.repository.js"
 import { HybridSearchService } from "../services/rag/retrieval/hybrid-search.service.js"
 import { RetrievalEvaluationService } from "../services/retrieval-evaluation/retrieval-evaluation.service.js"
-import { FileSystemService } from "../services/file-system/file-system.service.js"
-import { ReplaceTextService } from "../services/file-system/replace-text.service.js"
+import { FileSystemService } from "../services/tools/file-system/file-system.service.js"
+import { ReplaceTextService } from "../services/tools/file-system/replace-text.service.js"
 import { AgentService } from "../services/agent/agent.service.js"
 import { ReplaceTextTool } from "../tools/replace-text.tool.js"
+import { ToolExecutorService } from "../services/tools/tool-executor.service.js"
+import { ListFilesTool } from "../tools/list-files.tool.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -92,3 +94,5 @@ export const agentService = new AgentService(llmService)
 
 // Tools
 export const replaceTextTool = new ReplaceTextTool(replaceTextService)
+export const listFilesTool = new ListFilesTool(fileSystemService)
+export const toolExecutorService = new ToolExecutorService(replaceTextTool, listFilesTool)

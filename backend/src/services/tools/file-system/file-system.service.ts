@@ -19,7 +19,7 @@ export class FileSystemService {
 		return files
 	}
 
-	private async scan(currentDir: string, files: string[]): Promise<void> {
+	async scan(currentDir: string, files: string[]): Promise<void> {
 		try {
 			const entries = await fs.readdir(currentDir, {
 				withFileTypes: true

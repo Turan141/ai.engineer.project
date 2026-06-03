@@ -12,6 +12,7 @@ import { LMStudioEmbeddingService } from "../../providers/embedding/lmstudio.emb
 import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type { IAgentDecision } from "../../shared/interfaces/agent.interface.js"
 import { promptBuilderService } from "../../bootstrap/dependencies.js"
+import { EAgentAction } from "../../shared/enums/agent.enums.js"
 
 const log = createLogger("LLMService")
 
@@ -98,17 +99,17 @@ export class LLMService implements ILLMService {
 
 	isReplaceDecision(value: unknown): value is IAgentDecision {
 		if (!value || typeof value !== "object") return false
+		const decision = value as IAgentDecision
 
-		const decision = value as Record<string, unknown>
-
-		if (decision.action === "chat") return true
+		if (decision.action === EAgentAction.CHAT) return true
 
 		return (
-			decision.action === "replace_text" &&
-			(decision.targetPath === undefined || typeof decision.targetPath === "string") &&
-			typeof decision.searchText === "string" &&
-			typeof decision.replaceText === "string" &&
-			decision.searchText.trim().length >= 3
+			decision.action === EAgentAction.REPLACE_TEXT &&
+			(decision.args?.targetPath === undefined ||
+				typeof decision.args?.targetPath === "string") &&
+			typeof decision.args?.searchText === "string" &&
+			typeof decision.args?.replaceText === "string" &&
+			decision.args?.searchText.trim().length >= 3
 		)
 	}
 
@@ -125,17 +126,18 @@ export class LLMService implements ILLMService {
 				.replace(/```json/g, "")
 				.replace(/```/g, "")
 				.trim()
-			const parsed = JSON.parse(jsonText)
-			if (!this.isReplaceDecision(parsed)) {
-				return { action: "chat" }
-			} else {
-				return parsed
+			const parsed = JSON.parse(jsonText) as IAgentDecision
+			if (!Object.values(EAgentAction).includes(parsed.action)) {
+				return {
+					action: EAgentAction.CHAT
+				}
 			}
+			return parsed
 		} catch (error) {
 			console.error("Invalid decision:", response.content)
 
 			return {
-				action: "chat"
+				action: EAgentAction.CHAT
 			}
 		}
 	}

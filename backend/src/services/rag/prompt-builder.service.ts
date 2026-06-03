@@ -1,3 +1,4 @@
+import { EAgentAction } from "../../shared/enums/agent.enums.js"
 import type { IChatMessage, ISearchResult } from "../../types/chat.types.js"
 
 export class PromptBuilderService {
@@ -10,18 +11,31 @@ export class PromptBuilderService {
 							"action": "chat"
 						}
 						{
-							"action": "replace_text",
+							"action": ${EAgentAction.REPLACE_TEXT},
 							"args": {
 								"searchText": "old",
 								"replaceText": "new"
 							}
 						}
+						{
+							"action": "list_files",
+							"args": {
+								"pattern": "config"
+							}
+						}
 						Rules:
-						- Use replace_text only when the user explicitly requests file modification.
+						Use replace_text only when the user explicitly requests file modification.
 						- If information is missing, use chat.
 						- Never output markdown.
 						- Never output explanations.
 						- Return exactly one JSON object.
+
+						Use list_files when the user asks:
+						- find file
+						- search file
+						- locate file
+						- show files
+						- list files
 
 						User message:
 						${message}

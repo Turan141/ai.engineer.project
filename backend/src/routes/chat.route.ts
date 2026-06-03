@@ -1,14 +1,19 @@
 import { Router } from "express"
 import type { IChatMessage } from "../types/chat.types.js"
-import type { IAgentDecision } from "../shared/interfaces/agent.interface.js"
+import type {
+	IAgentDecision,
+	IAgentResponse
+} from "../shared/interfaces/agent.interface.js"
 import {
 	agentService,
 	llmService,
 	memoryService,
 	promptBuilderService,
 	ragService,
-	replaceTextTool
+	replaceTextTool,
+	toolExecutorService
 } from "../bootstrap/dependencies.js"
+import { EAgentAction } from "../shared/enums/agent.enums.js"
 
 export const chatRouter = Router()
 
@@ -146,35 +151,11 @@ chatRouter.post("/chat/stream", async (req, res) => {
 		console.log("Agent response:", resp)
 
 		if (resp.type === "tool") {
-			const data = resp.data as IAgentDecision | undefined
-			let result: unknown
-
-			if (
-				data?.action === "replace_text" &&
-				typeof data.args?.searchText === "string" &&
-				typeof data.args?.replaceText === "string"
-			) {
-				const toolArgs = {
-					searchText: data.args.searchText,
-					replaceText: data.args.replaceText,
-					dryRun: data.args.dryRun ?? false
-				}
-
-				result = await replaceTextTool.execute(
-					data.args.targetPath
-						? { ...toolArgs, targetPath: data.args.targetPath }
-						: toolArgs
-				)
-			} else {
-				res.write(`data: ${JSON.stringify({ error: "Unsupported tool action" })}\n\n`)
-				res.write("data: [DONE]\n\n")
-				res.end()
-				return
-			}
-
+			const result = await toolExecutorService.execute(resp as IAgentDecision)
 			res.write(
 				`data: ${JSON.stringify({
-					text: JSON.stringify(result)
+					type: "tool_result",
+					result
 				})}\n\n`
 			)
 

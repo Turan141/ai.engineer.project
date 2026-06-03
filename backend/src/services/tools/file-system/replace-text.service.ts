@@ -1,7 +1,7 @@
 import path from "node:path"
 
 import type { FileSystemService } from "./file-system.service.js"
-import type { IReplaceToolTextArgs } from "../../shared/interfaces/ai-tools.interface.js"
+import type { IReplaceToolTextArgs } from "../../../shared/interfaces/ai-tools.interface.js"
 
 export class ReplaceTextService {
 	private readonly allowedExtensions = new Set([
