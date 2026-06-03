@@ -1,15 +1,15 @@
-import { EAgentAction } from "../shared/enums/agent.enums.js"
-import type { ITool } from "../types/chat.types.js"
+import type { FileSystemService } from "../services/tools/file-system/file-system.service.js"
+import type { IReadFileArgs } from "../shared/interfaces/ai-tools.interface.js"
 
-export class ReadFileTool implements ITool {
-	name = EAgentAction.READ_FILE
-	description = "Read content of a file in the project"
+export class ReadFileTool {
+	constructor(private readonly fileSystemService: FileSystemService) {}
 
-	constructor() {}
+	async execute(args: IReadFileArgs) {
+		const content = await this.fileSystemService.readFile(args.path)
 
-	async execute(filePath: string): Promise<string> {
-		// In a real implementation, you would read the file content from the filesystem.
-		// Here we return a placeholder string for demonstration purposes.
-		return `Content of file at path: ${filePath}`
+		return {
+			path: args.path,
+			content
+		}
 	}
 }

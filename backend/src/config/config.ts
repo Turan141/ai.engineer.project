@@ -26,7 +26,8 @@ export const config = {
 	llmModel: process.env.LLM_MODEL,
 	embeddingModel: process.env.EMBEDDING_MODEL || "text-embedding-3-small",
 	comfyUiOutputPath: process.env.COMFYUI_OUTPUT_PATH || "./comfyui_output",
-	PYTHON_PATH: process.env.PYTHON_PATH || "python",
+	pythonPath: process.env.PYTHON_PATH || "python",
+	workspaceRoot: process.env.WORKSPACE_ROOT || process.cwd(),
 	rag: {
 		treshold: parseFloat(process.env.RAG_TRESHOLD || "0.5")
 	}

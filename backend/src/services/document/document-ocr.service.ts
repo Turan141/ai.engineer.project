@@ -4,7 +4,7 @@ import { config } from "../../config/config.js"
 export class DocumentOCRService {
 	async extractText(filePath: string): Promise<string> {
 		return new Promise((resolve, reject) => {
-			const process = spawn(config.PYTHON_PATH, ["./python/ocr.py", filePath])
+			const process = spawn(config.pythonPath, ["./python/ocr.py", filePath])
 
 			let result = ""
 			let error = ""

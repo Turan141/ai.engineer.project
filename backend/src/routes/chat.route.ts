@@ -116,8 +116,6 @@ chatRouter.post("/chat/stream", async (req, res) => {
 		if (mode === "agent") {
 			const resp = await agentService.handle(message)
 
-			console.log("Agent response:", resp)
-
 			if (resp.type === "tool") {
 				const result = await toolExecutorService.execute(resp as IAgentDecision)
 				console.log("Tool execution result:", result)

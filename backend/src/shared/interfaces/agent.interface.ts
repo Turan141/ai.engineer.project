@@ -1,11 +1,5 @@
 import type { EAgentAction } from "../enums/agent.enums.js"
 
-export type TAgentActionType =
-	| EAgentAction.REPLACE_TEXT
-	| EAgentAction.CHAT
-	| EAgentAction.LIST_FILES
-	| EAgentAction.READ_FILE
-
 export interface IAgentResponse {
 	type: "message" | "tool"
 	action: EAgentAction
@@ -13,12 +7,13 @@ export interface IAgentResponse {
 }
 
 export interface IAgentDecision {
-	action: TAgentActionType
+	action: EAgentAction
 	args?: {
 		searchText?: string
 		replaceText?: string
 		targetPath?: string
 		dryRun?: boolean
 		pattern?: string
+		symbol?: string
 	}
 }

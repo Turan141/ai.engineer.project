@@ -15,3 +15,21 @@ export interface IReplaceToolTextArgs {
 export interface IListFilesArgs {
 	pattern?: string
 }
+
+export interface IReadFileArgs {
+	path: string
+}
+
+export interface IReadFileResult {
+	content: string
+	path: string
+}
+
+export interface ISearchTextArgs {
+	searchText: string
+}
+
+export interface ISearchTextResult {
+	file: string
+	matches: number
+}

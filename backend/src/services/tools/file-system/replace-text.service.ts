@@ -16,7 +16,7 @@ export class ReplaceTextService {
 	constructor(private readonly fileSystemService: FileSystemService) {}
 
 	async replace(params: IReplaceToolTextArgs): Promise<string[]> {
-		const { searchText, replaceText, targetPath, dryRun = true } = params
+		const { searchText, replaceText, targetPath, dryRun = false } = params
 
 		if (searchText.trim().length < 3) {
 			throw new Error("searchText must be at least 3 characters")

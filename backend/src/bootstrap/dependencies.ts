@@ -30,6 +30,8 @@ import { AgentService } from "../services/agent/agent.service.js"
 import { ReplaceTextTool } from "../tools/replace-text.tool.js"
 import { ToolExecutorService } from "../services/tools/tool-executor.service.js"
 import { ListFilesTool } from "../tools/list-files.tool.js"
+import { ReadFileTool } from "../tools/read-file.tool.js"
+import { SearchTextTool } from "../tools/search-text.tools.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -90,9 +92,22 @@ export const memoryService = new MemoryService(
 export const retrievalEvaluationService = new RetrievalEvaluationService(hybridService)
 export const fileSystemService = new FileSystemService()
 export const replaceTextService = new ReplaceTextService(fileSystemService)
-export const agentService = new AgentService(llmService)
 
 // Tools
 export const replaceTextTool = new ReplaceTextTool(replaceTextService)
 export const listFilesTool = new ListFilesTool(fileSystemService)
-export const toolExecutorService = new ToolExecutorService(replaceTextTool, listFilesTool)
+export const readFileTool = new ReadFileTool(fileSystemService)
+export const searchTextTool = new SearchTextTool(fileSystemService)
+export const toolExecutorService = new ToolExecutorService(
+	replaceTextTool,
+	listFilesTool,
+	readFileTool,
+	searchTextTool
+)
+
+export const agentService = new AgentService(
+	llmService,
+	promptBuilderService,
+	searchTextTool,
+	readFileTool
+)
