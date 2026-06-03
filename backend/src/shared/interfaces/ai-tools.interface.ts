@@ -31,8 +31,14 @@ export interface ISearchTextArgs {
 	maxResults?: number
 }
 
+export interface ISearchTextOccurrence {
+	line: number
+	text: string
+}
+
 export interface ISearchTextResult {
 	file: string
+	occurrences: ISearchTextOccurrence[]
 	matches: number
 }
 

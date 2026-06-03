@@ -97,22 +97,6 @@ export class LLMService implements ILLMService {
 		return this.currentProvider.generateStream(params, signal)
 	}
 
-	isReplaceDecision(value: unknown): value is IAgentDecision {
-		if (!value || typeof value !== "object") return false
-		const decision = value as IAgentDecision
-
-		if (decision.action === EAgentAction.CHAT) return true
-
-		return (
-			decision.action === EAgentAction.REPLACE_TEXT &&
-			(decision.args?.targetPath === undefined ||
-				typeof decision.args?.targetPath === "string") &&
-			typeof decision.args?.searchText === "string" &&
-			typeof decision.args?.replaceText === "string" &&
-			decision.args?.searchText.trim().length >= 3
-		)
-	}
-
 	async decideAction(message: string): Promise<IAgentDecision> {
 		const prompt = promptBuilderService.buildAgentPrompt(message)
 		const response = await this.generate({

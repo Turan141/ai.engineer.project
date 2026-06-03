@@ -9,31 +9,29 @@ export class AgentService {
 	constructor(
 		private readonly llmService: ILLMService,
 		private readonly promptBuilderService: PromptBuilderService,
-		private readonly searchTextTool: SearchTextTool,
-		private readonly readFileTool: ReadFileTool
+		private readonly searchTextTool: SearchTextTool
 	) {}
 
-	private async explainUsage(symbol: string): Promise<string> {
+	private async explainUsage(symbol: string, isSimple: boolean): Promise<string> {
 		const searchResult = await this.searchTextTool.execute({
 			searchText: symbol
 		})
+		console.log("Search result for isSimple:", isSimple)
+		let prompt: string
 
-		const files = searchResult.results.slice(0, 3)
-
-		const contents = await Promise.all(
-			files.map(async (file) => {
-				const result = await this.readFileTool.execute({
-					path: file.file
-				})
-
-				return {
-					...result,
-					content: result.content.slice(0, 3000)
-				}
-			})
-		)
-
-		const prompt = this.promptBuilderService.buildAnalysisPrompt(symbol, contents)
+		if (isSimple) {
+			prompt = this.promptBuilderService.buildAnalysisPrompt(
+				symbol,
+				searchResult.results,
+				true
+			)
+		} else {
+			prompt = this.promptBuilderService.buildAnalysisPrompt(
+				symbol,
+				searchResult.results,
+				false
+			)
+		}
 
 		const response = await this.llmService.generate({
 			messages: [
@@ -95,11 +93,29 @@ export class AgentService {
 				}
 			}
 
-			const analysis = await this.explainUsage(symbol)
+			const analysis = await this.explainUsage(symbol, false)
 			console.log("Agent explain usage analysis:", analysis)
 			return {
 				type: "assistant_message",
 				action: EAgentAction.EXPLAIN_USAGE,
+				content: analysis
+			}
+		}
+
+		if (decision.action === EAgentAction.EXPLAIN_SIMPLE) {
+			const symbol = decision.args?.symbol
+			console.log("Agent decided to explain simple for symbol:", symbol)
+			if (typeof symbol !== "string") {
+				return {
+					type: "chat",
+					action: EAgentAction.CHAT
+				}
+			}
+			const analysis = await this.explainUsage(symbol, true)
+			console.log("Agent explain simple analysis:", analysis)
+			return {
+				type: "assistant_message",
+				action: EAgentAction.EXPLAIN_SIMPLE,
 				content: analysis
 			}
 		}

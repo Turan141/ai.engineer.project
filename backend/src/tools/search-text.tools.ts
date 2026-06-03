@@ -1,5 +1,6 @@
 import type {
 	ISearchTextArgs,
+	ISearchTextResult,
 	ISearchTextToolResult
 } from "../shared/interfaces/ai-tools.interface.js"
 
@@ -10,11 +11,17 @@ import type { FileSystemService } from "../services/tools/file-system/file-syste
 const DEFAULT_MAX_RESULTS = 50
 const MAX_RESULTS_LIMIT = 100
 const MAX_FILE_SIZE_BYTES = 512 * 1024
+const MAX_OCCURRENCES_PER_FILE = 5
+const MAX_LINE_LENGTH = 300
 
 export class SearchTextTool {
 	constructor(private readonly fileSystemService: FileSystemService) {}
 
 	async execute(args: ISearchTextArgs): Promise<ISearchTextToolResult> {
+		if (!args || typeof args.searchText !== "string") {
+			throw new Error("searchText is required")
+		}
+
 		const searchText = args.searchText.trim()
 		if (searchText.length < 2) {
 			throw new Error("searchText must be at least 2 characters")
@@ -30,7 +37,9 @@ export class SearchTextTool {
 			searchText,
 			{
 				maxResults,
-				maxFileSizeBytes: MAX_FILE_SIZE_BYTES
+				maxFileSizeBytes: MAX_FILE_SIZE_BYTES,
+				maxOccurrencesPerFile: MAX_OCCURRENCES_PER_FILE,
+				maxLineLength: MAX_LINE_LENGTH
 			}
 		)
 

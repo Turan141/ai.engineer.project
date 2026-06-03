@@ -108,6 +108,5 @@ export const toolExecutorService = new ToolExecutorService(
 export const agentService = new AgentService(
 	llmService,
 	promptBuilderService,
-	searchTextTool,
-	readFileTool
+	searchTextTool
 )

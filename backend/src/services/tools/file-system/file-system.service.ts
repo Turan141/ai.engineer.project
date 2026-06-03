@@ -5,6 +5,8 @@ import type { ISearchTextResult } from "../../../shared/interfaces/ai-tools.inte
 interface ISearchTextOptions {
 	maxResults: number
 	maxFileSizeBytes: number
+	maxOccurrencesPerFile: number
+	maxLineLength: number
 }
 
 export class FileSystemService {
@@ -113,12 +115,32 @@ export class FileSystemService {
 
 				const content = await this.readFile(file)
 
-				const matches = content.split(searchText).length - 1
+				const lines = content.split("\n")
+				let matches = 0
 
-				if (matches > 0) {
+				const occurrences = lines.flatMap((line, index) => {
+					if (!line.includes(searchText)) {
+						return []
+					}
+
+					matches += line.split(searchText).length - 1
+
+					return [
+						{
+							line: index + 1,
+							text:
+								line.length > options.maxLineLength
+									? `${line.slice(0, options.maxLineLength)}...`
+									: line
+						}
+					]
+				})
+
+				if (occurrences.length > 0) {
 					results.push({
 						file,
-						matches
+						matches,
+						occurrences: occurrences.slice(0, options.maxOccurrencesPerFile)
 					})
 				}
 			} catch {

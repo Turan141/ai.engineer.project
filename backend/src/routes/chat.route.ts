@@ -164,7 +164,6 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 			if (resp.type === "tool") {
 				const result = await toolExecutorService.execute(resp as IAgentDecision)
-				console.log("Tool execution result:", result)
 				res.write(
 					`data: ${JSON.stringify({
 						type: "tool_result",
