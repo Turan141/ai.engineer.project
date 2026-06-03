@@ -1,10 +1,13 @@
 import { Router } from "express"
 import type { IChatMessage } from "../types/chat.types.js"
+import type { IAgentDecision } from "../shared/interfaces/agent.interface.js"
 import {
+	agentService,
 	llmService,
 	memoryService,
 	promptBuilderService,
-	ragService
+	ragService,
+	replaceTextTool
 } from "../bootstrap/dependencies.js"
 
 export const chatRouter = Router()
@@ -53,38 +56,6 @@ chatRouter.post("/embeddings", async (req, res) => {
 	}
 })
 
-chatRouter.post("/chat", async (req, res) => {
-	if (!req.body) {
-		return res.status(400).json({ error: "Request body is required" })
-	}
-
-	const abortController = new AbortController()
-
-	req.on("close", () => {
-		abortController.abort()
-	})
-
-	const { messages } = req.body
-	if (!Array.isArray(messages) || messages.length === 0) {
-		return res.status(400).json({ error: "Messages are required" })
-	}
-
-	try {
-		const aiResponse = await llmService.generate(
-			{ messages: withSystemPrompt(messages) },
-			abortController.signal
-		)
-		if (!aiResponse || !aiResponse.content) {
-			return res.status(500).json({ error: "AI response is empty" })
-		}
-
-		return res.json({ message: aiResponse })
-	} catch (error) {
-		console.error("Error generating AI response:", error)
-		return res.status(500).json({ error: "Failed to generate AI response" })
-	}
-})
-
 chatRouter.delete("/chat/messages/:sessionId", async (req, res) => {
 	const { sessionId } = req.params
 	if (typeof sessionId !== "string" || sessionId.trim() === "") {
@@ -115,6 +86,17 @@ chatRouter.get("/debug/messages/:sessionId", async (req, res) => {
 })
 
 chatRouter.post("/chat/stream", async (req, res) => {
+	const origin = req.headers.origin ?? ""
+	if (
+		origin === "https://ai-support-leather.vercel.app" ||
+		origin.startsWith("http://localhost") ||
+		origin.startsWith("http://127.0.0.1")
+	) {
+		res.setHeader("Access-Control-Allow-Origin", origin)
+		res.setHeader("Access-Control-Allow-Private-Network", "true")
+		res.setHeader("Vary", "Origin, Access-Control-Request-Private-Network")
+	}
+
 	res.setHeader("Content-Type", "text/event-stream")
 	res.setHeader("Cache-Control", "no-cache, no-transform")
 	res.setHeader("Connection", "keep-alive")
@@ -130,6 +112,44 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 	try {
 		const { sessionId, message } = req.body
+
+		const resp = await agentService.handle(message)
+
+		console.log("Agent response:", resp)
+
+		if (resp.type === "tool") {
+			const data = resp.data as IAgentDecision | undefined
+			let result: unknown
+
+			if (
+				data?.action === "replace_text" &&
+				typeof data.searchText === "string" &&
+				typeof data.replaceText === "string"
+			) {
+				result = await replaceTextTool.execute({
+					searchText: data.searchText,
+					replaceText: data.replaceText,
+					targetPath: data.targetPath ?? "",
+					dryRun: true
+				})
+			} else {
+				res.write(`data: ${JSON.stringify({ error: "Unsupported tool action" })}\n\n`)
+				res.write("data: [DONE]\n\n")
+				res.end()
+				return
+			}
+
+			res.write(
+				`data: ${JSON.stringify({
+					text: JSON.stringify(result)
+				})}\n\n`
+			)
+
+			res.write("data: [DONE]\n\n")
+			res.end()
+
+			return
+		}
 
 		await memoryService.addMessage(sessionId, message, "user")
 		const messages = await memoryService.getConversationContext(sessionId)

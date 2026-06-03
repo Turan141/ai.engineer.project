@@ -26,6 +26,8 @@ import { HybridSearchService } from "../services/rag/retrieval/hybrid-search.ser
 import { RetrievalEvaluationService } from "../services/retrieval-evaluation/retrieval-evaluation.service.js"
 import { FileSystemService } from "../services/file-system/file-system.service.js"
 import { ReplaceTextService } from "../services/file-system/replace-text.service.js"
+import { AgentService } from "../services/agent/agent.service.js"
+import { ReplaceTextTool } from "../tools/replace-text.tool.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -86,3 +88,7 @@ export const memoryService = new MemoryService(
 export const retrievalEvaluationService = new RetrievalEvaluationService(hybridService)
 export const fileSystemService = new FileSystemService()
 export const replaceTextService = new ReplaceTextService(fileSystemService)
+export const agentService = new AgentService(llmService)
+
+// Tools
+export const replaceTextTool = new ReplaceTextTool(replaceTextService)

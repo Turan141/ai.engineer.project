@@ -1,8 +1,8 @@
 import "dotenv/config"
-import { embeddingProvider, vectorStore } from "../bootstrap/dependencies.js"
+import { embeddingProvider, sqliteVectorRepository } from "../bootstrap/dependencies.js"
 
 async function main(): Promise<void> {
-	await vectorStore.addDocument({
+	await sqliteVectorRepository.addDocument({
 		id: "1",
 		content: "React is a frontend library",
 		source: "doc1",
@@ -13,7 +13,7 @@ async function main(): Promise<void> {
 		}
 	})
 
-	await vectorStore.addDocument({
+	await sqliteVectorRepository.addDocument({
 		id: "2",
 		content: "PostgreSQL is a relational database",
 		source: "doc2",
@@ -26,7 +26,7 @@ async function main(): Promise<void> {
 		}
 	})
 
-	await vectorStore.addDocument({
+	await sqliteVectorRepository.addDocument({
 		id: "3",
 		content: "Football is the most popular sport in the world",
 		source: "doc3",
@@ -39,7 +39,7 @@ async function main(): Promise<void> {
 		}
 	})
 
-	await vectorStore.addDocument({
+	await sqliteVectorRepository.addDocument({
 		id: "4",
 		content: "Basketball is played with five players per team",
 		source: "doc4",
@@ -54,38 +54,44 @@ async function main(): Promise<void> {
 
 	console.log("\n=== QUERY: soccer ===")
 
-	const soccerResults = await vectorStore.search("soccer", 3)
+	const soccerResults = await sqliteVectorRepository.search("soccer", 3)
 
 	console.table(
-		soccerResults.map((result) => ({
-			id: result.document.id,
-			content: result.document.content,
-			score: result.score
-		}))
+		soccerResults.map(
+			(result: { document: { id: string; content: string }; score: number }) => ({
+				id: result.document.id,
+				content: result.document.content,
+				score: result.score
+			})
+		)
 	)
 
 	console.log("\n=== QUERY: frontend framework ===")
 
-	const frontendResults = await vectorStore.search("frontend framework", 3)
+	const frontendResults = await sqliteVectorRepository.search("frontend framework", 3)
 
 	console.table(
-		frontendResults.map((result) => ({
-			id: result.document.id,
-			content: result.document.content,
-			score: result.score
-		}))
+		frontendResults.map(
+			(result: { document: { id: string; content: string }; score: number }) => ({
+				id: result.document.id,
+				content: result.document.content,
+				score: result.score
+			})
+		)
 	)
 
 	console.log("\n=== QUERY: database ===")
 
-	const databaseResults = await vectorStore.search("database", 3)
+	const databaseResults = await sqliteVectorRepository.search("database", 3)
 
 	console.table(
-		databaseResults.map((result) => ({
-			id: result.document.id,
-			content: result.document.content,
-			score: result.score
-		}))
+		databaseResults.map(
+			(result: { document: { id: string; content: string }; score: number }) => ({
+				id: result.document.id,
+				content: result.document.content,
+				score: result.score
+			})
+		)
 	)
 }
 

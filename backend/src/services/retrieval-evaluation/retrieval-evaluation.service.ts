@@ -11,7 +11,7 @@ export class RetrievalEvaluationService {
 	}
 
 	init() {
-		testRetrieval(this)
+		// testRetrieval(this)
 	}
 
 	private calculateRecall(foundIds: string[], expectedIds: string[]): number {

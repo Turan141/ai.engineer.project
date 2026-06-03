@@ -41,3 +41,7 @@ export type {
 	IRetrievalTestCase,
 	IEvaluationResult
 } from "../shared/interfaces/retrieval-evaluation.interface.js"
+
+export type { IReplaceResult } from "../shared/interfaces/file-system.interface.js"
+
+export type { ITool } from "../shared/interfaces/ai-tools.interface.js"

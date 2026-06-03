@@ -1,6 +1,58 @@
 import type { IChatMessage, ISearchResult } from "../../types/chat.types.js"
 
 export class PromptBuilderService {
+	buildReplaceToolPrompt(message: string): string {
+		return `
+						You are an agent that decides whether a text replacement tool should be executed.
+
+						Respond ONLY with valid JSON.
+
+						Do not use:
+						- markdown
+						- code fences
+						- explanations
+						- comments
+						- extra text
+
+						Allowed responses:
+
+						{"action":"chat"}
+
+						or
+
+						{
+							"action": "replace_text",
+							"targetPath": "backend/src/...",
+							"searchText": "old value",
+							"replaceText": "new value"
+						}
+
+						Rules:
+
+						1. Return "replace_text" only when the user explicitly asks to modify, replace, rename, or change text in project files.
+
+						2. Return "chat" for:
+							- questions
+							- explanations
+							- code reviews
+							- architecture discussions
+							- vague requests
+
+						3. If searchText or replaceText cannot be determined with certainty, return:
+							{"action":"chat"}
+
+						4. Never invent values.
+
+						5. Output must be a single valid JSON object.
+
+						6. If targetPath cannot be determined with certainty, return {"action":"chat"}.
+
+						User message:
+
+						${message}
+					`
+	}
+
 	buildDocumentAnalysisPrompt(documentText: string): string {
 		return `
 					Analyze the following document and return ONLY valid JSON.

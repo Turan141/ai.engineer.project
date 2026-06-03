@@ -11,27 +11,50 @@ import { logger } from "./shared/logger.js"
 
 const app = express()
 
-app.use(
-	cors({
-		origin: ["https://ai-support-leather.vercel.app", "http://localhost:5173"]
-	})
-)
+const allowedOrigins = new Set(["https://ai-support-leather.vercel.app"])
 
-// Allow the Vite dev server (and any localhost port) to call the backend directly.
-// This bypasses Vite's HTTP proxy which buffers SSE responses.
+function isAllowedOrigin(origin: string): boolean {
+	return (
+		allowedOrigins.has(origin) ||
+		origin.startsWith("http://localhost") ||
+		origin.startsWith("http://127.0.0.1")
+	)
+}
+
+// Private Network Access preflights are answered before cors() can finish OPTIONS.
 app.use((req, res, next) => {
 	const origin = req.headers.origin ?? ""
-	if (origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1")) {
+
+	if (isAllowedOrigin(origin)) {
 		res.setHeader("Access-Control-Allow-Origin", origin)
 		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
+		res.setHeader("Access-Control-Allow-Private-Network", "true")
+		res.setHeader("Vary", "Origin, Access-Control-Request-Private-Network")
 	}
+
 	if (req.method === "OPTIONS") {
 		res.sendStatus(204)
 		return
 	}
+
 	next()
 })
+
+app.use(
+	cors({
+		origin(origin, callback) {
+			if (!origin || isAllowedOrigin(origin)) {
+				callback(null, true)
+				return
+			}
+
+			callback(new Error(`Origin ${origin} is not allowed by CORS`))
+		},
+		allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+		methods: ["GET", "POST", "OPTIONS", "DELETE"]
+	})
+)
 
 app.use(express.json())
 

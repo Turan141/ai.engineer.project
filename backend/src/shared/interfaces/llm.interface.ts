@@ -1,3 +1,4 @@
+import type { IAgentDecision } from "./agent.interface.js"
 import type { IChatMessage, TChatMessageRole } from "./chat.interface.js"
 
 export interface IGenerateParams {
@@ -6,6 +7,8 @@ export interface IGenerateParams {
 
 export interface ILLMService {
 	setProvider(name: string): void
+
+	decideAction(message: string): Promise<IAgentDecision>
 
 	getProviderName(): string
 

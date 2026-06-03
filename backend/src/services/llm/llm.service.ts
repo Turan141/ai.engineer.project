@@ -10,6 +10,8 @@ import { LMStudioService } from "../../providers/llm/lmstudio.provider.js"
 import { GeminiService } from "../../providers/llm/gemini.provider.js"
 import { LMStudioEmbeddingService } from "../../providers/embedding/lmstudio.embedding.provider.js"
 import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
+import type { IAgentDecision } from "../../shared/interfaces/agent.interface.js"
+import { promptBuilderService } from "../../bootstrap/dependencies.js"
 
 const log = createLogger("LLMService")
 
@@ -79,7 +81,10 @@ export class LLMService implements ILLMService {
 		const t0 = Date.now()
 		log.info({ provider: this.currentProviderName }, "llm:generate")
 		const aiResponse = await this.currentProvider.generate(params, signal)
-		log.info({ provider: this.currentProviderName, durationMs: Date.now() - t0 }, "llm:generate:done")
+		log.info(
+			{ provider: this.currentProviderName, durationMs: Date.now() - t0 },
+			"llm:generate:done"
+		)
 		return { role: "assistant", content: aiResponse }
 	}
 
@@ -89,5 +94,50 @@ export class LLMService implements ILLMService {
 	): Promise<AsyncIterable<{ text: string }>> {
 		log.info({ provider: this.currentProviderName }, "llm:stream:start")
 		return this.currentProvider.generateStream(params, signal)
+	}
+
+	isReplaceDecision(value: unknown): value is IAgentDecision {
+		if (!value || typeof value !== "object") return false
+
+		const decision = value as Record<string, unknown>
+
+		if (decision.action === "chat") return true
+
+		return (
+			typeof decision.targetPath === "string" &&
+			decision.targetPath.trim().length > 0 &&
+			decision.action === "replace_text" &&
+			typeof decision.searchText === "string" &&
+			typeof decision.replaceText === "string" &&
+			decision.searchText.trim().length >= 3
+		)
+	}
+
+	async decideAction(message: string): Promise<IAgentDecision> {
+		const prompt = promptBuilderService.buildReplaceToolPrompt(message)
+		const response = await this.generate({
+			messages: [{ role: "system", content: prompt }]
+		})
+
+		console.log("LLM decision response:", response)
+
+		try {
+			const jsonText = response.content
+				.replace(/```json/g, "")
+				.replace(/```/g, "")
+				.trim()
+			const parsed = JSON.parse(jsonText)
+			if (!this.isReplaceDecision(parsed)) {
+				return { action: "chat" }
+			} else {
+				return parsed
+			}
+		} catch (error) {
+			console.error("Invalid decision:", response.content)
+
+			return {
+				action: "chat"
+			}
+		}
 	}
 }
