@@ -17,6 +17,52 @@ const SYSTEM_MESSAGE: IChatMessage = {
 	content: promptBuilderService.buildSystemPrompt()
 }
 
+function summarizeToolResultForMemory(result: unknown): string {
+	if (
+		result &&
+		typeof result === "object" &&
+		"content" in result &&
+		typeof (result as { content?: unknown }).content === "string"
+	) {
+		const readFileResult = result as { path?: unknown; content: string }
+
+		return JSON.stringify({
+			type: "tool_result_summary",
+			path: readFileResult.path,
+			contentLength: readFileResult.content.length,
+			preview: readFileResult.content.slice(0, 1000)
+		})
+	}
+
+	if (
+		result &&
+		typeof result === "object" &&
+		"results" in result &&
+		Array.isArray((result as { results?: unknown }).results)
+	) {
+		const searchResult = result as {
+			results: Array<{ file?: unknown; matches?: unknown }>
+			count?: unknown
+			truncated?: unknown
+			maxResults?: unknown
+		}
+		const preview = searchResult.results.slice(0, 10).map((item) => ({
+			file: item.file,
+			matches: item.matches
+		}))
+
+		return JSON.stringify({
+			type: "tool_result_summary",
+			count: searchResult.count,
+			truncated: searchResult.truncated,
+			maxResults: searchResult.maxResults,
+			preview
+		})
+	}
+
+	return JSON.stringify(result)
+}
+
 function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
 	return [SYSTEM_MESSAGE, ...messages]
 }
@@ -129,7 +175,11 @@ chatRouter.post("/chat/stream", async (req, res) => {
 				res.write("data: [DONE]\n\n")
 				res.end()
 				await memoryService.addMessage(sessionId, message, "user")
-				await memoryService.addMessage(sessionId, JSON.stringify(result), "assistant")
+				await memoryService.addMessage(
+					sessionId,
+					summarizeToolResultForMemory(result),
+					"assistant"
+				)
 
 				return
 			}

@@ -27,9 +27,18 @@ export interface IReadFileResult {
 
 export interface ISearchTextArgs {
 	searchText: string
+	targetPath?: string
+	maxResults?: number
 }
 
 export interface ISearchTextResult {
 	file: string
 	matches: number
+}
+
+export interface ISearchTextToolResult {
+	results: ISearchTextResult[]
+	count: number
+	truncated: boolean
+	maxResults: number
 }

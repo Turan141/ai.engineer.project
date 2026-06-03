@@ -21,7 +21,7 @@ export class SQLiteMessageRepository implements IMessageRepository {
 		)
 	}
 
-	async trim(sessionId: string): Promise<void> {
+	async trim(sessionId: string, lastSavedMsgCount: number): Promise<void> {
 		const stmt = this.sqliteService.getDb().prepare(`
       DELETE FROM messages
       WHERE id IN (
@@ -29,12 +29,16 @@ export class SQLiteMessageRepository implements IMessageRepository {
         WHERE session_id = ?
         ORDER BY created_at ASC
         LIMIT (
-          SELECT COUNT(*) - ? FROM messages WHERE session_id = ?
+          SELECT CASE
+            WHEN COUNT(*) > ? THEN COUNT(*) - ?
+            ELSE 0
+          END
+          FROM messages WHERE session_id = ?
         )
       )
     `)
 
-		stmt.run(sessionId, 20, sessionId)
+		stmt.run(sessionId, lastSavedMsgCount, lastSavedMsgCount, sessionId)
 	}
 
 	async getMessages(sessionId: string): Promise<IChatMessage[]> {

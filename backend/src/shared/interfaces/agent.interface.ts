@@ -12,6 +12,7 @@ export interface IAgentDecision {
 		searchText?: string
 		replaceText?: string
 		targetPath?: string
+		maxResults?: number
 		dryRun?: boolean
 		pattern?: string
 		symbol?: string

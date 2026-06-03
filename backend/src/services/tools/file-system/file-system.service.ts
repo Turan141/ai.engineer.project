@@ -2,6 +2,11 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import type { ISearchTextResult } from "../../../shared/interfaces/ai-tools.interface.js"
 
+interface ISearchTextOptions {
+	maxResults: number
+	maxFileSizeBytes: number
+}
+
 export class FileSystemService {
 	private readonly ignoredDirectories = new Set([
 		"node_modules",
@@ -10,6 +15,27 @@ export class FileSystemService {
 		"build",
 		".next",
 		".cache"
+	])
+	private readonly ignoredFileNames = new Set([
+		"package-lock.json",
+		"npm-shrinkwrap.json",
+		"yarn.lock",
+		"pnpm-lock.yaml",
+		"tsconfig.tsbuildinfo"
+	])
+	private readonly searchableExtensions = new Set([
+		".ts",
+		".tsx",
+		".js",
+		".jsx",
+		".json",
+		".md",
+		".css",
+		".html",
+		".txt",
+		".env",
+		".yml",
+		".yaml"
 	])
 
 	async getFiles(rootDir: string): Promise<string[]> {
@@ -59,13 +85,32 @@ export class FileSystemService {
 		await fs.writeFile(filePath, content, "utf8")
 	}
 
-	async searchText(rootDir: string, searchText: string): Promise<ISearchTextResult[]> {
+	async searchText(
+		rootDir: string,
+		searchText: string,
+		options: ISearchTextOptions
+	): Promise<{ results: ISearchTextResult[]; truncated: boolean }> {
 		const files = await this.getFiles(rootDir)
 
 		const results: ISearchTextResult[] = []
+		let truncated = false
 
 		for (const file of files) {
+			if (results.length >= options.maxResults) {
+				truncated = true
+				break
+			}
+
 			try {
+				if (!this.isSearchableTextFile(file)) {
+					continue
+				}
+
+				const stat = await fs.stat(file)
+				if (stat.size > options.maxFileSizeBytes) {
+					continue
+				}
+
 				const content = await this.readFile(file)
 
 				const matches = content.split(searchText).length - 1
@@ -81,6 +126,14 @@ export class FileSystemService {
 			}
 		}
 
-		return results
+		return { results, truncated }
+	}
+
+	private isSearchableTextFile(filePath: string): boolean {
+		if (this.ignoredFileNames.has(path.basename(filePath))) {
+			return false
+		}
+
+		return this.searchableExtensions.has(path.extname(filePath))
 	}
 }

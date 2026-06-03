@@ -33,7 +33,9 @@ export class PromptBuilderService {
 							{
 							"action": "search_text",
 							"args": {
-								"searchText": "AgentService"
+								"searchText": "AgentService",
+								"targetPath": "optional/path",
+								"maxResults": 50
 							}
 						}
 						{
@@ -77,6 +79,8 @@ export class PromptBuilderService {
 							- покажи использование
 
 						Use search_text only when the user explicitly wants to search text occurrences.
+						When using search_text, include targetPath if the user names a folder or area.
+						Use maxResults only when the user asks for a specific limit; otherwise omit it.
 
 						Examples:
 
