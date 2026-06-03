@@ -1,10 +1,8 @@
-import {} from "../../bootstrap/dependencies.js"
 import { EAgentAction } from "../../shared/enums/agent.enums.js"
 import type { IAgentResponse } from "../../shared/interfaces/agent.interface.js"
 import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type { ReadFileTool } from "../../tools/read-file.tool.js"
 import type { SearchTextTool } from "../../tools/search-text.tools.js"
-import type { IChatMessage } from "../../types/chat.types.js"
 import type { PromptBuilderService } from "../rag/prompt-builder.service.js"
 
 export class AgentService {
@@ -92,7 +90,7 @@ export class AgentService {
 			console.log("Agent decided to explain usage for symbol:", symbol)
 			if (typeof symbol !== "string") {
 				return {
-					type: "message",
+					type: "chat",
 					action: EAgentAction.CHAT
 				}
 			}
@@ -100,14 +98,14 @@ export class AgentService {
 			const analysis = await this.explainUsage(symbol)
 			console.log("Agent explain usage analysis:", analysis)
 			return {
-				type: "message",
-				action: EAgentAction.CHAT,
-				args: analysis
+				type: "assistant_message",
+				action: EAgentAction.EXPLAIN_USAGE,
+				content: analysis
 			}
 		}
 
 		return {
-			type: "message",
+			type: "chat",
 			action: decision.action,
 			args: decision.args
 		}

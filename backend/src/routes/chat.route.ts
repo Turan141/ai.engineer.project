@@ -183,6 +183,16 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 				return
 			}
+
+			if (resp.type === "assistant_message") {
+				res.write(`data: ${JSON.stringify({ text: resp.content })}\n\n`)
+				res.write("data: [DONE]\n\n")
+				res.end()
+				await memoryService.addMessage(sessionId, message, "user")
+				await memoryService.addMessage(sessionId, resp.content, "assistant")
+
+				return
+			}
 		}
 
 		await memoryService.addMessage(sessionId, message, "user")
