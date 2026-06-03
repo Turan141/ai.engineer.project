@@ -11,14 +11,27 @@ import { logger } from "./shared/logger.js"
 
 const app = express()
 
-const allowedOrigins = new Set(["https://ai-support-leather.vercel.app"])
+const allowedOrigins = new Set([
+	"https://ai-support-leather.vercel.app",
+	...(process.env.CORS_ALLOWED_ORIGINS ?? "")
+		.split(",")
+		.map((origin) => origin.trim())
+		.filter(Boolean)
+])
+const allowedMethods = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+const defaultAllowedHeaders = "Content-Type, Authorization, Accept"
 
 function isAllowedOrigin(origin: string): boolean {
-	return (
-		allowedOrigins.has(origin) ||
-		origin.startsWith("http://localhost") ||
-		origin.startsWith("http://127.0.0.1")
-	)
+	if (allowedOrigins.has(origin)) return true
+	if (origin.startsWith("http://localhost")) return true
+	if (origin.startsWith("http://127.0.0.1")) return true
+
+	try {
+		const { hostname } = new URL(origin)
+		return hostname.endsWith(".vercel.app") || hostname.endsWith(".tail0c91e0.ts.net")
+	} catch (_error) {
+		return false
+	}
 }
 
 // Private Network Access preflights are answered before cors() can finish OPTIONS.
@@ -26,10 +39,16 @@ app.use((req, res, next) => {
 	const origin = req.headers.origin ?? ""
 
 	if (isAllowedOrigin(origin)) {
+		const requestedHeaders = req.headers["access-control-request-headers"]
+
 		res.setHeader("Access-Control-Allow-Origin", origin)
-		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
+		res.setHeader("Access-Control-Allow-Methods", allowedMethods)
+		res.setHeader(
+			"Access-Control-Allow-Headers",
+			typeof requestedHeaders === "string" ? requestedHeaders : defaultAllowedHeaders
+		)
 		res.setHeader("Access-Control-Allow-Private-Network", "true")
+		res.setHeader("Access-Control-Max-Age", "86400")
 		res.setHeader("Vary", "Origin, Access-Control-Request-Private-Network")
 	}
 
@@ -52,7 +71,7 @@ app.use(
 			callback(new Error(`Origin ${origin} is not allowed by CORS`))
 		},
 		allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-		methods: ["GET", "POST", "OPTIONS", "DELETE"]
+		methods: allowedMethods.split(", ")
 	})
 )
 

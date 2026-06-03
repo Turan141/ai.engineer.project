@@ -4,15 +4,40 @@ import { DocumentLab } from "./DocumentLab"
 import { ImageGen } from "./ImageGen"
 import { KnowledgeBase } from "./KnowledgeBase"
 
-type TView = "chat" | "image" | "document" | "knowledge"
+type TView = "agent" | "chat" | "image" | "document" | "knowledge"
 
 const App: React.FC = () => {
-	const [view, setView] = useState<TView>("chat")
+	const [view, setView] = useState<TView>("agent")
 
 	return (
 		<div className={`app-root ${view === "document" ? "app-root--document" : ""}`}>
 			<nav className='app-nav'>
 				<div className='app-nav__bar'>
+					<button
+						type='button'
+						className={`app-nav__pill ${view === "agent" ? "is-active" : ""}`}
+						onClick={() => setView("agent")}
+					>
+						<svg
+							width='14'
+							height='14'
+							viewBox='0 0 24 24'
+							fill='none'
+							stroke='currentColor'
+							strokeWidth='2.2'
+							strokeLinecap='round'
+							strokeLinejoin='round'
+							aria-hidden='true'
+						>
+							<path d='M12 8V4H8' />
+							<rect x='4' y='8' width='16' height='12' rx='2' />
+							<path d='M2 14h2' />
+							<path d='M20 14h2' />
+							<path d='M9 14h.01' />
+							<path d='M15 14h.01' />
+						</svg>
+						Agent
+					</button>
 					<button
 						type='button'
 						className={`app-nav__pill ${view === "chat" ? "is-active" : ""}`}
@@ -104,8 +129,10 @@ const App: React.FC = () => {
 			</nav>
 
 			<div className={`app-view app-view--${view}`}>
-				{view === "chat" ? (
-					<Chat />
+				{view === "agent" ? (
+					<Chat key='agent' experience='agent' />
+				) : view === "chat" ? (
+					<Chat key='chat' experience='chat' />
 				) : view === "image" ? (
 					<ImageGen />
 				) : view === "document" ? (

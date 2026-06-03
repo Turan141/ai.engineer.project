@@ -1,3 +1,5 @@
+export type TAgentActionType = "replace_text" | "chat"
+
 export interface IAgentResponse {
 	type: "message" | "tool"
 	content: string
@@ -5,9 +7,11 @@ export interface IAgentResponse {
 }
 
 export interface IAgentDecision {
-	action: "chat" | "replace_text"
-	searchText?: string
-	replaceText?: string
-	targetPath?: string
-	dryRun?: boolean
+	action: TAgentActionType
+	args?: {
+		searchText?: string
+		replaceText?: string
+		targetPath?: string
+		dryRun?: boolean
+	}
 }

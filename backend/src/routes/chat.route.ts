@@ -31,6 +31,34 @@ chatRouter.get("/chat/history/:sessionId", async (req, res) => {
 	return res.json({ history })
 })
 
+chatRouter.post("/chat", async (req, res) => {
+	const { messages } = req.body
+	const abortController = new AbortController()
+
+	req.on("close", () => {
+		abortController.abort()
+	})
+
+	if (!Array.isArray(messages)) {
+		return res.status(400).json({ error: "Messages are required" })
+	}
+
+	try {
+		const message = await llmService.generate(
+			{ messages: withSystemPrompt(messages) },
+			abortController.signal
+		)
+		return res.json({ message })
+	} catch (error) {
+		if ((error as any)?.name === "AbortError") {
+			return
+		}
+
+		console.error("Error generating chat response:", error)
+		return res.status(500).json({ error: "Failed to generate chat response" })
+	}
+})
+
 chatRouter.post("/embeddings", async (req, res) => {
 	const { text } = req.body
 
@@ -123,15 +151,20 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 			if (
 				data?.action === "replace_text" &&
-				typeof data.searchText === "string" &&
-				typeof data.replaceText === "string"
+				typeof data.args?.searchText === "string" &&
+				typeof data.args?.replaceText === "string"
 			) {
-				result = await replaceTextTool.execute({
-					searchText: data.searchText,
-					replaceText: data.replaceText,
-					targetPath: data.targetPath ?? "",
-					dryRun: true
-				})
+				const toolArgs = {
+					searchText: data.args.searchText,
+					replaceText: data.args.replaceText,
+					dryRun: data.args.dryRun ?? false
+				}
+
+				result = await replaceTextTool.execute(
+					data.args.targetPath
+						? { ...toolArgs, targetPath: data.args.targetPath }
+						: toolArgs
+				)
 			} else {
 				res.write(`data: ${JSON.stringify({ error: "Unsupported tool action" })}\n\n`)
 				res.write("data: [DONE]\n\n")

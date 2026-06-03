@@ -104,9 +104,8 @@ export class LLMService implements ILLMService {
 		if (decision.action === "chat") return true
 
 		return (
-			typeof decision.targetPath === "string" &&
-			decision.targetPath.trim().length > 0 &&
 			decision.action === "replace_text" &&
+			(decision.targetPath === undefined || typeof decision.targetPath === "string") &&
 			typeof decision.searchText === "string" &&
 			typeof decision.replaceText === "string" &&
 			decision.searchText.trim().length >= 3
@@ -114,7 +113,7 @@ export class LLMService implements ILLMService {
 	}
 
 	async decideAction(message: string): Promise<IAgentDecision> {
-		const prompt = promptBuilderService.buildReplaceToolPrompt(message)
+		const prompt = promptBuilderService.buildAgentPrompt(message)
 		const response = await this.generate({
 			messages: [{ role: "system", content: prompt }]
 		})

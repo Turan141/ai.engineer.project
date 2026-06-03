@@ -10,6 +10,11 @@ import {
 } from "../services/chat.service"
 
 type TChatMode = "stream" | "single"
+type TChatExperience = "agent" | "chat"
+
+interface IChatProps {
+	experience?: TChatExperience
+}
 
 interface IEmbeddingPreview {
 	text: string
@@ -17,7 +22,10 @@ interface IEmbeddingPreview {
 }
 
 const EMBEDDING_PREVIEW_SIZE = 8
-const SESSION_ID_STORAGE_KEY = "ai-engineer-pet-chat-session-id"
+const SESSION_ID_STORAGE_KEY_BY_EXPERIENCE: Record<TChatExperience, string> = {
+	agent: "ai-engineer-pet-agent-session-id",
+	chat: "ai-engineer-pet-chat-session-id"
+}
 
 function updateLastAssistantMessage(
 	messages: IChatMessage[],
@@ -53,25 +61,26 @@ function removeEmptyAssistantMessage(messages: IChatMessage[]): IChatMessage[] {
 	return messages
 }
 
-export const Chat: React.FC = () => {
+export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 	const [messages, setMessages] = useState<IChatMessage[]>([])
 	const [input, setInput] = useState("")
-	const [mode, setMode] = useState<TChatMode>("stream")
 	const [isLoading, setIsLoading] = useState(false)
 	const [isHistoryLoading, setIsHistoryLoading] = useState(false)
 	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
 	const [isClearing, setIsClearing] = useState(false)
 	const [embeddingPreview, setEmbeddingPreview] = useState<IEmbeddingPreview | null>(null)
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+	const mode: TChatMode = experience === "agent" ? "stream" : "single"
+	const sessionStorageKey = SESSION_ID_STORAGE_KEY_BY_EXPERIENCE[experience]
 	const [sessionId] = useState(() => {
-		const storedSessionId = window.localStorage.getItem(SESSION_ID_STORAGE_KEY)?.trim()
+		const storedSessionId = window.localStorage.getItem(sessionStorageKey)?.trim()
 
 		if (storedSessionId) {
 			return storedSessionId
 		}
 
 		const nextSessionId = crypto.randomUUID()
-		window.localStorage.setItem(SESSION_ID_STORAGE_KEY, nextSessionId)
+		window.localStorage.setItem(sessionStorageKey, nextSessionId)
 		return nextSessionId
 	})
 	const [debugMessages, setDebugMessages] = useState<IChatMessage[] | null>(null)
@@ -299,29 +308,16 @@ export const Chat: React.FC = () => {
 						</div>
 
 						<div className='settings-section'>
-							<div className='settings-section__label'>Chat mode</div>
-							<div className='chat-mode-switch' aria-label='Chat mode switch'>
-								<button
-									type='button'
-									onClick={() => setMode("stream")}
-									className={`chat-pill ${mode === "stream" ? "is-active" : ""}`}
-									disabled={isLoading || isHistoryLoading}
-								>
-									Stream /chat/stream
-								</button>
-								<button
-									type='button'
-									onClick={() => setMode("single")}
-									className={`chat-pill ${mode === "single" ? "is-active" : ""}`}
-									disabled={isLoading || isHistoryLoading}
-								>
-									Single /chat
-								</button>
+							<div className='settings-section__label'>Mode</div>
+							<div className='chat-mode-switch' aria-label='Current mode'>
+								<span className='chat-pill is-active'>
+									{experience === "agent" ? "Agent /chat/stream" : "Chat /chat"}
+								</span>
 							</div>
 							<p className='settings-section__hint'>
-								{mode === "stream"
-									? "Ответ придёт потоком сразу по мере генерации."
-									: "Ответ вернётся одним сообщением через стандартный chat endpoint."}
+								{experience === "agent"
+									? "Tool routing is isolated in the Agent tab."
+									: "Plain chat is isolated from agent tool routing."}
 							</p>
 						</div>
 
@@ -380,9 +376,11 @@ export const Chat: React.FC = () => {
 				<header className='chat-header'>
 					<div>
 						<div className='chat-eyebrow'>AI engineer pet</div>
-						<h1>Chat workbench</h1>
+						<h1>{experience === "agent" ? "Agent workbench" : "Chat workbench"}</h1>
 						<p>
-							Обычный chat, streaming chat и embeddings доступны из одного интерфейса.
+							{experience === "agent"
+								? "Agent mode uses /chat/stream and can route tool actions from the prompt."
+								: "Regular chat mode uses the standard /chat endpoint."}
 						</p>
 					</div>
 					<div
@@ -437,7 +435,7 @@ export const Chat: React.FC = () => {
 						<div>
 							<div className='chat-composer__title'>Your prompt</div>
 							<div className='chat-composer__hint'>
-								{mode === "stream" ? "Stream mode" : "Single mode"}
+								{experience === "agent" ? "Agent mode" : "Chat mode"}
 							</div>
 						</div>
 						<div className='chat-composer__topline-end'>

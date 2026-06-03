@@ -5,7 +5,7 @@ export interface ITool {
 }
 
 export interface IReplaceToolTextArgs {
-	targetPath: string
+	targetPath?: string
 	searchText: string
 	replaceText: string
 	dryRun?: boolean

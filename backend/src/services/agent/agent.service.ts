@@ -11,7 +11,7 @@ export class AgentService {
 			return {
 				type: "tool",
 				data: decision,
-				content: `Replace "${decision.searchText}" with "${decision.replaceText}"`
+				content: `Replace "${decision.args?.searchText}" with "${decision.args?.replaceText}"`
 			}
 		}
 

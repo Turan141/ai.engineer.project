@@ -22,17 +22,10 @@ export class ReplaceTextService {
 			throw new Error("searchText must be at least 3 characters")
 		}
 
-		const projectRoot = path.resolve("C:\\Users\\darkh\\ai.engineer.pet")
-		const resolvedTarget = path.resolve(targetPath)
+		const projectRoot = this.resolveProjectRoot()
+		const resolvedTarget = this.resolveTargetPath(projectRoot, targetPath)
 
-		if (!resolvedTarget.startsWith(projectRoot + path.sep)) {
-			throw new Error("targetPath is outside project root")
-		}
-
-		if (
-			resolvedTarget !== projectRoot &&
-			!resolvedTarget.startsWith(projectRoot + path.sep)
-		) {
+		if (!this.isInsideProject(projectRoot, resolvedTarget)) {
 			throw new Error("targetPath is outside project root")
 		}
 
@@ -71,5 +64,24 @@ export class ReplaceTextService {
 		}
 
 		return changedFiles
+	}
+
+	private resolveProjectRoot(): string {
+		const cwd = path.resolve(process.cwd())
+		return path.basename(cwd) === "backend" ? path.dirname(cwd) : cwd
+	}
+
+	private resolveTargetPath(projectRoot: string, targetPath?: string): string {
+		if (!targetPath || targetPath.trim().length === 0) {
+			return projectRoot
+		}
+
+		return path.isAbsolute(targetPath)
+			? path.resolve(targetPath)
+			: path.resolve(projectRoot, targetPath)
+	}
+
+	private isInsideProject(projectRoot: string, targetPath: string): boolean {
+		return targetPath === projectRoot || targetPath.startsWith(projectRoot + path.sep)
 	}
 }
