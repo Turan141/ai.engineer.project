@@ -43,6 +43,7 @@ import { ModifyHandler } from "../services/agent/handlers/modification.handler.j
 import { PatchService } from "../services/agent/patch.service.js"
 import { AgentPatchMemory } from "../storage/repositories/agent-patch.repository.js"
 import { ApplyPatchHandler } from "../services/agent/handlers/apply-patch.handler.js"
+import { ChatService } from "../services/chat/chat.service.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -138,3 +139,13 @@ export const agentHandlerRegistry = new AgentHandlerRegistry([
 ])
 
 export const agentService = new AgentService(llmService, agentHandlerRegistry)
+export const chatService = new ChatService(
+	agentService,
+	fileSystemService,
+	llmService,
+	memoryService,
+	patchService,
+	promptBuilderService,
+	ragService,
+	toolRegistry
+)
