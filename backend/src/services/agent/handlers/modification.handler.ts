@@ -114,23 +114,8 @@ export class ModifyHandler {
 		filePath: string
 	): Promise<ICodePatch> {
 		try {
-			let content = jsonString.trim()
-			if (content.startsWith("```json")) {
-				content = content
-					.replace(/^```json\s*/i, "")
-					.replace(/```$/i, "")
-					.trim()
-			}
-
-			if (content.startsWith("```")) {
-				content = content
-					.replace(/^```\s*/i, "")
-					.replace(/```$/i, "")
-					.trim()
-			}
-
-			const patch: unknown = JSON.parse(content)
-			if (this.isPatchPayload(patch)) {
+			const patch = this.parsePatchPayload(jsonString)
+			if (patch) {
 				return {
 					filePath,
 					summary: patch.summary,
@@ -149,6 +134,93 @@ export class ModifyHandler {
 				summary: "Failed to parse model response",
 				modifiedCode: ""
 			}
+		}
+	}
+
+	private parsePatchPayload(
+		content: string
+	): Pick<ICodePatch, "summary" | "modifiedCode"> | null {
+		const jsonContent = this.extractJSONContent(content)
+		const parsed = this.tryParseJSON(jsonContent)
+
+		if (this.isPatchPayload(parsed)) {
+			return parsed
+		}
+
+		if (
+			parsed &&
+			typeof parsed === "object" &&
+			"text" in parsed &&
+			typeof parsed.text === "string"
+		) {
+			return this.parsePatchPayload(parsed.text)
+		}
+
+		return null
+	}
+
+	private extractJSONContent(content: string): string {
+		const trimmed = content.trim()
+		const directJSON = this.extractJSONObject(trimmed)
+		if (directJSON) {
+			return directJSON
+		}
+
+		return trimmed
+	}
+
+	private extractJSONObject(content: string): string | null {
+		const start = content.indexOf("{")
+		if (start === -1) {
+			return null
+		}
+
+		let depth = 0
+		let inString = false
+		let escaped = false
+
+		for (let i = start; i < content.length; i += 1) {
+			const char = content[i]
+
+			if (escaped) {
+				escaped = false
+				continue
+			}
+
+			if (char === "\\") {
+				escaped = true
+				continue
+			}
+
+			if (char === '"') {
+				inString = !inString
+				continue
+			}
+
+			if (inString) {
+				continue
+			}
+
+			if (char === "{") {
+				depth += 1
+			}
+
+			if (char === "}") {
+				depth -= 1
+				if (depth === 0) {
+					return content.slice(start, i + 1)
+				}
+			}
+		}
+
+		return null
+	}
+
+	private tryParseJSON(content: string): unknown | null {
+		try {
+			return JSON.parse(content)
+		} catch (_error) {
+			return null
 		}
 	}
 

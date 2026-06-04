@@ -77,28 +77,111 @@ function isPatchPayload(value: unknown): value is TPatchPayload {
 	)
 }
 
-function parsePatchFromContent(content: string): ICodePatch | null {
+function isFailedPatchPayload(value: TPatchPayload): boolean {
+	return value.summary === "Failed to parse model response" && value.modifiedCode === ""
+}
+
+function tryParseJSON(content: string): unknown | null {
 	try {
-		const normalized = content
-			.trim()
-			.replace(/^```json\s*/i, "")
-			.replace(/^```\s*/i, "")
-			.replace(/```$/i, "")
-			.trim()
-		const parsed: unknown = JSON.parse(normalized)
-
-		if (!isPatchPayload(parsed)) {
-			return null
-		}
-
-		return {
-			filePath: parsed.filePath ?? "Pending file",
-			summary: parsed.summary,
-			modifiedCode: parsed.modifiedCode
-		}
+		return JSON.parse(content)
 	} catch (_error) {
 		return null
 	}
+}
+
+function extractJSONObject(content: string): string | null {
+	const start = content.indexOf("{")
+	if (start === -1) {
+		return null
+	}
+
+	let depth = 0
+	let inString = false
+	let escaped = false
+
+	for (let i = start; i < content.length; i += 1) {
+		const char = content[i]
+
+		if (escaped) {
+			escaped = false
+			continue
+		}
+
+		if (char === "\\") {
+			escaped = true
+			continue
+		}
+
+		if (char === '"') {
+			inString = !inString
+			continue
+		}
+
+		if (inString) {
+			continue
+		}
+
+		if (char === "{") {
+			depth += 1
+		}
+
+		if (char === "}") {
+			depth -= 1
+			if (depth === 0) {
+				return content.slice(start, i + 1)
+			}
+		}
+	}
+
+	return null
+}
+
+function parsePatchPayload(content: string): TPatchPayload | null {
+	const jsonContent = extractJSONObject(content.trim()) ?? content.trim()
+	const parsed = tryParseJSON(jsonContent)
+
+	if (isPatchPayload(parsed)) {
+		return parsed
+	}
+
+	if (
+		parsed &&
+		typeof parsed === "object" &&
+		"text" in parsed &&
+		typeof parsed.text === "string"
+	) {
+		return parsePatchPayload(parsed.text)
+	}
+
+	return null
+}
+
+function parsePatchFromContent(content: string): ICodePatch | null {
+	const parsed = parsePatchPayload(content)
+
+	if (!parsed || isFailedPatchPayload(parsed)) {
+		return null
+	}
+
+	return {
+		filePath: parsed.filePath ?? "Pending file",
+		summary: parsed.summary,
+		modifiedCode: parsed.modifiedCode
+	}
+}
+
+function buildMetadataPatch(message: IChatMessage): ICodePatch | null {
+	const patch = message.metadata?.patch
+
+	if (isPatchPayload(patch) && !isFailedPatchPayload(patch)) {
+		return {
+			filePath: patch.filePath ?? "Pending file",
+			summary: patch.summary,
+			modifiedCode: patch.modifiedCode
+		}
+	}
+
+	return null
 }
 
 function getPatchPreview(content: string): string {
@@ -183,13 +266,7 @@ function AgentMessageContent({
 	onApplyPatch?: () => void
 	isApplyingPatch?: boolean
 }) {
-	const metadataPatch = isPatchPayload(message.metadata?.patch)
-		? {
-				filePath: message.metadata.patch.filePath ?? "Pending file",
-				summary: message.metadata.patch.summary,
-				modifiedCode: message.metadata.patch.modifiedCode
-			}
-		: null
+	const metadataPatch = buildMetadataPatch(message)
 	const patch = metadataPatch ?? parsePatchFromContent(message.content)
 	const file =
 		typeof message.metadata?.file === "string"
