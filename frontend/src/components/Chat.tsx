@@ -166,7 +166,7 @@ function parsePatchFromContent(content: string): ICodePatch | null {
 	return {
 		filePath: parsed.filePath ?? "Pending file",
 		summary: parsed.summary,
-		modifiedCode: parsed.modifiedCode
+		modifiedCode: normalizePatchCode(parsed.modifiedCode)
 	}
 }
 
@@ -177,11 +177,23 @@ function buildMetadataPatch(message: IChatMessage): ICodePatch | null {
 		return {
 			filePath: patch.filePath ?? "Pending file",
 			summary: patch.summary,
-			modifiedCode: patch.modifiedCode
+			modifiedCode: normalizePatchCode(patch.modifiedCode)
 		}
 	}
 
 	return null
+}
+
+function normalizePatchCode(content: string): string {
+	if (!content.includes("\\n") && !content.includes("\\t")) {
+		return content
+	}
+
+	return content
+		.replace(/\\r\\n/g, "\n")
+		.replace(/\\n/g, "\n")
+		.replace(/\\t/g, "\t")
+		.replace(/\\"/g, '"')
 }
 
 function getPatchPreview(content: string): string {

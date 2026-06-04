@@ -232,6 +232,7 @@ textarea {
 
 .chat-message--assistant {
 	align-self: flex-start;
+	max-width: min(96%, 920px);
 }
 
 .chat-message__meta {
@@ -442,6 +443,8 @@ textarea {
 	max-height: 360px;
 	border-color: rgba(255, 159, 90, 0.18);
 	background: rgba(7, 11, 20, 0.78);
+	white-space: pre;
+	word-break: normal;
 }
 
 /* Typing spinner — three bouncing dots */
