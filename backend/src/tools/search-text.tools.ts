@@ -1,12 +1,14 @@
 import type {
 	ISearchTextArgs,
 	ISearchTextResult,
-	ISearchTextToolResult
+	ISearchTextToolResult,
+	ITool
 } from "../shared/interfaces/ai-tools.interface.js"
 
 import path from "node:path"
 import { config } from "../config/config.js"
 import type { FileSystemService } from "../services/tools/file-system/file-system.service.js"
+import { EAgentAction } from "../shared/enums/agent.enums.js"
 
 const DEFAULT_MAX_RESULTS = 50
 const MAX_RESULTS_LIMIT = 100
@@ -14,7 +16,10 @@ const MAX_FILE_SIZE_BYTES = 512 * 1024
 const MAX_OCCURRENCES_PER_FILE = 5
 const MAX_LINE_LENGTH = 300
 
-export class SearchTextTool {
+export class SearchTextTool implements ITool {
+	name = EAgentAction.SEARCH_TEXT
+	description = "Search text occurrences in project files"
+
 	constructor(private readonly fileSystemService: FileSystemService) {}
 
 	async execute(args: ISearchTextArgs): Promise<ISearchTextToolResult> {

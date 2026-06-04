@@ -1,4 +1,5 @@
 import type { EAgentAction } from "../enums/agent.enums.js"
+import type { IInvestigateArgs } from "./planner.interface.js"
 
 export type IAgentResponse =
 	| {
@@ -10,6 +11,7 @@ export type IAgentResponse =
 			type: "assistant_message"
 			action: EAgentAction
 			content: string
+			metadata?: Record<string, unknown>
 	  }
 	| {
 			type: "chat"
@@ -22,13 +24,16 @@ export interface IAgentDecision {
 	args?: {
 		searchText?: string
 		replaceText?: string
+		path?: string
 		targetPath?: string
 		maxResults?: number
 		dryRun?: boolean
 		pattern?: string
 		symbol?: string
-		target?: string
-		intent?: "implementation"
+		target?: IInvestigateArgs["target"]
+		fileName?: string
+		intent?: IInvestigateArgs["intent"]
+		mode?: IInvestigateArgs["mode"]
 	}
 }
 

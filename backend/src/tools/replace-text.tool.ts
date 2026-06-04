@@ -1,6 +1,9 @@
 import type { ITool } from "../types/chat.types.js"
 import type { ReplaceTextService } from "../services/tools/file-system/replace-text.service.js"
-import type { IReplaceToolTextArgs } from "../shared/interfaces/ai-tools.interface.js"
+import type {
+	IReplaceToolTextArgs,
+	IReplaceToolTextResult
+} from "../shared/interfaces/ai-tools.interface.js"
 import { EAgentAction } from "../shared/enums/agent.enums.js"
 
 export class ReplaceTextTool implements ITool {
@@ -9,12 +12,9 @@ export class ReplaceTextTool implements ITool {
 
 	constructor(private readonly replaceTextService: ReplaceTextService) {}
 
-	async execute(
-		params: IReplaceToolTextArgs
-	): Promise<{ files: string[]; count: number }> {
+	async execute(params: IReplaceToolTextArgs): Promise<IReplaceToolTextResult> {
 		const files = await this.replaceTextService.replace(params)
 
-		console.log("Files changed:", files)
 		return {
 			files,
 			count: files.length

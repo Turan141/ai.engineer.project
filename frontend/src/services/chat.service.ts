@@ -1,6 +1,12 @@
 import { IChatMessage } from "../types/chat.types"
 
-type OnChunk = (text: string) => void
+interface IStreamChunk {
+	text: string
+	metadata?: IChatMessage["metadata"]
+	type?: string
+}
+
+type OnChunk = (chunk: IStreamChunk) => void
 
 interface JsonRequestOptions {
 	path: string
@@ -209,10 +215,19 @@ export async function streamChat({
 				}
 
 				if (parsed && typeof parsed.text === "string") {
-					onChunk(parsed.text)
+					onChunk({
+						text: parsed.text,
+						metadata:
+							parsed.metadata && typeof parsed.metadata === "object"
+								? (parsed.metadata as IChatMessage["metadata"])
+								: undefined
+					})
 				}
 				if (parsed && parsed.type === "tool_result") {
-					onChunk(JSON.stringify(parsed.result, null, 2))
+					onChunk({
+						type: "tool_result",
+						text: JSON.stringify(parsed.result, null, 2)
+					})
 				}
 			}
 		}
@@ -235,10 +250,19 @@ export async function streamChat({
 					throw new Error(parsed.error)
 				}
 				if (parsed && typeof parsed.text === "string") {
-					onChunk(parsed.text)
+					onChunk({
+						text: parsed.text,
+						metadata:
+							parsed.metadata && typeof parsed.metadata === "object"
+								? (parsed.metadata as IChatMessage["metadata"])
+								: undefined
+					})
 				}
 				if (parsed && parsed.type === "tool_result") {
-					onChunk(JSON.stringify(parsed.result, null, 2))
+					onChunk({
+						type: "tool_result",
+						text: JSON.stringify(parsed.result, null, 2)
+					})
 				}
 			}
 		}

@@ -4,68 +4,46 @@ import type {
 	IAgentHandler,
 	IAgentResponse
 } from "../../../shared/interfaces/agent.interface.js"
-import type { IInvestigateArgs } from "../../../shared/interfaces/planner.interface.js"
-import type { ReadFileTool } from "../../../tools/read-file.tool.js"
-import type { SearchTextTool } from "../../../tools/search-text.tools.js"
-import type { ILLMService } from "../../../shared/interfaces/llm.interface.js"
-import type { PromptBuilderService } from "../../rag/prompt-builder.service.js"
+import type {
+	IInvestigateArgs,
+	InvestigateIntent,
+	InvestigateMode
+} from "../../../shared/interfaces/planner.interface.js"
+import type {
+	CodeInvestigationService,
+	ICodeInvestigationResult
+} from "../code-investigation.service.js"
+
+const INVESTIGATE_INTENTS: readonly InvestigateIntent[] = [
+	"implementation",
+	"usage",
+	"definition",
+	"summary"
+]
+const INVESTIGATE_MODES: readonly InvestigateMode[] = ["simple", "detailed"]
 
 export class InvestigateHandler implements IAgentHandler {
 	readonly action = EAgentAction.INVESTIGATE
 
-	constructor(
-		private readonly searchTextTool: SearchTextTool,
-		private readonly readFileTool: ReadFileTool,
-		private readonly llmService: ILLMService,
-		private readonly promptBuilder: PromptBuilderService
-	) {}
+	constructor(private readonly codeInvestigationService: CodeInvestigationService) {}
 
 	async execute(decision: IAgentDecision): Promise<IAgentResponse> {
 		const args = this.parseArgs(decision.args)
-
 		if (!args) {
 			return {
 				type: "chat",
 				action: EAgentAction.CHAT
 			}
 		}
+		const intent = args.intent || "implementation"
 
-		const searchResult = await this.searchTextTool.execute({
-			searchText: args.target,
-			maxResults: 10
-		})
-		const firstMatch = this.selectBestMatch(searchResult.results, args.target)
-
-		if (!firstMatch) {
-			return {
-				type: "assistant_message",
-				action: this.action,
-				content: `${args.target} not found`
-			}
-		}
-
-		const fileResult = await this.readFileTool.execute({
-			path: firstMatch.file
-		})
-
-		const prompt = this.promptBuilder.buildImplementationPrompt(
-			args.target,
-			fileResult.content
-		)
-
-		const answer = await this.llmService.generate({
-			messages: [
-				{
-					role: "user",
-					content: prompt
-				}
-			]
-		})
+		const result = await this.executeInvestigation(intent, args.target)
 
 		return {
 			type: "assistant_message",
 			action: this.action,
-			content: answer.content
+			content: result.content,
+			...(result.file ? { metadata: { file: result.file } } : {})
 		}
 	}
 
@@ -74,30 +52,49 @@ export class InvestigateHandler implements IAgentHandler {
 			return null
 		}
 
+		const mode = this.parseMode(args.mode)
+
 		return {
 			target: args.target.trim(),
-			intent: args.intent === "implementation" ? args.intent : "implementation"
+			intent: this.parseIntent(args.intent),
+			...(mode ? { mode } : {})
 		}
 	}
 
-	private selectBestMatch(
-		results: Awaited<ReturnType<SearchTextTool["execute"]>>["results"],
+	private executeInvestigation(
+		intent: InvestigateIntent,
 		target: string
-	) {
-		const declarationPattern = new RegExp(
-			`\\b(class|function|interface|type|const|let|var)\\s+${this.escapeRegExp(target)}\\b`
-		)
+	): Promise<ICodeInvestigationResult> {
+		switch (intent) {
+			case "implementation":
+				return this.codeInvestigationService.showImplementation(target)
+			case "usage":
+				return this.codeInvestigationService.explainUsage(target)
+			case "summary":
+				return this.codeInvestigationService.showSummary(target)
+			case "definition":
+				return this.codeInvestigationService.findDefinition(target)
+		}
+	}
 
+	private parseIntent(intent: unknown): InvestigateIntent {
+		return this.isInvestigateIntent(intent) ? intent : "implementation"
+	}
+
+	private parseMode(mode: unknown): InvestigateMode | undefined {
+		return this.isInvestigateMode(mode) ? mode : undefined
+	}
+
+	private isInvestigateIntent(value: unknown): value is InvestigateIntent {
 		return (
-			results.find((result) =>
-				result.occurrences.some((occurrence) =>
-					declarationPattern.test(occurrence.text)
-				)
-			) ?? results[0]
+			typeof value === "string" &&
+			INVESTIGATE_INTENTS.includes(value as InvestigateIntent)
 		)
 	}
 
-	private escapeRegExp(value: string): string {
-		return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+	private isInvestigateMode(value: unknown): value is InvestigateMode {
+		return (
+			typeof value === "string" && INVESTIGATE_MODES.includes(value as InvestigateMode)
+		)
 	}
 }

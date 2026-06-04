@@ -28,16 +28,18 @@ import { FileSystemService } from "../services/tools/file-system/file-system.ser
 import { ReplaceTextService } from "../services/tools/file-system/replace-text.service.js"
 import { AgentService } from "../services/agent/agent.service.js"
 import { ReplaceTextTool } from "../tools/replace-text.tool.js"
-import { ToolExecutorService } from "../services/tools/tool-executor.service.js"
+import { ToolRegistry } from "../services/tools/tool-registry.service.js"
 import { ListFilesTool } from "../tools/list-files.tool.js"
 import { ReadFileTool } from "../tools/read-file.tool.js"
 import { SearchTextTool } from "../tools/search-text.tools.js"
-import { AgentHandlerRegistry } from "../services/agent/handlers/agent-handler.service.js"
+import { AgentHandlerRegistry } from "../services/agent/handlers/agent-handler-registry.service.js"
 import { EAgentAction } from "../shared/enums/agent.enums.js"
 import { ChatHandler } from "../services/agent/handlers/chat.handler.js"
-import { ExplainUsageHandler } from "../services/agent/handlers/explain-usage.handler.js"
 import { ToolActionHandler } from "../services/agent/handlers/tool-action.handler.js"
 import { InvestigateHandler } from "../services/agent/handlers/investigate.handler.js"
+import { PlannerService } from "../services/agent/planner.service.js"
+import { CodeInvestigationService } from "../services/agent/code-investigation.service.js"
+import { WorkflowExecutor } from "../services/tools/workflow/workflow-executor.service.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -104,11 +106,18 @@ export const replaceTextTool = new ReplaceTextTool(replaceTextService)
 export const listFilesTool = new ListFilesTool(fileSystemService)
 export const readFileTool = new ReadFileTool(fileSystemService)
 export const searchTextTool = new SearchTextTool(fileSystemService)
-export const toolExecutorService = new ToolExecutorService(
+export const toolRegistry = new ToolRegistry([
 	replaceTextTool,
 	listFilesTool,
 	readFileTool,
 	searchTextTool
+])
+export const workflowExecutor = new WorkflowExecutor(toolRegistry)
+
+export const codeInvestigationService = new CodeInvestigationService(
+	toolRegistry,
+	llmService,
+	promptBuilderService
 )
 
 // Agent Handlers and Service
@@ -118,21 +127,8 @@ export const agentHandlerRegistry = new AgentHandlerRegistry([
 	new ToolActionHandler(EAgentAction.LIST_FILES),
 	new ToolActionHandler(EAgentAction.READ_FILE),
 	new ToolActionHandler(EAgentAction.SEARCH_TEXT),
-	new ExplainUsageHandler(
-		EAgentAction.EXPLAIN_USAGE,
-		false,
-		llmService,
-		promptBuilderService,
-		searchTextTool
-	),
-	new ExplainUsageHandler(
-		EAgentAction.EXPLAIN_SIMPLE,
-		true,
-		llmService,
-		promptBuilderService,
-		searchTextTool
-	),
-	new InvestigateHandler(searchTextTool, readFileTool, llmService, promptBuilderService)
+	new InvestigateHandler(codeInvestigationService)
 ])
 
 export const agentService = new AgentService(llmService, agentHandlerRegistry)
+export const plannerService = new PlannerService()

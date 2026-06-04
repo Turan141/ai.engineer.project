@@ -1,3 +1,11 @@
+export type InvestigateIntent =
+	| "implementation"
+	| "usage"
+	| "definition"
+	| "summary"
+	| "modification"
+export type InvestigateMode = "simple" | "detailed"
+
 export interface IPlanStep {
 	tool: string
 	args: unknown
@@ -13,5 +21,6 @@ export interface IExecutionContext {
 
 export interface IInvestigateArgs {
 	target: string
-	intent: "implementation"
+	intent: InvestigateIntent
+	mode?: InvestigateMode
 }

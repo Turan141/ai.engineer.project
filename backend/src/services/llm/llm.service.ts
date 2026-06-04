@@ -103,8 +103,6 @@ export class LLMService implements ILLMService {
 			messages: [{ role: "system", content: prompt }]
 		})
 
-		console.log("LLM decision response:", response)
-
 		try {
 			const jsonText = response.content
 				.replace(/```json/g, "")

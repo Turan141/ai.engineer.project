@@ -12,8 +12,19 @@ export interface IReplaceToolTextArgs {
 	dryRun?: boolean
 }
 
+export interface IReplaceToolTextResult {
+	files: string[]
+	count: number
+}
+
 export interface IListFilesArgs {
+	fileName?: string
 	pattern?: string
+}
+
+export interface IListFilesResult {
+	files: string[]
+	count: number
 }
 
 export interface IReadFileArgs {

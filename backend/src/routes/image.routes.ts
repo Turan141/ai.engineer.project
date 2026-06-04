@@ -7,7 +7,6 @@ export const imageRouter = Router()
 
 imageRouter.post("/image/generate", async (req, res) => {
 	const { prompt } = req.body
-	console.log(prompt)
 
 	if (typeof prompt !== "string" || prompt.trim() === "") {
 		return res.status(400).json({ error: "Prompt is required for image generation" })
@@ -34,9 +33,7 @@ imageRouter.get("/image/:id", async (req, res) => {
 	if (!imageMetadata) {
 		return res.status(404).json({ error: "Image not found" })
 	}
-	console.log(imageMetadata)
 	const filePath = path.resolve(config.comfyUiOutputPath + "/" + imageMetadata.fileName)
-	console.log(" Serving ", filePath)
 	return res.sendFile(filePath)
 })
 

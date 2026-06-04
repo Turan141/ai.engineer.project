@@ -7,7 +7,7 @@ import {
 	memoryService,
 	promptBuilderService,
 	ragService,
-	toolExecutorService
+	toolRegistry
 } from "../bootstrap/dependencies.js"
 
 export const chatRouter = Router()
@@ -163,7 +163,7 @@ chatRouter.post("/chat/stream", async (req, res) => {
 			const resp = await agentService.handle(message)
 
 			if (resp.type === "tool") {
-				const result = await toolExecutorService.execute(resp as IAgentDecision)
+				const result = await toolRegistry.execute(resp as IAgentDecision)
 				res.write(
 					`data: ${JSON.stringify({
 						type: "tool_result",
@@ -184,7 +184,12 @@ chatRouter.post("/chat/stream", async (req, res) => {
 			}
 
 			if (resp.type === "assistant_message") {
-				res.write(`data: ${JSON.stringify({ text: resp.content })}\n\n`)
+				res.write(
+					`data: ${JSON.stringify({
+						text: resp.content,
+						metadata: resp.metadata
+					})}\n\n`
+				)
 				res.write("data: [DONE]\n\n")
 				res.end()
 				await memoryService.addMessage(sessionId, message, "user")

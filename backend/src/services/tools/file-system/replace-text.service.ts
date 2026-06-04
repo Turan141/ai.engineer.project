@@ -55,8 +55,6 @@ export class ReplaceTextService {
 					console.log(`Dry run: ${file} would be updated`)
 				}
 
-				console.log(`Updated: ${file}`)
-
 				changedFiles.push(file)
 			} catch (error) {
 				console.warn(`Skipped: ${file}`, error)

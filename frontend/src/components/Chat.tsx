@@ -59,6 +59,101 @@ function removeEmptyAssistantMessage(messages: IChatMessage[]): IChatMessage[] {
 	return messages
 }
 
+function getFileName(path: string): string {
+	return path.split(/[\\/]/).filter(Boolean).at(-1) ?? path
+}
+
+function renderInlineCode(text: string): React.ReactNode[] {
+	const parts = text.split(/(`[^`]+`)/g)
+
+	return parts.map((part, index) => {
+		if (part.startsWith("`") && part.endsWith("`") && part.length > 1) {
+			return <code key={index}>{part.slice(1, -1)}</code>
+		}
+
+		return part
+	})
+}
+
+function renderMessageBlocks(content: string): React.ReactNode {
+	const blocks = content.split(/```/g)
+
+	return blocks.map((block, index) => {
+		if (index % 2 === 1) {
+			const lines = block.replace(/^\w+\n/, "").trim()
+
+			return (
+				<pre key={index} className='agent-code-block'>
+					<code>{lines}</code>
+				</pre>
+			)
+		}
+
+		return block
+			.split(/\n{2,}/)
+			.filter((paragraph) => paragraph.trim() !== "")
+			.map((paragraph, paragraphIndex) => {
+				const trimmed = paragraph.trim()
+				const heading = trimmed.match(/^(#{1,3})\s+(.+)$/)
+
+				if (heading) {
+					const HeadingTag = heading[1].length === 1 ? "h3" : "h4"
+					return (
+						<HeadingTag key={`${index}-${paragraphIndex}`} className='agent-heading'>
+							{renderInlineCode(heading[2])}
+						</HeadingTag>
+					)
+				}
+
+				const lines = trimmed.split("\n")
+				const isList = lines.every((line) => /^\s*(-|\d+\.)\s+/.test(line))
+
+				if (isList) {
+					return (
+						<ul key={`${index}-${paragraphIndex}`} className='agent-list'>
+							{lines.map((line, lineIndex) => (
+								<li key={lineIndex}>
+									{renderInlineCode(line.replace(/^\s*(-|\d+\.)\s+/, ""))}
+								</li>
+							))}
+						</ul>
+					)
+				}
+
+				return (
+					<p key={`${index}-${paragraphIndex}`} className='agent-paragraph'>
+						{renderInlineCode(trimmed)}
+					</p>
+				)
+			})
+	})
+}
+
+function AgentMessageContent({ message }: { message: IChatMessage }) {
+	const file = typeof message.metadata?.file === "string" ? message.metadata.file : null
+	const isToolResult = message.metadata?.type === "tool_result"
+
+	return (
+		<div className='agent-answer'>
+			{file && (
+				<div className='agent-source'>
+					<span className='agent-source__label'>Implementation analyzed from</span>
+					<span className='agent-source__file' title={file}>
+						{getFileName(file)}
+					</span>
+				</div>
+			)}
+			{isToolResult ? (
+				<pre className='agent-code-block agent-code-block--tool'>
+					<code>{message.content}</code>
+				</pre>
+			) : (
+				<div className='agent-answer__content'>{renderMessageBlocks(message.content)}</div>
+			)}
+		</div>
+	)
+}
+
 export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 	const [messages, setMessages] = useState<IChatMessage[]>([])
 	const [input, setInput] = useState("")
@@ -184,11 +279,16 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 				message: trimmed,
 				mode: experience,
 				signal: controller.signal,
-				onChunk: (text) => {
+				onChunk: (chunk) => {
 					setMessages((prev) =>
 						updateLastAssistantMessage(prev, (message) => ({
 							...message,
-							content: message.content + text
+							content: message.content + chunk.text,
+							metadata: {
+								...message.metadata,
+								...chunk.metadata,
+								...(chunk.type ? { type: chunk.type } : {})
+							}
 						}))
 					)
 				}
@@ -412,7 +512,11 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 										<span />
 									</span>
 								) : (
-									m.content
+									m.role === "assistant" ? (
+										<AgentMessageContent message={m} />
+									) : (
+										m.content
+									)
 								)}
 							</div>
 						</div>

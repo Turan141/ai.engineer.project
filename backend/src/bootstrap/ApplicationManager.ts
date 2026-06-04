@@ -1,4 +1,4 @@
-import { replaceTextService, sqLiteService } from "./dependencies.js"
+import { sqLiteService } from "./dependencies.js"
 
 export async function initializeApplication(): Promise<void> {
 	console.log("Initializing application...")
