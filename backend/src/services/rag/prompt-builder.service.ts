@@ -7,6 +7,23 @@ import type {
 import type { IChatMessage, ISearchResult } from "../../types/chat.types.js"
 
 export class PromptBuilderService {
+	buildImplementationPrompt(symbol: string, code: string): string {
+		return `
+						You are a senior TypeScript engineer.
+						Analyze implementation of:
+						${symbol}
+						Provide:
+						1. Purpose
+						2. Main responsibilities
+						3. Important methods
+						4. Dependencies
+						5. Summary
+						Code:
+						<code>
+						${code}
+						</code>`
+	}
+
 	buildAgentPrompt(message: string): string {
 		return `
 						You are a software engineering agent.
@@ -58,6 +75,33 @@ export class PromptBuilderService {
 								"symbol": "AgentService"
 							}
 						}
+						Show implementation of AgentService
+						{
+							"action": "investigate",
+							"args": {
+								"target": "AgentService",
+								"intent": "implementation"
+							}
+						}
+
+						How does AgentService work?
+						{
+							"action": "investigate",
+							"args": {
+								"target": "AgentService",
+								"intent": "implementation"
+							}
+						}
+
+						Explain UserService implementation
+						{
+							"action": "investigate",
+							"args": {
+								"target": "UserService",
+								"intent": "implementation"
+							}
+						}
+
 						Rules:
 						- Use chat for general conversation and when information is missing.
 						- Use read_file when the user asks to read a specific file.

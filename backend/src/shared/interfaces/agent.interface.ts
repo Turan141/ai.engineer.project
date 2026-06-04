@@ -27,5 +27,12 @@ export interface IAgentDecision {
 		dryRun?: boolean
 		pattern?: string
 		symbol?: string
+		target?: string
+		intent?: "implementation"
 	}
+}
+
+export interface IAgentHandler {
+	action: EAgentAction
+	execute(decision: IAgentDecision): Promise<IAgentResponse>
 }

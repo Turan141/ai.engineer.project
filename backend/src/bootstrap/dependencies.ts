@@ -32,6 +32,12 @@ import { ToolExecutorService } from "../services/tools/tool-executor.service.js"
 import { ListFilesTool } from "../tools/list-files.tool.js"
 import { ReadFileTool } from "../tools/read-file.tool.js"
 import { SearchTextTool } from "../tools/search-text.tools.js"
+import { AgentHandlerRegistry } from "../services/agent/handlers/agent-handler.service.js"
+import { EAgentAction } from "../shared/enums/agent.enums.js"
+import { ChatHandler } from "../services/agent/handlers/chat.handler.js"
+import { ExplainUsageHandler } from "../services/agent/handlers/explain-usage.handler.js"
+import { ToolActionHandler } from "../services/agent/handlers/tool-action.handler.js"
+import { InvestigateHandler } from "../services/agent/handlers/investigate.handler.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -105,8 +111,28 @@ export const toolExecutorService = new ToolExecutorService(
 	searchTextTool
 )
 
-export const agentService = new AgentService(
-	llmService,
-	promptBuilderService,
-	searchTextTool
-)
+// Agent Handlers and Service
+export const agentHandlerRegistry = new AgentHandlerRegistry([
+	new ChatHandler(),
+	new ToolActionHandler(EAgentAction.REPLACE_TEXT),
+	new ToolActionHandler(EAgentAction.LIST_FILES),
+	new ToolActionHandler(EAgentAction.READ_FILE),
+	new ToolActionHandler(EAgentAction.SEARCH_TEXT),
+	new ExplainUsageHandler(
+		EAgentAction.EXPLAIN_USAGE,
+		false,
+		llmService,
+		promptBuilderService,
+		searchTextTool
+	),
+	new ExplainUsageHandler(
+		EAgentAction.EXPLAIN_SIMPLE,
+		true,
+		llmService,
+		promptBuilderService,
+		searchTextTool
+	),
+	new InvestigateHandler(searchTextTool, readFileTool, llmService, promptBuilderService)
+])
+
+export const agentService = new AgentService(llmService, agentHandlerRegistry)
