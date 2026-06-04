@@ -7,7 +7,6 @@ import { initializeApplication } from "./bootstrap/ApplicationManager.js"
 import { imageRouter } from "./routes/image.routes.js"
 import { documentRouter } from "./routes/document.route.js"
 import { debugRouter } from "./routes/debug.route.js"
-import { logger } from "./shared/logger.js"
 
 const app = express()
 
@@ -83,19 +82,6 @@ app.use((req, res, next) => {
 	const start = Date.now()
 	;(req as any).requestId = requestId
 
-	res.on("finish", () => {
-		logger.info(
-			{
-				requestId,
-				method: req.method,
-				url: req.url,
-				status: res.statusCode,
-				durationMs: Date.now() - start
-			},
-			"http"
-		)
-	})
-
 	next()
 })
 
@@ -113,7 +99,7 @@ async function bootstrap(): Promise<void> {
 	await initializeApplication()
 
 	app.listen(process.env.PORT, () => {
-		logger.info({ port: process.env.PORT ?? 3000 }, "server started")
+		console.log(`Server started on port ${process.env.PORT ?? 3000}`)
 	})
 }
 

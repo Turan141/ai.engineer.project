@@ -31,3 +31,8 @@ export interface IModifyArgs {
 	target: string
 	task: string
 }
+
+export interface ICodePatch {
+	summary: string
+	modifiedCode: string
+}

@@ -32,7 +32,7 @@ import { ToolRegistry } from "../services/tools/tool-registry.service.js"
 import { ListFilesTool } from "../tools/list-files.tool.js"
 import { ReadFileTool } from "../tools/read-file.tool.js"
 import { SearchTextTool } from "../tools/search-text.tools.js"
-import { AgentHandlerRegistry } from "../services/agent/handlers/agent-handler-registry.service.js"
+import { AgentHandlerRegistry } from "../services/agent/handlers/handler-registry.service.js"
 import { EAgentAction } from "../shared/enums/agent.enums.js"
 import { ChatHandler } from "../services/agent/handlers/chat.handler.js"
 import { ToolActionHandler } from "../services/agent/handlers/tool-action.handler.js"
@@ -40,6 +40,8 @@ import { InvestigateHandler } from "../services/agent/handlers/investigate.handl
 import { PlannerService } from "../services/agent/planner.service.js"
 import { CodeInvestigationService } from "../services/agent/code-investigation.service.js"
 import { ModifyHandler } from "../services/agent/handlers/modification.handler.js"
+import { PatchService } from "../services/agent/apply-patch.service.js"
+import { AgentPatchMemory } from "../storage/repositories/agent-patch.repository.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -60,6 +62,7 @@ export const sqliteVectorRepository = new SQLiteVectorRepository(
 
 // Memory
 export const imageMemory = new ImageMemory()
+export const agentPatchMemory = new AgentPatchMemory()
 
 // Filters
 export const retrievalFilter = new ThresholdRetrievalFilter(config.rag.treshold)
@@ -118,6 +121,8 @@ export const codeInvestigationService = new CodeInvestigationService(
 	llmService,
 	promptBuilderService
 )
+export const patchService = new PatchService(agentPatchMemory)
+export const plannerService = new PlannerService()
 
 // Agent Handlers and Service
 export const agentHandlerRegistry = new AgentHandlerRegistry([
@@ -127,8 +132,7 @@ export const agentHandlerRegistry = new AgentHandlerRegistry([
 	new ToolActionHandler(EAgentAction.READ_FILE),
 	new ToolActionHandler(EAgentAction.SEARCH_TEXT),
 	new InvestigateHandler(codeInvestigationService),
-	new ModifyHandler(toolRegistry, llmService)
+	new ModifyHandler(toolRegistry, llmService, patchService)
 ])
 
 export const agentService = new AgentService(llmService, agentHandlerRegistry)
-export const plannerService = new PlannerService()

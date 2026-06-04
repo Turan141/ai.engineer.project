@@ -8,5 +8,6 @@ export enum EAgentAction {
 	EXPLAIN_SIMPLE = "explain_simple",
 	INVESTIGATE = "investigate",
 	MODIFY = "modify",
+	CONFIRM_PATCH = "confirm_patch",
 	FINISH = "finish"
 }

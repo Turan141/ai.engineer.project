@@ -93,6 +93,7 @@ export class FileSystemService {
 		options: ISearchTextOptions
 	): Promise<{ results: ISearchTextResult[]; truncated: boolean }> {
 		const files = await this.getFiles(rootDir)
+		const normalizedSearchText = searchText.toLowerCase()
 
 		const results: ISearchTextResult[] = []
 		let truncated = false
@@ -119,11 +120,13 @@ export class FileSystemService {
 				let matches = 0
 
 				const occurrences = lines.flatMap((line, index) => {
-					if (!line.includes(searchText)) {
+					const normalizedLine = line.toLowerCase()
+
+					if (!normalizedLine.includes(normalizedSearchText)) {
 						return []
 					}
 
-					matches += line.split(searchText).length - 1
+					matches += normalizedLine.split(normalizedSearchText).length - 1
 
 					return [
 						{

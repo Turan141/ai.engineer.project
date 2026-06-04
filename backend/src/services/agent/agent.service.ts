@@ -1,6 +1,6 @@
 import type { IAgentResponse } from "../../shared/interfaces/agent.interface.js"
 import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
-import type { AgentHandlerRegistry } from "./handlers/agent-handler-registry.service.js"
+import type { AgentHandlerRegistry } from "./handlers/handler-registry.service.js"
 
 export class AgentService {
 	constructor(

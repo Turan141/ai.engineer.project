@@ -56,9 +56,3 @@ export interface IGenerateImageProviderQueryResult {
 export interface IImagePresetService {
 	get(): Promise<IGenerateImageParams>
 }
-
-interface IImagePresetConfig {
-	width: number
-	height: number
-	workflowFile: string
-}

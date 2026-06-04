@@ -80,7 +80,6 @@ export class LLMService implements ILLMService {
 
 	async generate(params: IGenerateParams, signal?: AbortSignal): Promise<IChatMessage> {
 		const t0 = Date.now()
-		log.info({ provider: this.currentProviderName }, "llm:generate")
 		const aiResponse = await this.currentProvider.generate(params, signal)
 		log.info(
 			{ provider: this.currentProviderName, durationMs: Date.now() - t0 },
@@ -93,7 +92,6 @@ export class LLMService implements ILLMService {
 		params: IGenerateParams,
 		signal?: AbortSignal
 	): Promise<AsyncIterable<{ text: string }>> {
-		log.info({ provider: this.currentProviderName }, "llm:stream:start")
 		return this.currentProvider.generateStream(params, signal)
 	}
 

@@ -1,8 +1,5 @@
 import { config } from "../../config/config.js"
 import type { IEmbeddingProvider, IEmbeddingResponse } from "../../types/chat.types.js"
-import { createLogger } from "../../shared/logger.js"
-
-const log = createLogger("LMStudioEmbedding")
 
 export class LMStudioEmbeddingService implements IEmbeddingProvider {
 	async generateEmbedding(text: string, signal?: AbortSignal): Promise<number[]> {
@@ -31,11 +28,6 @@ export class LMStudioEmbeddingService implements IEmbeddingProvider {
 		if (!Array.isArray(embedding)) {
 			throw new Error("LM Studio returned invalid embedding")
 		}
-
-		log.debug(
-			{ textLength: text.length, dims: embedding.length, durationMs: Date.now() - t0 },
-			"embed:generated"
-		)
 
 		return embedding
 	}
