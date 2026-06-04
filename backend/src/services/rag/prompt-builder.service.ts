@@ -82,6 +82,14 @@ export class PromptBuilderService {
 							}
 
 							{
+							"action": "modify",
+							"args": {
+							"target": "AgentService",
+							"task": "Refactor AgentService"
+							}
+							}
+
+							{
 							"action": "replace_text",
 							"args": {
 							"searchText": "old",
@@ -317,7 +325,8 @@ export class PromptBuilderService {
 							* Use investigate for implementation and usage questions.
 							* Use search_text only when the user explicitly asks to search text.
 							* Use read_file only when the user explicitly asks to read a file.
-							* Use replace_text only when the user explicitly asks to modify code.
+							* Use modify when the user asks to refactor, fix, improve, add, remove, or otherwise change code in a file/class/module.
+							* Use replace_text only when the user explicitly asks for a literal search-and-replace operation.
 							* Use chat when information is missing.
 							* Return exactly one JSON object.
 
@@ -517,6 +526,7 @@ Return only the analysis.
 
 				If the task is a refactor:
 
+				- Treat an explicit refactor request as a request to return an improved version of the file.
 				- Improve readability.
 				- Reduce duplication.
 				- Extract helper methods when beneficial.
@@ -526,8 +536,6 @@ Return only the analysis.
 				- Do NOT add logging.
 				- Do NOT add comments.
 				- Do NOT change architecture.
-				- If the file is already simple and no meaningful refactor exists:
-				- Return the original code unchanged.
 				- Do not invent refactors.
 				- Do not rename variables unless it provides a clear benefit.
 
@@ -568,7 +576,13 @@ Return only the analysis.
 				- Do not use code fences.
 				- Do not include explanations outside JSON.
 
-				If no meaningful improvement can be made:
+				NO-CHANGE RULE:
+
+				Only return "No meaningful changes required" when the requested change is already fully present in the code or the task is impossible for this file.
+				Do not use "No meaningful changes required" just because the safest refactor is small.
+				For explicit refactor, improve, fix, add, or remove requests, prefer a minimal correct code change over no-op output.
+
+				If and only if no change is valid:
 
 				{
 					"summary": "No meaningful changes required",

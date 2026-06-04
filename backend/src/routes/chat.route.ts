@@ -71,8 +71,12 @@ function summarizeAgentResponseForMemory(content: string, metadata?: Record<stri
 		typeof patch === "object" &&
 		"summary" in patch &&
 		"filePath" in patch &&
+		"modifiedCode" in patch &&
 		typeof patch.summary === "string" &&
-		typeof patch.filePath === "string"
+		typeof patch.filePath === "string" &&
+		typeof patch.modifiedCode === "string" &&
+		patch.summary !== "Failed to parse model response" &&
+		patch.modifiedCode.trim() !== ""
 	) {
 		return JSON.stringify({
 			type: "agent_patch_summary",
@@ -90,7 +94,10 @@ function summarizeAgentResponseForMemory(content: string, metadata?: Record<stri
 			typeof parsed === "object" &&
 			"summary" in parsed &&
 			"modifiedCode" in parsed &&
-			typeof parsed.summary === "string"
+			typeof parsed.summary === "string" &&
+			typeof parsed.modifiedCode === "string" &&
+			parsed.summary !== "Failed to parse model response" &&
+			parsed.modifiedCode.trim() !== ""
 		) {
 			return JSON.stringify({
 				type: "agent_patch_summary",

@@ -22,6 +22,12 @@ interface IEmbeddingPreview {
 type TPatchPayload = Pick<ICodePatch, "summary" | "modifiedCode"> &
 	Partial<Pick<ICodePatch, "filePath">>
 
+interface IAgentPatchSummary {
+	type: "agent_patch_summary"
+	file?: string
+	summary: string
+}
+
 const EMBEDDING_PREVIEW_SIZE = 8
 const SESSION_ID_STORAGE_KEY_BY_EXPERIENCE: Record<TChatExperience, string> = {
 	agent: "ai-engineer-pet-agent-session-id",
@@ -74,6 +80,17 @@ function isPatchPayload(value: unknown): value is TPatchPayload {
 		"modifiedCode" in value &&
 		typeof value.summary === "string" &&
 		typeof value.modifiedCode === "string"
+	)
+}
+
+function isAgentPatchSummary(value: unknown): value is IAgentPatchSummary {
+	return (
+		!!value &&
+		typeof value === "object" &&
+		"type" in value &&
+		(value as { type?: unknown }).type === "agent_patch_summary" &&
+		"summary" in value &&
+		typeof (value as { summary?: unknown }).summary === "string"
 	)
 }
 
@@ -184,6 +201,12 @@ function buildMetadataPatch(message: IChatMessage): ICodePatch | null {
 	return null
 }
 
+function parseAgentPatchSummary(content: string): IAgentPatchSummary | null {
+	const parsed = tryParseJSON(content.trim())
+
+	return isAgentPatchSummary(parsed) ? parsed : null
+}
+
 function normalizePatchCode(content: string): string {
 	if (!content.includes("\\n") && !content.includes("\\t")) {
 		return content
@@ -280,10 +303,11 @@ function AgentMessageContent({
 }) {
 	const metadataPatch = buildMetadataPatch(message)
 	const patch = metadataPatch ?? parsePatchFromContent(message.content)
+	const patchSummary = patch ? null : parseAgentPatchSummary(message.content)
 	const file =
 		typeof message.metadata?.file === "string"
 			? message.metadata.file
-			: patch?.filePath ?? null
+			: patch?.filePath ?? patchSummary?.file ?? null
 	const isToolResult = message.metadata?.type === "tool_result"
 
 	return (
@@ -324,11 +348,20 @@ function AgentMessageContent({
 					</pre>
 				</div>
 			)}
+			{patchSummary && (
+				<div className='agent-answer__content'>
+					<p className='agent-paragraph'>
+						{patchSummary.summary === "Failed to parse model response"
+							? "Patch generation failed. Try the request again with a more specific change."
+							: patchSummary.summary}
+					</p>
+				</div>
+			)}
 			{isToolResult ? (
 				<pre className='agent-code-block agent-code-block--tool'>
 					<code>{message.content}</code>
 				</pre>
-			) : patch ? null : (
+			) : patch || patchSummary ? null : (
 				<div className='agent-answer__content'>{renderMessageBlocks(message.content)}</div>
 			)}
 		</div>
