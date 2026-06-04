@@ -3,18 +3,36 @@ import type { IChatMessage } from "../types/chat.types.js"
 import type { IAgentDecision } from "../shared/interfaces/agent.interface.js"
 import {
 	agentService,
+	fileSystemService,
 	llmService,
 	memoryService,
+	patchService,
 	promptBuilderService,
 	ragService,
 	toolRegistry
 } from "../bootstrap/dependencies.js"
+import type { ICodePatch } from "../shared/interfaces/planner.interface.js"
 
 export const chatRouter = Router()
 
 const SYSTEM_MESSAGE: IChatMessage = {
 	role: "system",
 	content: promptBuilderService.buildSystemPrompt()
+}
+
+function isCodePatch(value: unknown): value is ICodePatch {
+	return (
+		!!value &&
+		typeof value === "object" &&
+		"filePath" in value &&
+		"summary" in value &&
+		"modifiedCode" in value &&
+		typeof value.filePath === "string" &&
+		value.filePath.trim() !== "" &&
+		typeof value.summary === "string" &&
+		typeof value.modifiedCode === "string" &&
+		value.modifiedCode.trim() !== ""
+	)
 }
 
 function summarizeToolResultForMemory(result: unknown): string {
@@ -209,10 +227,60 @@ chatRouter.post("/chat/stream", async (req, res) => {
 	})
 
 	try {
-		const { sessionId, message, mode = "agent" } = req.body
+		const { sessionId, message, mode = "agent", applyPatch, patch } = req.body
 		if (typeof sessionId !== "string" || sessionId.trim() === "") {
 			res.write(`data: ${JSON.stringify({ error: "Session ID is required" })}\n\n`)
 			res.end()
+			return
+		}
+
+		if (mode === "agent" && applyPatch === true) {
+			const directPatch = isCodePatch(patch)
+				? patch
+				: await patchService.getPendingPatch(sessionId)
+
+			if (!directPatch) {
+				res.write(
+					`data: ${JSON.stringify({
+						text: "No pending patch found for this session."
+					})}\n\n`
+				)
+				res.write("data: [DONE]\n\n")
+				res.end()
+				await memoryService.addMessage(sessionId, message, "user")
+				await memoryService.addMessage(
+					sessionId,
+					"No pending patch found for this session.",
+					"assistant"
+				)
+				return
+			}
+
+			await fileSystemService.writeFile(
+				directPatch.filePath,
+				directPatch.modifiedCode
+			)
+			await patchService.clearPendingPatch(sessionId)
+
+			const content = `Patch applied: ${directPatch.summary}`
+			const metadata = {
+				file: directPatch.filePath
+			}
+
+			res.write(
+				`data: ${JSON.stringify({
+					text: content,
+					metadata
+				})}\n\n`
+			)
+			res.write("data: [DONE]\n\n")
+			res.end()
+			await memoryService.addMessage(sessionId, message, "user")
+			await memoryService.addMessage(
+				sessionId,
+				summarizeAgentResponseForMemory(content, metadata),
+				"assistant"
+			)
 			return
 		}
 

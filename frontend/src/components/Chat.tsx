@@ -298,7 +298,7 @@ function AgentMessageContent({
 	isApplyingPatch
 }: {
 	message: IChatMessage
-	onApplyPatch?: () => void
+	onApplyPatch?: (patch: ICodePatch) => void
 	isApplyingPatch?: boolean
 }) {
 	const metadataPatch = buildMetadataPatch(message)
@@ -333,7 +333,7 @@ function AgentMessageContent({
 							<button
 								type='button'
 								className='agent-patch__apply'
-								onClick={onApplyPatch}
+								onClick={() => onApplyPatch(patch)}
 								disabled={isApplyingPatch}
 							>
 								{isApplyingPatch ? "Applying..." : "Apply patch"}
@@ -463,7 +463,7 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 
 	const sendAgentMessage = async (
 		trimmed: string,
-		options: { clearInput?: boolean; applyingPatch?: boolean } = {}
+		options: { clearInput?: boolean; applyingPatch?: boolean; patch?: ICodePatch } = {}
 	) => {
 		if (!trimmed || isLoading || isHistoryLoading || isApplyingPatch) {
 			return
@@ -500,6 +500,8 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 				message: trimmed,
 				mode: experience,
 				signal: controller.signal,
+				applyPatch: options.applyingPatch,
+				patch: options.patch,
 				onChunk: (chunk) => {
 					setMessages((prev) =>
 						updateLastAssistantMessage(prev, (message) => ({
@@ -540,8 +542,8 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 		await sendAgentMessage(trimmed, { clearInput: true })
 	}
 
-	const handleApplyPatch = async () => {
-		await sendAgentMessage("confirm", { applyingPatch: true })
+	const handleApplyPatch = async (patch: ICodePatch) => {
+		await sendAgentMessage("Apply patch", { applyingPatch: true, patch })
 	}
 
 	const handleGenerateEmbedding = async () => {

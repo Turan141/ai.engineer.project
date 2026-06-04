@@ -1,4 +1,4 @@
-import { IChatMessage } from "../types/chat.types"
+import { IChatMessage, ICodePatch } from "../types/chat.types"
 
 interface IStreamChunk {
 	text: string
@@ -20,6 +20,8 @@ interface StreamOptions {
 	mode: "agent" | "chat"
 	onChunk: OnChunk
 	signal?: AbortSignal
+	applyPatch?: boolean
+	patch?: ICodePatch
 }
 
 // In development (VITE_API_BASE=http://localhost:3000) requests go straight to the
@@ -146,12 +148,14 @@ export async function streamChat({
 	message,
 	mode,
 	onChunk,
-	signal
+	signal,
+	applyPatch,
+	patch
 }: StreamOptions): Promise<void> {
 	const res = await fetch(`${API_BASE}/api/chat/stream`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-		body: JSON.stringify({ sessionId, message, mode }),
+		body: JSON.stringify({ sessionId, message, mode, applyPatch, patch }),
 		signal
 	})
 
