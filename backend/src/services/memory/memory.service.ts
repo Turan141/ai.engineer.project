@@ -1,6 +1,10 @@
 import type { IChatMessage, TChatMessageRole } from "../../types/chat.types.js"
 import type { IMessageRepository, ISummaryRepository, ISummaryService } from "./types.js"
 
+const MAX_MEMORY_MESSAGE_CHARS = 4_000
+const MAX_SUMMARY_INPUT_MESSAGE_CHARS = 2_000
+const MAX_MEMORY_SUMMARY_CHARS = 3_000
+
 export class MemoryService {
 	constructor(
 		private readonly summaryService: ISummaryService,
@@ -31,9 +35,14 @@ export class MemoryService {
 		const messages = await this.messageRepository.getMessages(sessionId)
 		if (messages.length > this.MAX_MESSAGES) {
 			const summarizedMessages = await this.summaryRepository.getSummary(sessionId)
-			const messagesToSummarize = messages.slice(0, -this.LAST_SAVED_MESSAGES_COUNT)
+			const compactCurrentSummary = summarizedMessages
+				? this.truncateText(summarizedMessages, MAX_MEMORY_SUMMARY_CHARS)
+				: null
+			const messagesToSummarize = messages
+				.slice(0, -this.LAST_SAVED_MESSAGES_COUNT)
+				.map((message) => this.truncateMessage(message, MAX_SUMMARY_INPUT_MESSAGE_CHARS))
 			const summary = await this.summaryService.generateSummary(
-				summarizedMessages,
+				compactCurrentSummary,
 				messagesToSummarize
 			)
 			await this.summaryRepository.addSummary(sessionId, summary)
@@ -49,17 +58,44 @@ export class MemoryService {
 	async getConversationContext(sessionId: string): Promise<IChatMessage[]> {
 		const messages = await this.messageRepository.getMessages(sessionId)
 		const summary = await this.summaryRepository.getSummary(sessionId)
+		const compactSummary = summary
+			? this.truncateText(summary, MAX_MEMORY_SUMMARY_CHARS)
+			: null
+		const compactMessages = messages.map((message) =>
+			this.truncateMessage(message, MAX_MEMORY_MESSAGE_CHARS)
+		)
 
 		return [
-			...(summary
+			...(compactSummary
 				? [
 						{
 							role: "system",
-							content: `Conversation summary:\n${summary}`
+							content: `Conversation summary:\n${compactSummary}`
 						} as IChatMessage
 					]
 				: []),
-			...messages
+			...compactMessages
 		]
+	}
+
+	private truncateMessage(message: IChatMessage, maxChars: number): IChatMessage {
+		if (message.content.length <= maxChars) {
+			return message
+		}
+
+		return {
+			...message,
+			content: this.truncateText(message.content, maxChars)
+		}
+	}
+
+	private truncateText(content: string, maxChars: number): string {
+		if (content.length <= maxChars) {
+			return content
+		}
+
+		return `${content.slice(0, maxChars)}
+
+[Text truncated: ${content.length - maxChars} characters omitted]`
 	}
 }

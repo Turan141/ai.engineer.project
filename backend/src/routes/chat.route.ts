@@ -63,6 +63,51 @@ function summarizeToolResultForMemory(result: unknown): string {
 	return JSON.stringify(result)
 }
 
+function summarizeAgentResponseForMemory(content: string, metadata?: Record<string, unknown>): string {
+	const patch = metadata?.patch
+
+	if (
+		patch &&
+		typeof patch === "object" &&
+		"summary" in patch &&
+		"filePath" in patch &&
+		typeof patch.summary === "string" &&
+		typeof patch.filePath === "string"
+	) {
+		return JSON.stringify({
+			type: "agent_patch_summary",
+			file: patch.filePath,
+			summary: patch.summary
+		})
+	}
+
+	const trimmedContent = content.trim()
+
+	try {
+		const parsed: unknown = JSON.parse(trimmedContent)
+		if (
+			parsed &&
+			typeof parsed === "object" &&
+			"summary" in parsed &&
+			"modifiedCode" in parsed &&
+			typeof parsed.summary === "string"
+		) {
+			return JSON.stringify({
+				type: "agent_patch_summary",
+				summary: parsed.summary
+			})
+		}
+	} catch (_error) {
+		// Non-JSON assistant messages are stored as a bounded text preview below.
+	}
+
+	return content.length > 2000
+		? `${content.slice(0, 2000)}
+
+[Assistant response truncated for memory: ${content.length - 2000} characters omitted]`
+		: content
+}
+
 function withSystemPrompt(messages: IChatMessage[]): IChatMessage[] {
 	return [SYSTEM_MESSAGE, ...messages]
 }
@@ -200,7 +245,11 @@ chatRouter.post("/chat/stream", async (req, res) => {
 				res.write("data: [DONE]\n\n")
 				res.end()
 				await memoryService.addMessage(sessionId, message, "user")
-				await memoryService.addMessage(sessionId, resp.content, "assistant")
+				await memoryService.addMessage(
+					sessionId,
+					summarizeAgentResponseForMemory(resp.content, resp.metadata),
+					"assistant"
+				)
 
 				return
 			}

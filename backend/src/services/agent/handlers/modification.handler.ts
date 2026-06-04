@@ -18,6 +18,8 @@ import type { LLMService } from "../../llm/llm.service.js"
 import type { ToolRegistry } from "../../tools/tool-registry.service.js"
 import type { PatchService } from "../patch.service.js"
 
+const MAX_MODIFICATION_CONTEXT_CHARS = 30_000
+
 export class ModifyHandler {
 	constructor(
 		private readonly toolRegistry: ToolRegistry,
@@ -82,7 +84,7 @@ export class ModifyHandler {
 		const prompt = promptBuilderService.buildModificationPrompt(
 			parsedArgs.task,
 			filePath,
-			readData?.content ?? ""
+			this.truncateContent(readData?.content ?? "")
 		)
 
 		const answer = await this.llmService.generate({
@@ -161,6 +163,16 @@ export class ModifyHandler {
 			typeof value.summary === "string" &&
 			typeof value.modifiedCode === "string"
 		)
+	}
+
+	private truncateContent(content: string): string {
+		if (content.length <= MAX_MODIFICATION_CONTEXT_CHARS) {
+			return content
+		}
+
+		return `${content.slice(0, MAX_MODIFICATION_CONTEXT_CHARS)}
+
+[Content truncated: ${content.length - MAX_MODIFICATION_CONTEXT_CHARS} characters omitted]`
 	}
 
 	private async findTargetFile(target: string): Promise<string | null> {
