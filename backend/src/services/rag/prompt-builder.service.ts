@@ -551,6 +551,8 @@ Return only the analysis.
 				CRITICAL:
 
 				modifiedCode MUST contain the complete file content.
+				modifiedCode MUST be a JSON string compatible with JSON.stringify.
+				Escape all newlines as \\n, tabs as \\t, backslashes as \\\\, and quotes as \\" inside modifiedCode.
 				Never use:
 				- "// ... original file content ..."
 				- "// unchanged"
@@ -572,6 +574,7 @@ Return only the analysis.
 
 				- modifiedCode must contain the entire updated file.
 				- Return valid JSON only.
+				- The response must be parseable by JSON.parse without preprocessing.
 				- Do not use markdown.
 				- Do not use code fences.
 				- Do not include explanations outside JSON.
