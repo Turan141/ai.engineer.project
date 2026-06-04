@@ -20,14 +20,25 @@ export class ListFilesTool implements ITool {
 			throw new Error("fileName or pattern argument is required")
 		}
 
-		const files = await this.fileSystemService.findFiles(
-			config.workspaceRoot,
-			pattern
-		)
+		const files = await this.fileSystemService.getFiles(config.workspaceRoot)
+		const normalizedPattern = this.normalizeFileSearch(pattern)
+		const matchedFiles = files.filter((file) => {
+			const lowerFile = file.toLowerCase()
+			const normalizedFile = this.normalizeFileSearch(file)
+
+			return (
+				lowerFile.includes(pattern.toLowerCase()) ||
+				normalizedFile.includes(normalizedPattern)
+			)
+		})
 
 		return {
-			files: files,
-			count: files.length
+			files: matchedFiles,
+			count: matchedFiles.length
 		}
+	}
+
+	private normalizeFileSearch(value: string): string {
+		return value.toLowerCase().replace(/[^a-z0-9]/g, "")
 	}
 }

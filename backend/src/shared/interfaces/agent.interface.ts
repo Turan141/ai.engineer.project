@@ -31,6 +31,7 @@ export interface IAgentDecision {
 		pattern?: string
 		symbol?: string
 		target?: IInvestigateArgs["target"]
+		task?: string
 		fileName?: string
 		intent?: IInvestigateArgs["intent"]
 		mode?: IInvestigateArgs["mode"]

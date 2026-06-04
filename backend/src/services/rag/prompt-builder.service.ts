@@ -86,6 +86,13 @@ export class PromptBuilderService {
 							"replaceText": "new"
 							}
 							}
+							{
+							"action": "investigate",
+							"args": {
+							"target": "AgentService",
+							"intent": "review"
+							}
+							}
 
 							Intent meanings:
 
@@ -273,6 +280,27 @@ export class PromptBuilderService {
 							}
 							}
 
+							User: Refactor AgentService, 
+							User: Fix bug in AgentService
+							User: Improve AgentService
+							User: Add logging to AgentService
+							{
+								"action": "modify",
+								"args": {
+									"target": "AgentService",
+									"task": "Refactor AgentService"
+								}
+							}
+
+							User: Add error handling to AgentService
+							{
+								"action": "modify",
+								"args": {
+									"target": "AgentService",
+									"task": "Add error handling"
+								}
+							}
+
 							Rules:
 
 							* Use investigate for implementation and usage questions.
@@ -434,5 +462,77 @@ Return only the analysis.
 				- no apologies
 				- give correct answers
 		`
+	}
+
+	buildModificationPrompt(task: string, filePath: string, code: string): string {
+		return `
+You are a senior TypeScript software engineer.
+
+You are modifying an EXISTING codebase.
+
+Project stack:
+- TypeScript
+- Node.js
+- Express
+- SQLite
+- LM Studio
+- React
+
+User request:
+${task}
+
+File:
+${filePath}
+
+Current code:
+
+<code>
+${code}
+</code>
+
+Rules:
+
+- Preserve the existing architecture.
+- Preserve the existing coding style.
+- Make the smallest possible change that satisfies the request.
+- Do NOT introduce new frameworks.
+- Do NOT introduce React, Vue, Angular or frontend concepts.
+- Do NOT rewrite classes into functional components.
+- Do NOT perform unrelated refactoring.
+- Do NOT rename symbols unless required by the task.
+- Keep imports unchanged unless modification requires it.
+- Keep public APIs unchanged unless modification requires it.
+
+When refactoring:
+- Improve readability.
+- Reduce duplication.
+- Improve naming when clearly beneficial.
+- Preserve behavior.
+
+When fixing bugs:
+- Fix only the requested problem.
+- Avoid broad architectural changes.
+- Preserve existing functionality.
+
+Output requirements:
+
+1. Brief explanation of the change.
+2. List of affected areas.
+3. Modified code.
+
+Format:
+
+## Change Summary
+
+Explain what was changed.
+
+## Modified Code
+
+Return the updated code.
+
+Only use information available in the provided file.
+Do not invent project structure.
+Do not assume the existence of files that were not provided.
+`
 	}
 }

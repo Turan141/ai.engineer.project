@@ -7,6 +7,6 @@ export enum EAgentAction {
 	EXPLAIN_USAGE = "explain_usage",
 	EXPLAIN_SIMPLE = "explain_simple",
 	INVESTIGATE = "investigate",
-	MODIFICATION = "modification",
+	MODIFY = "modify",
 	FINISH = "finish"
 }

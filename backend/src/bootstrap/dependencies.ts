@@ -39,7 +39,7 @@ import { ToolActionHandler } from "../services/agent/handlers/tool-action.handle
 import { InvestigateHandler } from "../services/agent/handlers/investigate.handler.js"
 import { PlannerService } from "../services/agent/planner.service.js"
 import { CodeInvestigationService } from "../services/agent/code-investigation.service.js"
-import { WorkflowExecutor } from "../services/tools/workflow/workflow-executor.service.js"
+import { ModifyHandler } from "../services/agent/handlers/modification.handler.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -112,7 +112,6 @@ export const toolRegistry = new ToolRegistry([
 	readFileTool,
 	searchTextTool
 ])
-export const workflowExecutor = new WorkflowExecutor(toolRegistry)
 
 export const codeInvestigationService = new CodeInvestigationService(
 	toolRegistry,
@@ -127,7 +126,8 @@ export const agentHandlerRegistry = new AgentHandlerRegistry([
 	new ToolActionHandler(EAgentAction.LIST_FILES),
 	new ToolActionHandler(EAgentAction.READ_FILE),
 	new ToolActionHandler(EAgentAction.SEARCH_TEXT),
-	new InvestigateHandler(codeInvestigationService)
+	new InvestigateHandler(codeInvestigationService),
+	new ModifyHandler(toolRegistry, llmService)
 ])
 
 export const agentService = new AgentService(llmService, agentHandlerRegistry)

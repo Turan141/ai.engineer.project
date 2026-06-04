@@ -9,10 +9,7 @@ import type {
 	InvestigateIntent,
 	InvestigateMode
 } from "../../../shared/interfaces/planner.interface.js"
-import type {
-	CodeInvestigationService,
-	ICodeInvestigationResult
-} from "../code-investigation.service.js"
+import type { CodeInvestigationService } from "../code-investigation.service.js"
 
 const INVESTIGATE_INTENTS: readonly InvestigateIntent[] = [
 	"implementation",
@@ -37,7 +34,34 @@ export class InvestigateHandler implements IAgentHandler {
 		}
 		const intent = args.intent || "implementation"
 
-		const result = await this.executeInvestigation(intent, args.target)
+		let result
+
+		switch (intent) {
+			case "modification":
+			case "refactor":
+				result = {
+					content: `Intent "${intent}" is not implemented yet.`
+				}
+				break
+			case "implementation":
+				result = await this.codeInvestigationService.showImplementation(args.target)
+				break
+			case "usage":
+				result = await this.codeInvestigationService.explainUsage(args.target)
+				break
+			case "summary":
+				result = await this.codeInvestigationService.showSummary(args.target)
+				break
+			case "definition":
+				result = await this.codeInvestigationService.findDefinition(args.target)
+				break
+			default:
+				result = {
+					type: "assistant_message",
+					action: this.action,
+					content: `Unknown investigation intent: ${intent}`
+				}
+		}
 
 		return {
 			type: "assistant_message",
@@ -58,22 +82,6 @@ export class InvestigateHandler implements IAgentHandler {
 			target: args.target.trim(),
 			intent: this.parseIntent(args.intent),
 			...(mode ? { mode } : {})
-		}
-	}
-
-	private executeInvestigation(
-		intent: InvestigateIntent,
-		target: string
-	): Promise<ICodeInvestigationResult> {
-		switch (intent) {
-			case "implementation":
-				return this.codeInvestigationService.showImplementation(target)
-			case "usage":
-				return this.codeInvestigationService.explainUsage(target)
-			case "summary":
-				return this.codeInvestigationService.showSummary(target)
-			case "definition":
-				return this.codeInvestigationService.findDefinition(target)
 		}
 	}
 

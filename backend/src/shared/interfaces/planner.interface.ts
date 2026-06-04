@@ -4,6 +4,8 @@ export type InvestigateIntent =
 	| "definition"
 	| "summary"
 	| "modification"
+	| "refactor"
+
 export type InvestigateMode = "simple" | "detailed"
 
 export interface IPlanStep {
@@ -23,4 +25,9 @@ export interface IInvestigateArgs {
 	target: string
 	intent: InvestigateIntent
 	mode?: InvestigateMode
+}
+
+export interface IModifyArgs {
+	target: string
+	task: string
 }

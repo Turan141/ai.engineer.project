@@ -25,7 +25,6 @@ export class AgentHandlerRegistry {
 
 	async execute(decision: IAgentDecision): Promise<IAgentResponse> {
 		const handler = this.getHandler(decision.action) ?? this.getHandler(EAgentAction.CHAT)
-
 		if (!handler) {
 			throw new Error("Chat handler is not registered")
 		}
