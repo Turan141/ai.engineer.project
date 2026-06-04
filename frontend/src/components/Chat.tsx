@@ -19,6 +19,9 @@ interface IEmbeddingPreview {
 	values: number[]
 }
 
+type TPatchPayload = Pick<ICodePatch, "summary" | "modifiedCode"> &
+	Partial<Pick<ICodePatch, "filePath">>
+
 const EMBEDDING_PREVIEW_SIZE = 8
 const SESSION_ID_STORAGE_KEY_BY_EXPERIENCE: Record<TChatExperience, string> = {
 	agent: "ai-engineer-pet-agent-session-id",
@@ -63,24 +66,46 @@ function getFileName(path: string): string {
 	return path.split(/[\\/]/).filter(Boolean).at(-1) ?? path
 }
 
-function isCodePatch(value: unknown): value is ICodePatch {
+function isPatchPayload(value: unknown): value is TPatchPayload {
 	return (
 		!!value &&
 		typeof value === "object" &&
-		"filePath" in value &&
 		"summary" in value &&
 		"modifiedCode" in value &&
-		typeof value.filePath === "string" &&
 		typeof value.summary === "string" &&
 		typeof value.modifiedCode === "string"
 	)
 }
 
+function parsePatchFromContent(content: string): ICodePatch | null {
+	try {
+		const normalized = content
+			.trim()
+			.replace(/^```json\s*/i, "")
+			.replace(/^```\s*/i, "")
+			.replace(/```$/i, "")
+			.trim()
+		const parsed: unknown = JSON.parse(normalized)
+
+		if (!isPatchPayload(parsed)) {
+			return null
+		}
+
+		return {
+			filePath: parsed.filePath ?? "Pending file",
+			summary: parsed.summary,
+			modifiedCode: parsed.modifiedCode
+		}
+	} catch (_error) {
+		return null
+	}
+}
+
 function getPatchPreview(content: string): string {
 	const lines = content.split("\n")
-	const preview = lines.slice(0, 28).join("\n")
+	const preview = lines.slice(0, 16).join("\n")
 
-	return lines.length > 28 ? `${preview}\n...` : preview
+	return lines.length > 16 ? `${preview}\n...` : preview
 }
 
 function renderInlineCode(text: string): React.ReactNode[] {
@@ -158,7 +183,14 @@ function AgentMessageContent({
 	onApplyPatch?: () => void
 	isApplyingPatch?: boolean
 }) {
-	const patch = isCodePatch(message.metadata?.patch) ? message.metadata.patch : null
+	const metadataPatch = isPatchPayload(message.metadata?.patch)
+		? {
+				filePath: message.metadata.patch.filePath ?? "Pending file",
+				summary: message.metadata.patch.summary,
+				modifiedCode: message.metadata.patch.modifiedCode
+			}
+		: null
+	const patch = metadataPatch ?? parsePatchFromContent(message.content)
 	const file =
 		typeof message.metadata?.file === "string"
 			? message.metadata.file
@@ -169,7 +201,9 @@ function AgentMessageContent({
 		<div className='agent-answer'>
 			{file && (
 				<div className='agent-source'>
-					<span className='agent-source__label'>Implementation analyzed from</span>
+					<span className='agent-source__label'>
+						{patch ? "Patch target" : "Implementation analyzed from"}
+					</span>
 					<span className='agent-source__file' title={file}>
 						{getFileName(file)}
 					</span>
