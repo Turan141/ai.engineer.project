@@ -1,5 +1,6 @@
 import { EAgentAction } from "../../../shared/enums/agent.enums.js"
 import type {
+	IAgentContext,
 	IAgentDecision,
 	IAgentHandler,
 	IAgentResponse
@@ -23,12 +24,15 @@ export class AgentHandlerRegistry {
 		return this.handlers.get(action)
 	}
 
-	async execute(decision: IAgentDecision): Promise<IAgentResponse> {
+	async execute(
+		decision: IAgentDecision,
+		context: IAgentContext
+	): Promise<IAgentResponse> {
 		const handler = this.getHandler(decision.action) ?? this.getHandler(EAgentAction.CHAT)
 		if (!handler) {
 			throw new Error("Chat handler is not registered")
 		}
 
-		return handler.execute(decision)
+		return handler.execute(decision, context)
 	}
 }

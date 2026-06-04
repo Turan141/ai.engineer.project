@@ -40,8 +40,9 @@ import { InvestigateHandler } from "../services/agent/handlers/investigate.handl
 import { PlannerService } from "../services/agent/planner.service.js"
 import { CodeInvestigationService } from "../services/agent/code-investigation.service.js"
 import { ModifyHandler } from "../services/agent/handlers/modification.handler.js"
-import { PatchService } from "../services/agent/apply-patch.service.js"
+import { PatchService } from "../services/agent/patch.service.js"
 import { AgentPatchMemory } from "../storage/repositories/agent-patch.repository.js"
+import { ApplyPatchHandler } from "../services/agent/handlers/apply-patch.handler.js"
 
 // Providers
 export const comfyProvider = new ComfyUIProvider()
@@ -132,7 +133,8 @@ export const agentHandlerRegistry = new AgentHandlerRegistry([
 	new ToolActionHandler(EAgentAction.READ_FILE),
 	new ToolActionHandler(EAgentAction.SEARCH_TEXT),
 	new InvestigateHandler(codeInvestigationService),
-	new ModifyHandler(toolRegistry, llmService, patchService)
+	new ModifyHandler(toolRegistry, llmService, patchService),
+	new ApplyPatchHandler(patchService, fileSystemService)
 ])
 
 export const agentService = new AgentService(llmService, agentHandlerRegistry)

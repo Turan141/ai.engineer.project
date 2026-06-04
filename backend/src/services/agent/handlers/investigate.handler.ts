@@ -15,7 +15,9 @@ const INVESTIGATE_INTENTS: readonly InvestigateIntent[] = [
 	"implementation",
 	"usage",
 	"definition",
-	"summary"
+	"summary",
+	"modification",
+	"refactor"
 ]
 const INVESTIGATE_MODES: readonly InvestigateMode[] = ["simple", "detailed"]
 

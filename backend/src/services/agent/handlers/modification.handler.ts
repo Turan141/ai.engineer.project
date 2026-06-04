@@ -1,6 +1,7 @@
 import { promptBuilderService } from "../../../bootstrap/dependencies.js"
 import { EAgentAction } from "../../../shared/enums/agent.enums.js"
 import type {
+	IAgentContext,
 	IAgentDecision,
 	IAgentResponse
 } from "../../../shared/interfaces/agent.interface.js"
@@ -15,7 +16,7 @@ import type {
 } from "../../../shared/interfaces/planner.interface.js"
 import type { LLMService } from "../../llm/llm.service.js"
 import type { ToolRegistry } from "../../tools/tool-registry.service.js"
-import type { PatchService } from "../apply-patch.service.js"
+import type { PatchService } from "../patch.service.js"
 
 export class ModifyHandler {
 	constructor(
@@ -47,7 +48,10 @@ export class ModifyHandler {
 		}
 	}
 
-	async execute(params: IAgentDecision): Promise<IAgentResponse> {
+	async execute(
+		params: IAgentDecision,
+		context: IAgentContext
+	): Promise<IAgentResponse> {
 		const parsedArgs = this.parseModificationArgs(params?.args ?? {})
 
 		if (!parsedArgs) {
@@ -75,26 +79,11 @@ export class ModifyHandler {
 			}
 		})
 
-		const taskType = parsedArgs.task.toLowerCase().includes("refactor")
-			? "refactor"
-			: parsedArgs.task.toLowerCase().includes("fix")
-				? "bugfix"
-				: "modify"
-
 		const prompt = promptBuilderService.buildModificationPrompt(
-			taskType,
+			parsedArgs.task,
 			filePath,
-			readData?.content
+			readData?.content ?? ""
 		)
-
-		await this.patchService.applyPatch(filePath, {
-			summary: `Modification task: ${parsedArgs.task}`,
-			modifiedCode: readData?.content ?? ""
-		})
-
-		// apply
-
-		// get
 
 		const answer = await this.llmService.generate({
 			messages: [
@@ -105,7 +94,8 @@ export class ModifyHandler {
 			]
 		})
 
-		const patch = await this.safelyParseJSON(answer.content)
+		const patch = await this.safelyParseJSON(answer.content, filePath)
+		await this.patchService.savePendingPatch(context.sessionId, patch)
 
 		return {
 			type: "assistant_message",
@@ -117,7 +107,10 @@ export class ModifyHandler {
 		}
 	}
 
-	private async safelyParseJSON(jsonString: string): Promise<ICodePatch | null> {
+	private async safelyParseJSON(
+		jsonString: string,
+		filePath: string
+	): Promise<ICodePatch> {
 		try {
 			let content = jsonString.trim()
 			if (content.startsWith("```json")) {
@@ -134,21 +127,40 @@ export class ModifyHandler {
 					.trim()
 			}
 
-			const patch = JSON.parse(content)
-			if (typeof patch === "object") {
-				return patch
+			const patch: unknown = JSON.parse(content)
+			if (this.isPatchPayload(patch)) {
+				return {
+					filePath,
+					summary: patch.summary,
+					modifiedCode: patch.modifiedCode
+				}
 			} else {
 				return {
+					filePath,
 					summary: "Failed to parse model response",
 					modifiedCode: ""
 				}
 			}
 		} catch (error) {
 			return {
+				filePath,
 				summary: "Failed to parse model response",
 				modifiedCode: ""
 			}
 		}
+	}
+
+	private isPatchPayload(
+		value: unknown
+	): value is Pick<ICodePatch, "summary" | "modifiedCode"> {
+		return (
+			!!value &&
+			typeof value === "object" &&
+			"summary" in value &&
+			"modifiedCode" in value &&
+			typeof value.summary === "string" &&
+			typeof value.modifiedCode === "string"
+		)
 	}
 
 	private async findTargetFile(target: string): Promise<string | null> {

@@ -33,6 +33,7 @@ export interface IModifyArgs {
 }
 
 export interface ICodePatch {
+	filePath: string
 	summary: string
 	modifiedCode: string
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { IChatMessage } from "../types/chat.types"
+import { IChatMessage, ICodePatch } from "../types/chat.types"
 import {
 	clearChatHistory,
 	generateEmbedding,
@@ -61,6 +61,26 @@ function removeEmptyAssistantMessage(messages: IChatMessage[]): IChatMessage[] {
 
 function getFileName(path: string): string {
 	return path.split(/[\\/]/).filter(Boolean).at(-1) ?? path
+}
+
+function isCodePatch(value: unknown): value is ICodePatch {
+	return (
+		!!value &&
+		typeof value === "object" &&
+		"filePath" in value &&
+		"summary" in value &&
+		"modifiedCode" in value &&
+		typeof value.filePath === "string" &&
+		typeof value.summary === "string" &&
+		typeof value.modifiedCode === "string"
+	)
+}
+
+function getPatchPreview(content: string): string {
+	const lines = content.split("\n")
+	const preview = lines.slice(0, 28).join("\n")
+
+	return lines.length > 28 ? `${preview}\n...` : preview
 }
 
 function renderInlineCode(text: string): React.ReactNode[] {
@@ -129,8 +149,20 @@ function renderMessageBlocks(content: string): React.ReactNode {
 	})
 }
 
-function AgentMessageContent({ message }: { message: IChatMessage }) {
-	const file = typeof message.metadata?.file === "string" ? message.metadata.file : null
+function AgentMessageContent({
+	message,
+	onApplyPatch,
+	isApplyingPatch
+}: {
+	message: IChatMessage
+	onApplyPatch?: () => void
+	isApplyingPatch?: boolean
+}) {
+	const patch = isCodePatch(message.metadata?.patch) ? message.metadata.patch : null
+	const file =
+		typeof message.metadata?.file === "string"
+			? message.metadata.file
+			: patch?.filePath ?? null
 	const isToolResult = message.metadata?.type === "tool_result"
 
 	return (
@@ -143,11 +175,37 @@ function AgentMessageContent({ message }: { message: IChatMessage }) {
 					</span>
 				</div>
 			)}
+			{patch && (
+				<div className='agent-patch'>
+					<div className='agent-patch__header'>
+						<div className='agent-patch__meta'>
+							<span className='agent-patch__eyebrow'>Pending patch</span>
+							<strong>{patch.summary}</strong>
+						</div>
+						{onApplyPatch && (
+							<button
+								type='button'
+								className='agent-patch__apply'
+								onClick={onApplyPatch}
+								disabled={isApplyingPatch}
+							>
+								{isApplyingPatch ? "Applying..." : "Apply patch"}
+							</button>
+						)}
+					</div>
+					<div className='agent-patch__file' title={patch.filePath}>
+						{patch.filePath}
+					</div>
+					<pre className='agent-code-block agent-code-block--patch'>
+						<code>{getPatchPreview(patch.modifiedCode)}</code>
+					</pre>
+				</div>
+			)}
 			{isToolResult ? (
 				<pre className='agent-code-block agent-code-block--tool'>
 					<code>{message.content}</code>
 				</pre>
-			) : (
+			) : patch ? null : (
 				<div className='agent-answer__content'>{renderMessageBlocks(message.content)}</div>
 			)}
 		</div>
@@ -158,6 +216,7 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 	const [messages, setMessages] = useState<IChatMessage[]>([])
 	const [input, setInput] = useState("")
 	const [isLoading, setIsLoading] = useState(false)
+	const [isApplyingPatch, setIsApplyingPatch] = useState(false)
 	const [isHistoryLoading, setIsHistoryLoading] = useState(false)
 	const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false)
 	const [isClearing, setIsClearing] = useState(false)
@@ -246,10 +305,11 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 		}
 	}
 
-	const handleSend = async () => {
-		const trimmed = input.trim()
-
-		if (!trimmed || isLoading || isHistoryLoading) {
+	const sendAgentMessage = async (
+		trimmed: string,
+		options: { clearInput?: boolean; applyingPatch?: boolean } = {}
+	) => {
+		if (!trimmed || isLoading || isHistoryLoading || isApplyingPatch) {
 			return
 		}
 
@@ -267,8 +327,13 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 			}
 		])
 
-		setInput("")
+		if (options.clearInput) {
+			setInput("")
+		}
 		setIsLoading(true)
+		if (options.applyingPatch) {
+			setIsApplyingPatch(true)
+		}
 
 		const controller = new AbortController()
 		controllerRef.current = controller
@@ -309,8 +374,18 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 			}
 		} finally {
 			setIsLoading(false)
+			setIsApplyingPatch(false)
 			controllerRef.current = null
 		}
+	}
+
+	const handleSend = async () => {
+		const trimmed = input.trim()
+		await sendAgentMessage(trimmed, { clearInput: true })
+	}
+
+	const handleApplyPatch = async () => {
+		await sendAgentMessage("confirm", { applyingPatch: true })
 	}
 
 	const handleGenerateEmbedding = async () => {
@@ -366,7 +441,9 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 	}
 
 	const statusLabel = isLoading
-		? "Generating"
+		? isApplyingPatch
+			? "Applying patch"
+			: "Generating"
 		: isHistoryLoading
 			? "Loading history"
 			: isEmbeddingLoading
@@ -513,7 +590,11 @@ export const Chat: React.FC<IChatProps> = ({ experience = "chat" }) => {
 									</span>
 								) : (
 									m.role === "assistant" ? (
-										<AgentMessageContent message={m} />
+										<AgentMessageContent
+											message={m}
+											onApplyPatch={experience === "agent" ? handleApplyPatch : undefined}
+											isApplyingPatch={isApplyingPatch}
+										/>
 									) : (
 										m.content
 									)

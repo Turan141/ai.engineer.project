@@ -38,7 +38,11 @@ export interface IAgentDecision {
 	}
 }
 
+export interface IAgentContext {
+	sessionId: string
+}
+
 export interface IAgentHandler {
 	action: EAgentAction
-	execute(decision: IAgentDecision): Promise<IAgentResponse>
+	execute(decision: IAgentDecision, context: IAgentContext): Promise<IAgentResponse>
 }

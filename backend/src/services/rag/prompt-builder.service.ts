@@ -41,7 +41,9 @@ export class PromptBuilderService {
 							{
 							"action": "chat"
 							}
-
+							{
+								"action": "approve_patch"
+							}
 							{
 							"action": "investigate",
 							"args": {
@@ -93,6 +95,15 @@ export class PromptBuilderService {
 							"intent": "review"
 							}
 							}
+
+							approve_patch action expects the following args:
+							* apply
+							* approve
+							* yes apply
+							* confirm
+							* да
+							* применить
+							* подтвердить
 
 							Intent meanings:
 

@@ -1,4 +1,7 @@
-import type { IAgentResponse } from "../../shared/interfaces/agent.interface.js"
+import type {
+	IAgentContext,
+	IAgentResponse
+} from "../../shared/interfaces/agent.interface.js"
 import type { ILLMService } from "../../shared/interfaces/llm.interface.js"
 import type { AgentHandlerRegistry } from "./handlers/handler-registry.service.js"
 
@@ -8,9 +11,9 @@ export class AgentService {
 		private readonly agentHandlerRegistry: AgentHandlerRegistry
 	) {}
 
-	async handle(message: string): Promise<IAgentResponse> {
+	async handle(message: string, context: IAgentContext): Promise<IAgentResponse> {
 		const decision = await this.llmService.decideAction(message)
 		console.log("Agent handle decision:", decision)
-		return this.agentHandlerRegistry.execute(decision)
+		return this.agentHandlerRegistry.execute(decision, context)
 	}
 }

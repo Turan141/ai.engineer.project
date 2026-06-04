@@ -10,4 +10,7 @@ export class AgentPatchMemory implements IAgentMemory {
 	async get(sessionId: string): Promise<ICodePatch | undefined> {
 		return this.patches.get(sessionId)
 	}
+	async delete(sessionId: string): Promise<void> {
+		this.patches.delete(sessionId)
+	}
 }

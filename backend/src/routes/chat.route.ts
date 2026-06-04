@@ -158,9 +158,16 @@ chatRouter.post("/chat/stream", async (req, res) => {
 
 	try {
 		const { sessionId, message, mode = "agent" } = req.body
+		if (typeof sessionId !== "string" || sessionId.trim() === "") {
+			res.write(`data: ${JSON.stringify({ error: "Session ID is required" })}\n\n`)
+			res.end()
+			return
+		}
 
 		if (mode === "agent") {
-			const resp = await agentService.handle(message)
+			const resp = await agentService.handle(message, {
+				sessionId
+			})
 
 			if (resp.type === "tool") {
 				const result = await toolRegistry.execute(resp as IAgentDecision)
